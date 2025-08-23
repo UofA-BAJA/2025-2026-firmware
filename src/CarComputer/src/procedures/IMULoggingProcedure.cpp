@@ -9,14 +9,14 @@
 namespace BajaWildcatRacing
 {
 
-class IMUProcedure : public Procedure{
+class IMULoggingProcedure : public Procedure{
     public:
         IMUSubsystem& imuSubsystem;
         DataStorage& dataStorage;
         Coms& coms;
 
 
-        IMUProcedure(IMUSubsystem& imuSubsystem, DataStorage& dataStorage, Coms& coms)
+        IMULoggingProcedure(IMUSubsystem& imuSubsystem, DataStorage& dataStorage, Coms& coms)
         : imuSubsystem(imuSubsystem)
         , dataStorage(dataStorage)
         , coms(coms)
@@ -57,15 +57,14 @@ class IMUProcedure : public Procedure{
             coms.sendData(DataTypes::IMU_ACCELERATION_Z, zAccel);
 
 
-            std::cout << std::fixed;
-            std::cout << std::setprecision(2);
+            // std::cout << std::fixed;
+            // std::cout << std::setprecision(2);
 
             // std::cout << "X: " << xRot << " Y: " << yRot << " Z: " << zRot << std::endl;
             // std::cout << "X-A: " << xAccel << " Y-A: " << yAccel << " Z-A: " << zAccel << std::endl;
         }
 
         void end() override {
-            // ! Remember to reset any local variables! This class does not actually get destroyed, only reused!
             std::cout << "IMU procedure ended" << std::endl;
         }
 

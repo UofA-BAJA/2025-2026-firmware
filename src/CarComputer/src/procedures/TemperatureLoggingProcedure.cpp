@@ -9,21 +9,21 @@
 namespace BajaWildcatRacing
 {
 
-class TemperatureProcedure : public Procedure{
+class TemperatureLoggingProcedure : public Procedure{
     public:
         DrivetrainSubsystem& drivetrainSubsystem;
         DataStorage& dataStorage;
         Coms& coms;
 
 
-        TemperatureProcedure(DrivetrainSubsystem& drivetrainSubsystem, DataStorage& dataStorage, Coms& coms)
+        TemperatureLoggingProcedure(DrivetrainSubsystem& drivetrainSubsystem, DataStorage& dataStorage, Coms& coms)
         : drivetrainSubsystem(drivetrainSubsystem)
         , dataStorage(dataStorage)
         , coms(coms)
         {
 
 
-            this->frequency = 20;
+            this->frequency = 30;
 
         }
         
@@ -35,9 +35,9 @@ class TemperatureProcedure : public Procedure{
 
             float cvt_temperature = drivetrainSubsystem.getCVTTemperature();
 
-            coms.sendData(DataTypes::CVT_TEMPERATURE, cvt_temperature);
 
-            //dataStorage->storeData(temperature, DataTypes::TEMPERATURE);
+            dataStorage.storeData(cvt_temperature, DataTypes::CVT_TEMPERATURE);
+            coms.sendData(DataTypes::CVT_TEMPERATURE, cvt_temperature);
 
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);
@@ -45,7 +45,6 @@ class TemperatureProcedure : public Procedure{
         }
 
         void end() override {
-            // ! Remember to reset any local variables! This class does not actually get destroyed, only reused!
             std::cout << "Temperature procedure ended" << std::endl;
         }
 
