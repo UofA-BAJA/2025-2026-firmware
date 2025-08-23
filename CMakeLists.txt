@@ -10,13 +10,10 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/src/CarMain/include
         #Wrapper Libraries
         ${CMAKE_SOURCE_DIR}/src/CarMain/src/devices/include
-        ${CMAKE_SOURCE_DIR}/src/CarMain/src/devices
         #Coms
         ${CMAKE_SOURCE_DIR}/src/CarMain/src/coms/include
-        ${CMAKE_SOURCE_DIR}/src/CarMain/src/coms
         #Subsystems
         ${CMAKE_SOURCE_DIR}/src/CarMain/src/subsystems/include
-        ${CMAKE_SOURCE_DIR}/src/CarMain/src/subsystems
 )
 
 
