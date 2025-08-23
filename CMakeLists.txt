@@ -21,7 +21,7 @@ include_directories(
 #   the correct way to do it.
 
 # Add the wrapper library cpps
-file(GLOB WAPPER_FILES ${CMAKE_SOURCE_DIR}/src/CarMain/src/devices/*.cpp)
+file(GLOB WRAPPER_FILES ${CMAKE_SOURCE_DIR}/src/CarMain/src/devices/*.cpp)
 # Grab all the .cpp files in src
 file(GLOB SRC_FILES ${CMAKE_SOURCE_DIR}/src/CarMain/src/*.cpp)
 # Grab all the .cpp files in subsystems recursively
