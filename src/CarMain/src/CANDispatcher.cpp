@@ -20,8 +20,9 @@ namespace BajaWildcatRacing
 
     void CANDispatcher::execute(){
         
+        //Send 6 commands per cycle to avoid saturating the output buffer
         for(int i = 0; i < 6; i++){
-            sendCanCommand();
+            sendNextCanCommand();
         }
         
         std::lock_guard<std::mutex> lock(callbacks_mutex);
@@ -83,9 +84,8 @@ namespace BajaWildcatRacing
     */
     void CANDispatcher::sendCanCommand(int deviceID, std::vector<byte> data, void* destination, std::function<void(can_frame, void*)> callback){
 
-        if(data.size() > 4){
-            
-            std::cerr << "Error: You are only allowed to send 4 bytes of data to CAN device." << std::endl;
+        if(data.size() > 8){
+            std::cerr << "Error: You are only allowed to send 8 bytes of data in a CAN frame." << std::endl;
             return;
         }
 
@@ -99,7 +99,7 @@ namespace BajaWildcatRacing
     }
 
 
-    void CANDispatcher::sendCanCommand(){
+    void CANDispatcher::sendNextCanCommand(){
 
         if(queuedCommands.empty()){
             return;

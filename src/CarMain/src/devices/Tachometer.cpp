@@ -10,7 +10,7 @@ namespace BajaWildcatRacing
     }
 
     float Tachometer::getEngineRPM(){
-        sendCanCommand(Device::TACHOMETER, 0x01, &engineRPM);
+        sendCanRequest(Device::TACHOMETER, 0x01, &engineRPM);
         return engineRPM;
     }
 

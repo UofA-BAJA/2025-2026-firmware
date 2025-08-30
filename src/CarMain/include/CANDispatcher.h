@@ -67,7 +67,7 @@ namespace BajaWildcatRacing
             void readCANInterface();
 
             // Pulls from the queue of commands and sends them accordingly
-            void sendCanCommand();
+            void sendNextCanCommand();
 
             void resetCANInterface(const char* interface);
             unsigned long droppedCommands = 0;
@@ -78,6 +78,7 @@ namespace BajaWildcatRacing
                 std::vector<byte> data;
                 void* destination;
                 std::function<void(can_frame, void*)> callback;
+                bool lossless;
             } CANCommand;
 
             std::queue<CANCommand> queuedCommands;

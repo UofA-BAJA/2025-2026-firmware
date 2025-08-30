@@ -18,7 +18,7 @@ namespace BajaWildcatRacing
         memcpy(data.data()+1, &speed, sizeof(float));
         data[0] = 0x01;
 
-        sendCanCommand(canID, 0x01, data);
+        sendLossyCanCommand(canID, 0x01, data);
         
     }
 
@@ -32,7 +32,7 @@ namespace BajaWildcatRacing
         memcpy(data.data()+1, &rpm, sizeof(float));
         data[0] = 0x02;
 
-        sendCanCommand(canID, 0x02, data);
+        sendLossyCanCommand(canID, 0x02, data);
 
     }
 
@@ -45,7 +45,7 @@ namespace BajaWildcatRacing
         memcpy(data.data()+1, &cvtTemp, sizeof(float));
         data[0] = 0x03;
         
-        sendCanCommand(canID, 0x03, data);
+        sendLossyCanCommand(canID, 0x03, data);
         
     }
 
@@ -58,7 +58,7 @@ namespace BajaWildcatRacing
         memcpy(data.data()+1, &seconds, sizeof(float));
         data[0] = 0x04;
         
-        sendCanCommand(canID, 0x04, data);
+        sendLossyCanCommand(canID, 0x04, data);
 
     }
 
@@ -87,7 +87,7 @@ namespace BajaWildcatRacing
         memcpy(data.data()+1, &this->indicatorLightState, sizeof(uint16_t));
         data[0] = 0x05;
 
-        sendCanCommand(canID, 0x05, data);
+        sendLossyCanCommand(canID, 0x05, data);
     }
 
     //Sends latest distance infromation to the dash
@@ -98,6 +98,6 @@ namespace BajaWildcatRacing
         memcpy(data.data()+1, &distance, sizeof(float));
         data[0] = 0x06;
         
-        sendCanCommand(canID, 0x04, data);
+        sendLossyCanCommand(canID, 0x04, data);
     }
 }
