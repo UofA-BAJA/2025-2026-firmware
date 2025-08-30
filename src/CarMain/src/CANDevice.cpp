@@ -71,8 +71,10 @@ namespace BajaWildcatRacing
         steady_clock::time_point now = steady_clock::now();
         double timeDifference = duration_cast<milliseconds>(now-activeCommandTimes[deviceCommandKey]).count();
         if(timeDifference > minimumRepeatThreshold){
-
-            m_canDispatcher.sendCanCommand(deviceCommandKey, data, receivedData, [this](can_frame frame, void* destination) {this ->populateValue(frame, destination);});
+            void callback = [this, recievedData, recievedDataLength](can_frame frame){
+                this->populateValue(frame, receivedData, recievedDataLength);
+            }
+            m_canDispatcher.sendCanCommand(deviceCommandKey, data, recievedDataLength, callback);
             activeCommandTimes[deviceCommandKey] = now;
         }
     }
@@ -97,13 +99,10 @@ namespace BajaWildcatRacing
     *
     *  @returns None
     */
-    void CANDevice::populateValue(can_frame frame, void* destination){
+    void CANDevice::populateValue(can_frame frame, void* recievedData, int recievedDataLength){
         // I think all the data we'll be sending back is of size 4 and will be a float
-        //YEAH YOU THINK??? LOL WE GOTTA REDO THIS WHOLE THING
-        //maybe the candispatcher can assemble the frames in order since it knows that and then this can remain a simple memcopy
-    
-        int size = 4;
-        memcpy(destination, &frame.data, size);
+        // The above comment is left in memorial of the ignorance of us in 2024-2025
+        memcpy(recievedData, &frame.data, recievedDataLength);
     }
 
 
