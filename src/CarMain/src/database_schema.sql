@@ -1,10 +1,29 @@
------------------------------------------------------------------------------
+------------------------------------------------------------------------------------
+-- The big idea behind this schema is that the database is stored in a single file.
+-- Every time the "new session" command is send from the pit, a new .db file is
+-- created. Associated with this file is a timestamp in the form YYYY-MM-DDTHH:SSZ
+-- (conforming to the ISO 8601 standard)
+-- The z means "Zulu time", otherwise known as an offset of 0 from UTC. (The name of 
+-- the file is really only used as a unique identifier, so it's not actually that
+-- important)
 --
+-- [The paragraph below is still theoretical and a WIP]
+-- All of these sessions are stored locally on a flash drive on the car. Once 
+-- somebody with the flash drive has access to the Postgres server, they can sync
+-- up all of the locally stored data with the rest of the data. The syncing process
+-- will also clear the data on the flash drive, eliminating the need to manually 
+-- clean it. Each .db file will be treated as its own unique session in the Postgres
+-- database
 --
+-- [Fever dream goal below]
+-- Eventually, it would be really cool to set up a web service that uses the postgres
+-- database in combination with a data visualizer (Grafana?). It would also be really
+-- cool to have this as a service that other teams could set up with their own 
+-- telemetry systems.
 --
---
---
------------------------------------------------------------------------------
+-- Originally written by Matthew Larson
+-- Started August 27, 2025
+------------------------------------------------------------------------------------
 
 
 
@@ -16,25 +35,24 @@ PRAGMA journal_mode = WAL;
 -- Another performance optimization. Should probably give some more information
 PRAGMA synchronous = NORMAL;
 
--- As opposed to the 2024-2025 database, this database does not have a "session" table.
--- This is because this year, each session will be represented as a separate .db file with an associated date.
--- Occasionally, we will take the local files and upload them to a separate postgres database that holds session information
--- Postgres is much better for managing large amounts of data
-
-CREATE TABLE IF NOT EXISTS log(
-	id INTEGER PRIMARY KEY,
-	vehicle VARCHAR(128), -- make foreign key constraint
-	type VARCHAR(16) NOT NULL, -- ie. Log, Warning, Error, Panic, etc.
-	message TEXT
-);
 
 CREATE TABLE IF NOT EXISTS vehicle(
 	name VARCHAR(128) PRIMARY KEY,
-	competition_year DATETIME NOT NULL,
-	
+	competition_year DATETIME NOT NULL
+	-- Should probably add more fields later?
 );
 
-CREATE TABLE IF NOT EXISTS sensors(
+CREATE TABLE IF NOT EXISTS log(
+	id INTEGER PRIMARY KEY,
+	epoch INTEGER,
+	vehicle VARCHAR(128), -- make foreign key constraint
+	type VARCHAR(16) NOT NULL, -- ie. Log, Warning, Error, Panic, etc.
+	message TEXT,
+	FOREIGN KEY(vehicle) REFERENCES vehicle(name)
+);
+
+
+CREATE TABLE IF NOT EXISTS sensor(
 	name VARCHAR(128) PRIMARY KEY,
 	manufacturer TEXT NOT NULL,
 	model TEXT NOT NULL,
@@ -52,6 +70,8 @@ CREATE TABLE IF NOT EXISTS imu(
 	az REAL,
 	-- other stuff, idk what we want yet
 	ax_unit VARCHAR(32) GENERATED ALWAYS AS ('m/s^2') VIRTUAL,
+	FOREIGN KEY(vehicle) REFERENCES vehicle(name),
+	FOREIGN KEY(sensor) REFERENCES sensor(name)
 );
 
 
@@ -61,6 +81,8 @@ CREATE TABLE IF NOT EXISTS temperature(
 	sensor VARCHAR(128), -- make foreign key constraint
 	temp REAL,
 	temp_unit VARCHAR(32) GENERATED ALWAYS AS ('°C') VIRTUAL,
+	FOREIGN KEY(vehicle) REFERENCES vehicle(name),
+	FOREIGN KEY(sensor) REFERENCES sensor(name)
 );
 
 
@@ -68,8 +90,9 @@ CREATE TABLE IF NOT EXISTS tachometer(
 	epoch INTEGER,
 	vehicle VARCHAR(128), -- make foreign key constraint
 	sensor VARCHAR(128), -- make foreign key constraint
-	value REAL,
-	value VARCHAR(32) GENERATED ALWAYS AS ('rad/s') VIRTUAL
+	rpm REAL, 	-- No need for a unit. It's literally in the name
+	FOREIGN KEY(vehicle) REFERENCES vehicle(name),
+	FOREIGN KEY(sensor) REFERENCES sensor(name)
 );
 
 
@@ -82,5 +105,7 @@ CREATE TABLE IF NOT EXISTS vehicle_state(
 	dist REAL,
 	
 	speed_unit VARCHAR(32) GENERATED ALWAYS AS ('m/s'),
-	dist_unit VARCHAR(32) GENERATED ALWAYS AS ('m')
+	dist_unit VARCHAR(32) GENERATED ALWAYS AS ('m'),
+	
+	FOREIGN KEY(vehicle) REFERENCES vehicle(name)
 );
