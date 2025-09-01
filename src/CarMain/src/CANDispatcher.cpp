@@ -213,12 +213,11 @@ namespace BajaWildcatRacing
             response->numFrames = 1;
             response->callback = callback;
             response->commandCycles = 0;
-            //TODO: There really needs to be a better way to add this pointer
-            std::unique_ptr<unsigned char[]> p(new unsigned char[recievedDataLength]);
-            response->recievedData = std::move(p);
+            response->recievedData = std::make_unique<unsigned char[]>(recievedDataLength);
             
             // std::shared_ptr<CANResponse> responsePtr(response);
-            responses[currUID](&response);
+            responses[currUID] = response;
+
             // (eventually) used for drop rate tracking & alerting
             totalCommands++;
 
@@ -249,9 +248,9 @@ namespace BajaWildcatRacing
             if(recievedDataLength > 0 || lossless == true){
                 // Erase what we just wrote from the callbacks and commandCycles if it fails to send
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
-                CANResponse response = responses[currUID];
-                for(int i = 0; i < response.framesLeft; i++){
-                    responses.erase(response.firstUID + i);
+                uint32_t firstUID = responses[currUID]->firstUID;
+                for(int i = 0; i < responses[currUID]->numFrames; i++){
+                    responses.erase(firstUID + i);
                 }
             } 
         }
@@ -326,9 +325,9 @@ namespace BajaWildcatRacing
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
 
                 // Check to see if the can frame is actually meant for us.
-                if(callbacks.find(messageID) != callbacks.end()){
+                if(responses.find(messageID) != responses.end()){
                     // Invoke the registered callback and pass the destination variable
-                    callbacks[messageID](frame, destinations[messageID]);
+                    responses[messageID]->callback(frame.data);
                     
                     responses.erase(messageID);
                 }
