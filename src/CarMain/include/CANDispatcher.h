@@ -46,8 +46,8 @@ namespace BajaWildcatRacing
             void sendLosslessCanCommand(int deviceCommandID, std::vector<byte> data);
 
         private:
-            const int MIN_UID_BOUND = 0x0000_0001;  //0 is reserved for flagging a "no callback" condition     
-            const int MAX_UID_BOUND = 0x000F_FFFF;  //Lower 20 bits of CAN IDs are always used for callback IDs
+            const int MIN_UID_BOUND = 0x00000001;  //0 is reserved for flagging a "no callback" condition     
+            const int MAX_UID_BOUND = 0x000FFFFF;  //Lower 20 bits of CAN IDs are always used for callback IDs
 
             int can_socket_fd;
             uint32_t currUID;
@@ -55,20 +55,22 @@ namespace BajaWildcatRacing
             std::thread canReadingThread;
             std::atomic<bool> running = true;
 
-            std::unordered_map<uint32_t, std::shared_ptr<CANResponse>> responses;
-            // Maps a command to the amount of cycles it has been waiting for a response
-            std::unordered_map<uint32_t, int> commandCycles;
-            int cycleThreshold = 100;     // A command can be in queue for 100 cycles until it is considered dropped.
-
             // Stores each response that we're waiting for (may be multiple CAN frames)
             typedef struct CANResponse{
                 uint32_t firstUID;
-                std::unique_ptr<void> recievedData;
+                std::unique_ptr<unsigned char[]> recievedData;
                 int framesLeft;
                 int numFrames;
                 std::function<void(void*)> callback;
                 int commandCycles;
             } CANResponse;
+
+            std::unordered_map<uint32_t, std::shared_ptr<CANResponse>> responses;
+            // Maps a command to the amount of cycles it has been waiting for a response
+            std::unordered_map<uint32_t, int> commandCycles;
+            int cycleThreshold = 100;     // A command can be in queue for 100 cycles until it is considered dropped.
+
+            
 
             const char* interfaceName;
 

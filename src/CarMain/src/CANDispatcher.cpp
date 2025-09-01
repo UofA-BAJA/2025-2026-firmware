@@ -30,9 +30,9 @@ namespace BajaWildcatRacing
         for(auto it = responses.begin(); it != responses.end();){
             uint32_t commandID = it->first;
 
-            responses[commandID].commandCycles++;
+            responses[commandID]->commandCycles++;
 
-            if(responses[commandID].commandCycles >= cycleThreshold){
+            if(responses[commandID]->commandCycles >= cycleThreshold){
                     droppedCommands++;
                     std::cout << "Commands Dropped: " << droppedCommands << std::endl;
                     // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
@@ -122,7 +122,7 @@ namespace BajaWildcatRacing
         }
 
         CANCommand canCommand;
-        canCommand.deviceID = deviceCommandID;
+        canCommand.deviceCommandID = deviceCommandID;
         canCommand.data = data;
         canCommand.recievedDataLength = 0;
         canCommand.lossless = false;
@@ -130,14 +130,14 @@ namespace BajaWildcatRacing
         queuedCommands.push(canCommand);
     }
 
-    void sendLosslessCanCommand(int deviceCommandID, std::vector<byte> data){
+    void CANDispatcher::sendLosslessCanCommand(int deviceCommandID, std::vector<byte> data){
         if(data.size() > 8){
             std::cerr << "Error: You are only allowed to send 8 bytes of data in a CAN frame." << std::endl;
             return;
         }
 
         CANCommand canCommand;
-        canCommand.deviceID = deviceCommandID;
+        canCommand.deviceCommandID = deviceCommandID;
         canCommand.data = data;
         canCommand.recievedDataLength = 0;
         canCommand.lossless = true;
@@ -158,7 +158,7 @@ namespace BajaWildcatRacing
         // Get all the information about the CAN Command
         int deviceCommandID = canCommand.deviceCommandID;
         std::vector<byte> data = canCommand.data;
-        std::function<void(can_frame)> callback = canCommand.callback;
+        std::function<void(void*)> callback = canCommand.callback;
         bool lossless = canCommand.lossless;
         int recievedDataLength = canCommand.recievedDataLength;
 
@@ -190,7 +190,7 @@ namespace BajaWildcatRacing
             
             // This line doesn't seem to do anything at all
             // Supposedly it stops if we've wrapped over the available callback IDs but the callbacks at the end haven't been recieved or timed out
-            if(callbacks.find(currUID) != callbacks.end()){
+            if(responses.find(currUID) != responses.end()){
                 std::cerr << "Error: Sending CAN requests too fast! Slow down!" << std::endl;
                 return;
             }
@@ -206,16 +206,19 @@ namespace BajaWildcatRacing
             */
 
             //Prepare response 
-            CANResponse response;
-            response.firstUID = currUID;
-            response.framesLeft = 1;
-            response.numFrames = 1;
-            response.callback = callback;
-            response.commandCycles = 0;
-            response.recievedData(new byte[recievedDataLength]);
-
+            std::shared_ptr<CANResponse> response(new CANResponse());
+            // CANResponse response;
+            response->firstUID = currUID;
+            response->framesLeft = 1;
+            response->numFrames = 1;
+            response->callback = callback;
+            response->commandCycles = 0;
+            //TODO: There really needs to be a better way to add this pointer
+            std::unique_ptr<unsigned char[]> p(new unsigned char[recievedDataLength]);
+            response->recievedData = std::move(p);
             
-            responses.add(currUID, *response);
+            // std::shared_ptr<CANResponse> responsePtr(response);
+            responses[currUID](&response);
             // (eventually) used for drop rate tracking & alerting
             totalCommands++;
 

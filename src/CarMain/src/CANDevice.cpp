@@ -71,9 +71,9 @@ namespace BajaWildcatRacing
         steady_clock::time_point now = steady_clock::now();
         double timeDifference = duration_cast<milliseconds>(now-activeCommandTimes[deviceCommandKey]).count();
         if(timeDifference > minimumRepeatThreshold){
-            void callback = [this, dataDestination, recievedDataLength](void* recievedData){
+            auto callback = [this, dataDestination, dataDestinationLength](void* recievedData){
                 this->populateValue(recievedData, dataDestination, dataDestinationLength);
-            }
+            };
             m_canDispatcher.sendCanRequest(deviceCommandKey, data, dataDestinationLength, callback);
             activeCommandTimes[deviceCommandKey] = now;
         }
@@ -102,7 +102,7 @@ namespace BajaWildcatRacing
     void CANDevice::populateValue(void* recievedData, void* dataDestination, int dataDestinationLength){
         // I think all the data we'll be sending back is of size 4 and will be a float
         // The above comment is left in memorial of the ignorance of us in 2024-2025
-        memcpy(&recievedData, &frame.data, dataDestinationLength);
+        memcpy(dataDestination, recievedData, dataDestinationLength);
     }
 
 

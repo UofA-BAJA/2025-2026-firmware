@@ -9,6 +9,7 @@
 #include <functional>
 #include <chrono>
 #include <map>
+#include <bitset>
 
 namespace BajaWildcatRacing
 {
