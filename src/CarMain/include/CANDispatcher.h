@@ -22,6 +22,7 @@
 
 #include <queue>
 #include <vector>
+#include <memory>
 
 #include "CarLogger.h"
 #include "CarTime.h"
@@ -40,12 +41,13 @@ namespace BajaWildcatRacing
             void execute();
             void end();
 
-            void sendCanCommand(int deviceID, std::vector<byte> data, void* destination, std::function<void(can_frame, void*)> callback);
-            void sendCanCommand(int deviceID, std::vector<byte> data);
+            void sendCanRequest(int deviceCommandID, std::vector<byte> data, int recievedDataLength, std::function<void(void*)> callback);
+            void sendLossyCanCommand(int deviceCommandID, std::vector<byte> data);
+            void sendLosslessCanCommand(int deviceCommandID, std::vector<byte> data);
 
         private:
-            const int MIN_UID_BOUND = 0x1000;         // Reserve the non extended ID's for all the other devices
-            const int MAX_UID_BOUND = 0xFFFFFF;
+            const int MIN_UID_BOUND = 0x0000_0001;  //0 is reserved for flagging a "no callback" condition     
+            const int MAX_UID_BOUND = 0x000F_FFFF;  //Lower 20 bits of CAN IDs are always used for callback IDs
 
             int can_socket_fd;
             uint32_t currUID;
@@ -53,11 +55,20 @@ namespace BajaWildcatRacing
             std::thread canReadingThread;
             std::atomic<bool> running = true;
 
-            std::unordered_map<uint32_t, std::function<void(can_frame, void*)>> callbacks;
-            std::unordered_map<uint32_t, void*> destinations;
+            std::unordered_map<uint32_t, std::shared_ptr<CANResponse>> responses;
             // Maps a command to the amount of cycles it has been waiting for a response
             std::unordered_map<uint32_t, int> commandCycles;
             int cycleThreshold = 100;     // A command can be in queue for 100 cycles until it is considered dropped.
+
+            // Stores each response that we're waiting for (may be multiple CAN frames)
+            typedef struct CANResponse{
+                uint32_t firstUID;
+                std::unique_ptr<void> recievedData;
+                int framesLeft;
+                int numFrames;
+                std::function<void(void*)> callback;
+                int commandCycles;
+            } CANResponse;
 
             const char* interfaceName;
 
@@ -73,11 +84,15 @@ namespace BajaWildcatRacing
             unsigned long droppedCommands = 0;
             unsigned long totalCommands = 0;
             
+            //Internal struct used for defining how a command should be dealt with 
             typedef struct CANCommand{
-                int deviceID;
+                int deviceCommandID; //This isn't a full CAN ID yet
                 std::vector<byte> data;
-                void* destination;
-                std::function<void(can_frame, void*)> callback;
+                //Request: recievedDataLength > 0
+                //Lossless command: receivedDataLength == 0, lossless = false
+                //Lossy command: receivedDataLength == 0, lossless = true
+                std::function<void(void*)> callback; //Callback is only called when all response frames are recieved
+                int recievedDataLength;
                 bool lossless;
             } CANCommand;
 

@@ -37,7 +37,7 @@ namespace BajaWildcatRacing
     /*
     *   Method: sendCanRequest (with data)
     *
-    *   Purpose: Send CAN request and data to a device, anddata will be recieved back
+    *   Purpose: Send CAN request and data to a device, and data will be recieved back
     *
     *   Pre-conditions:  
     *   
@@ -52,7 +52,7 @@ namespace BajaWildcatRacing
     *   @returns None
     *
     */
-    void CANDevice::sendCanRequest(byte dataType, std::vector<byte> data, void* receivedData, int recievedDataLength){
+    void CANDevice::sendCanRequest(byte dataType, std::vector<byte> data, void* dataDestination, int dataDestinationLength){
 
         using namespace std::chrono;
 
@@ -71,19 +71,19 @@ namespace BajaWildcatRacing
         steady_clock::time_point now = steady_clock::now();
         double timeDifference = duration_cast<milliseconds>(now-activeCommandTimes[deviceCommandKey]).count();
         if(timeDifference > minimumRepeatThreshold){
-            void callback = [this, recievedData, recievedDataLength](can_frame frame){
-                this->populateValue(frame, receivedData, recievedDataLength);
+            void callback = [this, dataDestination, recievedDataLength](void* recievedData){
+                this->populateValue(recievedData, dataDestination, dataDestinationLength);
             }
-            m_canDispatcher.sendCanCommand(deviceCommandKey, data, recievedDataLength, callback);
+            m_canDispatcher.sendCanRequest(deviceCommandKey, data, dataDestinationLength, callback);
             activeCommandTimes[deviceCommandKey] = now;
         }
     }
 
     //Overload without data
-    void CANDevice::sendCanRequest(byte dataType, void* receivedData, int receivedDataLength){
+    void CANDevice::sendCanRequest(byte dataType, void* dataDestination, int dataDestinationLength){
         //Initialize an empty vector and call the overload
         std::vector<byte> data;
-        sendCanRequest(dataType, data, receivedData, receivedDataLength);
+        sendCanRequest(dataType, data, dataDestination, dataDestinationLength);
     }
 
     /*
@@ -99,10 +99,10 @@ namespace BajaWildcatRacing
     *
     *  @returns None
     */
-    void CANDevice::populateValue(can_frame frame, void* recievedData, int recievedDataLength){
+    void CANDevice::populateValue(void* recievedData, void* dataDestination, int dataDestinationLength){
         // I think all the data we'll be sending back is of size 4 and will be a float
         // The above comment is left in memorial of the ignorance of us in 2024-2025
-        memcpy(recievedData, &frame.data, recievedDataLength);
+        memcpy(&recievedData, &frame.data, dataDestinationLength);
     }
 
 
@@ -142,7 +142,7 @@ namespace BajaWildcatRacing
         steady_clock::time_point now = steady_clock::now();
         double timeDifference = duration_cast<milliseconds>(now-activeCommandTimes[deviceCommandKey]).count();
         if(timeDifference > minimumRepeatThreshold){
-            m_canDispatcher.sendCanCommand(deviceCommandKey, data);
+            m_canDispatcher.sendLossyCanCommand(deviceCommandKey, data);
             activeCommandTimes[deviceCommandKey] = now;
         }
     }

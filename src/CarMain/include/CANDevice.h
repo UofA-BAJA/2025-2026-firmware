@@ -23,7 +23,7 @@ namespace BajaWildcatRacing
             // Maps device + command bytes to the time when that command was sent
             std::unordered_map<uint16_t, std::chrono::steady_clock::time_point> activeCommandTimes;
 
-            void populateValue(can_frame frame, void* destination);
+            void populateValue(void* recievedData, void* dataDestination, int dataDestinationLength);
 
 
 
@@ -39,8 +39,8 @@ namespace BajaWildcatRacing
             }
 
         protected:
-            void sendCanRequest(byte dataType, std::vector<byte> data, void* receivedData, int recievedDataLength);
-            void sendCanRequest(byte dataType, void* receivedData, int receivedDataLength);
+            void sendCanRequest(byte dataType, std::vector<byte> data, void* dataDestination, int dataDestinationLength);
+            void sendCanRequest(byte dataType, void* dataDestination, int dataDestinationLength);
             void sendLossyCanCommand(byte dataType, std::vector<byte> data);
             void sendLossyCanCommand(byte dataType);
             void sendLosslessCanCommand(byte dataType, std::vector<byte> data);

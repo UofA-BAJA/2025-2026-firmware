@@ -12,7 +12,7 @@ namespace BajaWildcatRacing
     class Temperature : CANDevice{
 
         public:
-            Temperature(CANDispatcher& canDispatcher);
+            Temperature(CANDispatcher& canDispatcher, byte deviceId);
 
             float getLatestTemperature();
 

@@ -5,12 +5,12 @@
 namespace BajaWildcatRacing
 {
 
-    Tachometer::Tachometer(CANDispatcher& canDispatcher) : CANDevice(canDispatcher) {
+    Tachometer::Tachometer(CANDispatcher& canDispatcher, byte deviceId) : CANDevice(canDispatcher, deviceId) {
 
     }
 
     float Tachometer::getEngineRPM(){
-        sendCanRequest(Device::TACHOMETER, 0x01, &engineRPM);
+        sendCanRequest(0x01, &engineRPM, sizeof(float));
         return engineRPM;
     }
 

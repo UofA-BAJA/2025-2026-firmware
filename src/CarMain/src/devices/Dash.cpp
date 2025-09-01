@@ -4,7 +4,7 @@
 namespace BajaWildcatRacing
 {
 
-    Dash::Dash(CANDispatcher& canDispatcher) : CANDevice(canDispatcher){
+    Dash::Dash(CANDispatcher& canDispatcher, byte deviceId) : CANDevice(canDispatcher, deviceId){
         indicatorLightState = 0;
     }
 
@@ -12,13 +12,11 @@ namespace BajaWildcatRacing
     // Sends latest speed information to the Dash
     void Dash::sendSpeed(float speed)
     {
-        Device::Devices canID = Device::DASH;
-        std::vector<byte> data(sizeof(float)+1, 0);
+        std::vector<byte> data(sizeof(float), 0);
 
-        memcpy(data.data()+1, &speed, sizeof(float));
-        data[0] = 0x01;
+        memcpy(data.data(), &speed, sizeof(float));
 
-        sendLossyCanCommand(canID, 0x01, data);
+        sendLossyCanCommand(0x01, data);
         
     }
 
@@ -26,39 +24,33 @@ namespace BajaWildcatRacing
     // Sends latest RPM information to the Dash
     void Dash::sendRPM(float rpm)
     {
-        Device::Devices canID = Device::DASH;
-        std::vector<byte> data(sizeof(float)+1, 0);
+        std::vector<byte> data(sizeof(float), 0);
 
-        memcpy(data.data()+1, &rpm, sizeof(float));
-        data[0] = 0x02;
+        memcpy(data.data(), &rpm, sizeof(float));
 
-        sendLossyCanCommand(canID, 0x02, data);
+        sendLossyCanCommand(0x02, data);
 
     }
 
     // Sends latest CVT Temp information to the Dash
     void Dash::sendCVTTemp(float cvtTemp)
     {
-        Device::Devices canID = Device::DASH;
-        std::vector<byte> data(sizeof(float)+1, 0);
+        std::vector<byte> data(sizeof(float), 0);
 
-        memcpy(data.data()+1, &cvtTemp, sizeof(float));
-        data[0] = 0x03;
+        memcpy(data.data(), &cvtTemp, sizeof(float));
         
-        sendLossyCanCommand(canID, 0x03, data);
+        sendLossyCanCommand(0x03, data);
         
     }
 
     // Sends latest Time Elapsed information to the Dash
     void Dash::sendTimeSeconds(float seconds)
     {
-        Device::Devices canID = Device::DASH;
-        std::vector<byte> data(sizeof(float)+1, 0);
+        std::vector<byte> data(sizeof(float), 0);
         
-        memcpy(data.data()+1, &seconds, sizeof(float));
-        data[0] = 0x04;
+        memcpy(data.data(), &seconds, sizeof(float));
         
-        sendLossyCanCommand(canID, 0x04, data);
+        sendLossyCanCommand(0x04, data);
 
     }
 
@@ -81,23 +73,19 @@ namespace BajaWildcatRacing
     // Sends the current indicator light state in the wrapper library to the dash
     // This should ONLY be called by the dash procedure at the end of its cycle
     void Dash::sendIndicatorLightState(){
-        Device::Devices canID = Device::DASH;
-        std::vector<byte> data(sizeof(uint16_t)+1, 0);
+        std::vector<byte> data(sizeof(uint16_t), 0);
 
-        memcpy(data.data()+1, &this->indicatorLightState, sizeof(uint16_t));
-        data[0] = 0x05;
+        memcpy(data.data(), &this->indicatorLightState, sizeof(uint16_t));
 
-        sendLossyCanCommand(canID, 0x05, data);
+        sendLossyCanCommand(0x05, data);
     }
 
     //Sends latest distance infromation to the dash
     void Dash::sendDistance(float distance){
-        Device::Devices canID = Device::DASH;
-        std::vector<byte> data(sizeof(float)+1, 0);
+        std::vector<byte> data(sizeof(float), 0);
         
-        memcpy(data.data()+1, &distance, sizeof(float));
-        data[0] = 0x06;
+        memcpy(data.data(), &distance, sizeof(float));
         
-        sendLossyCanCommand(canID, 0x04, data);
+        sendLossyCanCommand(0x06, data);
     }
 }

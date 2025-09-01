@@ -27,19 +27,18 @@ namespace BajaWildcatRacing
         
         std::lock_guard<std::mutex> lock(callbacks_mutex);
 
-        for(auto it = commandCycles.begin(); it != commandCycles.end();){
+        for(auto it = responses.begin(); it != responses.end();){
             uint32_t commandID = it->first;
 
-            commandCycles[commandID]++;
+            responses[commandID].commandCycles++;
 
-            if(commandCycles[commandID] >= cycleThreshold){
+            if(responses[commandID].commandCycles >= cycleThreshold){
                     droppedCommands++;
                     std::cout << "Commands Dropped: " << droppedCommands << std::endl;
                     // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
-                    callbacks.erase(commandID);
-                    destinations.erase(commandID);
+                    responses.erase(commandID);
                     // Proper way to continue iterating over the map
-                    it = commandCycles.erase(it);
+                    it = responses.erase(it);
             }
             else{
                 ++it;
@@ -59,10 +58,7 @@ namespace BajaWildcatRacing
     /*
     *  Method:  sendCanCommand
     *
-    *  Purpose: Sends a CAN frame to a device connected to the CAN bus, where the data
-    *           represents a command that the device should respond to. If we expect a
-    *           response from the device, provide a function that will get called when
-    *           a response is received.
+    *  Purpose: 
     *
     *  Pre-Condition:  There is a device on the CAN bus with ID deviceID; The size of the data
     *                  vector is 4 or less
@@ -82,7 +78,7 @@ namespace BajaWildcatRacing
     *  Returns: None
     *
     */
-    void CANDispatcher::sendCanCommand(int deviceID, std::vector<byte> data, void* destination, std::function<void(can_frame, void*)> callback){
+    void CANDispatcher::sendCanRequest(int deviceCommandID, std::vector<byte> data, int recievedDataLength, std::function<void(void*)> callback){
 
         if(data.size() > 8){
             std::cerr << "Error: You are only allowed to send 8 bytes of data in a CAN frame." << std::endl;
@@ -90,148 +86,15 @@ namespace BajaWildcatRacing
         }
 
         CANCommand canCommand;
-        canCommand.deviceID = deviceID;
+        canCommand.deviceCommandID = deviceCommandID;
         canCommand.data = data;
-        canCommand.destination = destination;
         canCommand.callback = callback;
+        canCommand.recievedDataLength = recievedDataLength;
+        canCommand.lossless = true; 
 
         queuedCommands.push(canCommand);
     }
 
-
-    void CANDispatcher::sendNextCanCommand(){
-
-        if(queuedCommands.empty()){
-            return;
-        }
-
-        CANCommand canCommand = queuedCommands.front();
-        queuedCommands.pop();
-
-
-        int deviceID = canCommand.deviceID;
-        std::vector<byte> data = canCommand.data;
-        void* destination = canCommand.destination;
-        std::function<void(can_frame, void*)> callback = canCommand.callback;
-
-        if(destination == nullptr){
-            // NO CALLBACK
-
-            // Prepare the CAN frame
-            struct can_frame frame;                                             // The CAN frame to send to the CAN device
-            frame.can_id = deviceID;                                            // CAN ID
-            frame.can_id |= CAN_EFF_FLAG;
-            // dlc stands for data length code. 
-            frame.can_dlc = data.size();
-            for(int i = 0; i < data.size(); i++){
-                frame.data[i] = data.at(i);
-            }
-            
-            // Send the CAN frame
-            ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
-
-            // std::cout << result << std::endl;
-            
-            if(result != sizeof(frame)){
-
-                std::string errorStr = strerror(errno);
-                std::cerr << "Error sending CAN frame: " << errorStr << std::endl;
-
-                if(!errorStr.compare("No buffer space available")){
-                    CarLogger::LogWarning("CAN Buffer filled");
-                    resetCANInterface(interfaceName);
-                }
-
-                // exit(1);
-            }
-        }
-        else{
-            // CALLBACK
-
-            uint32_t messageID = currUID + 1;   // The unique messageID that the device will send back to the PI to perform a callback
-    
-    
-            // std::cout << currUID << std::endl;
-    
-            if(messageID > MAX_UID_BOUND){
-                messageID = MIN_UID_BOUND;
-            }
-    
-            currUID = messageID;
-    
-    
-            byte callbackID[3];
-            callbackID[0] = (currUID >> 0) & 0xff;
-            callbackID[1] = (currUID >> 8) & 0xff;
-            callbackID[2] = (currUID >> 16) & 0xff;
-    
-    
-            std::lock_guard<std::mutex> lock(callbacks_mutex);
-    
-    
-            // This line doesn't seem to do anything at all.
-            if(callbacks.find(currUID) != callbacks.end()){
-                std::cerr << "Error: Sending CAN requests too fast! Slow down!" << std::endl;
-                return;
-            }
-    
-    
-            // Prepare the CAN frame
-            struct can_frame frame = {};                                        // The CAN frame to send to the CAN device
-            frame.can_id = deviceID;                                            // CAN ID
-            frame.can_id |= CAN_EFF_FLAG;
-            // dlc stands for data length code. It is plus 3 because we are sending the data and the callback
-            frame.can_dlc = data.size()+3;
-            frame.data[0] = callbackID[0];
-            frame.data[1] = callbackID[1];
-            frame.data[2] = callbackID[2];
-    
-            for(int i = 0; i < data.size(); i++){
-                frame.data[i+3] = data.at(i);
-            }
-    
-    
-            /* 
-            * Note about extremely bizzare bug and the order of code execution:
-            *
-            * Very rarely, if we wrote to the can bus, the device would respond so quickly that
-            * callbacks map and commandCycles wouldn't have time to be written to. To fix this, 
-            * I just had to add them to those maps before the command is written over the can socket.
-            * That's why the three lines are called before the write and not after.
-            *    
-            */
-    
-            // Now when we receive a CAN frame with ID of message ID, we will trigger the callback.
-            callbacks[currUID] = callback;
-            destinations[currUID] = destination;
-            commandCycles[currUID] = 0;
-    
-            ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
-            totalCommands++;
-    
-    
-            // std::cout << result << std::endl;
-    
-            // Send the CAN frame
-            if(result != sizeof(frame)){
-    
-                std::string errorStr = strerror(errno);
-                std::cerr << "Error sending CAN frame: " << errorStr << std::endl;
-                // Erase what we just wrote from the callbacks and commandCycles
-                callbacks.erase(currUID);
-                destinations.erase(currUID);
-                commandCycles.erase(currUID);
-    
-                if(!errorStr.compare("No buffer space available")){
-                    CarLogger::LogWarning("CAN Buffer filled");
-                    resetCANInterface(interfaceName);
-                }
-    
-                // exit(1);
-            }
-        }
-
-    }
 
     /*
     *  Method:  sendCanCommand
@@ -252,23 +115,145 @@ namespace BajaWildcatRacing
     *  Returns: None
     *
     */
-
-    void CANDispatcher::sendCanCommand(int deviceID, std::vector<byte> data){
-
+    void CANDispatcher::sendLossyCanCommand(int deviceCommandID, std::vector<byte> data){
         if(data.size() > 8){
-            
-            std::cerr << "Error: You are only allowed to send 8 bytes of data to CAN device." << std::endl;
+            std::cerr << "Error: You are only allowed to send 8 bytes of data in a CAN frame." << std::endl;
             return;
         }
 
         CANCommand canCommand;
-        canCommand.deviceID = deviceID;
+        canCommand.deviceID = deviceCommandID;
         canCommand.data = data;
-        canCommand.destination = 0;
-        canCommand.callback = nullptr;
+        canCommand.recievedDataLength = 0;
+        canCommand.lossless = false;
 
         queuedCommands.push(canCommand);
+    }
 
+    void sendLosslessCanCommand(int deviceCommandID, std::vector<byte> data){
+        if(data.size() > 8){
+            std::cerr << "Error: You are only allowed to send 8 bytes of data in a CAN frame." << std::endl;
+            return;
+        }
+
+        CANCommand canCommand;
+        canCommand.deviceID = deviceCommandID;
+        canCommand.data = data;
+        canCommand.recievedDataLength = 0;
+        canCommand.lossless = true;
+
+        queuedCommands.push(canCommand);
+    }
+
+
+    void CANDispatcher::sendNextCanCommand(){
+    
+        if(queuedCommands.empty()){
+            return;
+        }
+
+        CANCommand canCommand = queuedCommands.front();
+        queuedCommands.pop();
+
+        // Get all the information about the CAN Command
+        int deviceCommandID = canCommand.deviceCommandID;
+        std::vector<byte> data = canCommand.data;
+        std::function<void(can_frame)> callback = canCommand.callback;
+        bool lossless = canCommand.lossless;
+        int recievedDataLength = canCommand.recievedDataLength;
+
+
+        // Prepare the actual CAN frame
+        struct can_frame frame;                 // The CAN frame that will be sent
+        frame.can_id = deviceCommandID << 20;   // CAN ID (deviceCommandID occupies the upper 9 bits)
+        frame.can_id |= CAN_EFF_FLAG;           // Flag for SocketCAN to indicate extended CAN ID usage
+        frame.can_dlc = data.size();            // Data length code (dlc)
+        for(int i = 0; i < data.size(); i++){   // Copy data from vector to array
+            frame.data[i] = data.at(i);         // (surely there's a better way to do this)
+        }
+
+        //Lossless command or request
+        if(recievedDataLength > 0 || lossless == true){
+            uint32_t messageID = currUID + 1;   // The unique messageID that the device will send back to the PI to perform a callback
+    
+            if(messageID > MAX_UID_BOUND){
+                messageID = MIN_UID_BOUND; //Wraparound
+            }
+    
+            currUID = messageID;
+
+            //Update the CAN frame with the callback ID (or-ing it will include the lower 20 bits)
+            frame.can_id |= currUID;
+    
+            // Thread safety (callbacks are handled in another thread)
+            std::lock_guard<std::mutex> lock(callbacks_mutex);
+            
+            // This line doesn't seem to do anything at all
+            // Supposedly it stops if we've wrapped over the available callback IDs but the callbacks at the end haven't been recieved or timed out
+            if(callbacks.find(currUID) != callbacks.end()){
+                std::cerr << "Error: Sending CAN requests too fast! Slow down!" << std::endl;
+                return;
+            }
+
+            /* 
+            * Note about extremely bizzare bug and the order of code execution:
+            *
+            * Very rarely, if we wrote to the can bus, the device would respond so quickly that
+            * callbacks map and commandCycles wouldn't have time to be written to. To fix this, 
+            * I just had to add them to those maps before the command is written over the can socket.
+            * That's why the three lines are called before the write and not after.
+            *    
+            */
+
+            //Prepare response 
+            CANResponse response;
+            response.firstUID = currUID;
+            response.framesLeft = 1;
+            response.numFrames = 1;
+            response.callback = callback;
+            response.commandCycles = 0;
+            response.recievedData(new byte[recievedDataLength]);
+
+            
+            responses.add(currUID, *response);
+            // (eventually) used for drop rate tracking & alerting
+            totalCommands++;
+
+            //If we're expecting something super long back, reserve more callback IDs
+            if(recievedDataLength > 8){
+                //TODO: do this
+            }
+
+            //TODO: migrate commandCycles to the response struct
+        }
+
+        // Send the CAN frame
+        ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
+
+        // std::cout << result << std::endl;
+        
+        // Result is the length of the can frame, unless an error occurs
+        if(result != sizeof(frame)){
+
+            std::string errorStr = strerror(errno);
+            std::cerr << "Error sending CAN frame: " << errorStr << std::endl;
+
+            if(!errorStr.compare("No buffer space available")){
+                CarLogger::LogWarning("CAN Buffer filled");
+                resetCANInterface(interfaceName);
+            }
+
+            if(recievedDataLength > 0 || lossless == true){
+                // Erase what we just wrote from the callbacks and commandCycles if it fails to send
+                std::lock_guard<std::mutex> lock(callbacks_mutex);
+                CANResponse response = responses[currUID];
+                for(int i = 0; i < response.framesLeft; i++){
+                    responses.erase(response.firstUID + i);
+                }
+            } 
+        }
+
+        //Mutex automatically gets unlocked when it goes out of scope
     }
 
     /*
@@ -333,10 +318,8 @@ namespace BajaWildcatRacing
             }
 
             if(nbytes > 0){
-
-
                 uint32_t messageID = frame.can_id & CAN_EFF_MASK; // Mask to get only the 29-bit ID
-
+                
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
 
                 // Check to see if the can frame is actually meant for us.
@@ -344,14 +327,12 @@ namespace BajaWildcatRacing
                     // Invoke the registered callback and pass the destination variable
                     callbacks[messageID](frame, destinations[messageID]);
                     
-                    callbacks.erase(messageID);
-                    destinations.erase(messageID);
-                    commandCycles.erase(messageID);
+                    responses.erase(messageID);
                 }
             }
         }
 
-        std::cout << "Read CAN interface thread out of scope" << std::endl;
+        std::cout << "readCANInterface() has stopped." << std::endl;
 
     }
 
@@ -425,13 +406,13 @@ namespace BajaWildcatRacing
         int result1 = std::system(canDownCommand.c_str());
 
         if(result1 == 0){
-            std::cout << "Can down executed successfully" << std::endl;
+            std::cout << "CAN Interface set down successfully" << std::endl;
         }
 
         int result2 = std::system(canUpCommand.c_str());
 
         if(result2 == 0){
-            std::cout << "Can up executed successfully" << std::endl;
+            std::cout << "CAN Interface set up successfully" << std::endl;
         }
 
     }

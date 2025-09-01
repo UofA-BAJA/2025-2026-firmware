@@ -33,43 +33,43 @@
 namespace BajaWildcatRacing
 {
 
-    IMU::IMU(CANDispatcher& canDispatcher) : CANDevice(canDispatcher){
+    IMU::IMU(CANDispatcher& canDispatcher, byte deviceId) : CANDevice(canDispatcher, deviceId){
 
     }
 
     float IMU::getLatestAccelerationX(){
 
-        sendCanRequest(Device::IMU, 0x04, &accX);
+        sendCanRequest(0x04, &accX, sizeof(float));
         return accX;
 
     }
 
     float IMU::getLatestAccelerationY(){
 
-        sendCanRequest(Device::IMU, 0x05, &accY);
+        sendCanRequest(0x05, &accY, sizeof(float));
         return accY;
 
     }
 
     float IMU::getLatestAccelerationZ(){
 
-        sendCanRequest(Device::IMU, 0x06, &accZ);
+        sendCanRequest(0x06, &accZ, sizeof(float));
         return accZ;
 
     }
 
     float IMU::getLatestRotationX(){
-        sendCanRequest(Device::IMU, 0x01, &rotX);
+        sendCanRequest(0x01, &rotX, sizeof(float));
         return rotX;
     }
 
     float IMU::getLatestRotationY(){
-        sendCanRequest(Device::IMU, 0x02, &rotY);
+        sendCanRequest(0x02, &rotY, sizeof(float));
         return rotY;
     }
 
     float IMU::getLatestRotationZ(){
-        sendCanRequest(Device::IMU, 0x03, &rotZ);
+        sendCanRequest(0x03, &rotZ, sizeof(float));
         return rotZ;
     }
 

@@ -28,7 +28,7 @@ namespace BajaWildcatRacing
                 LIGHT_14,
                 RACING = 15
             };
-            Dash(CANDispatcher& canDispatcher);
+            Dash(CANDispatcher& canDispatcher, byte deviceId);
             void sendSpeed(float speed);
             void sendRPM(float rpm);
             void sendCVTTemp(float cvtTemp);

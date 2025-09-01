@@ -3,13 +3,13 @@
 namespace BajaWildcatRacing
 {
 
-    Temperature::Temperature(CANDispatcher& canDispatcher) : CANDevice(canDispatcher){
+    Temperature::Temperature(CANDispatcher& canDispatcher, byte deviceId) : CANDevice(canDispatcher, deviceId){
 
     }
 
     float Temperature::getLatestTemperature(){
 
-        sendCanRequest(Device::CVT_TEMP, 0x01, &temperature);
+        sendCanRequest(0x01, &temperature, sizeof(float));
         return temperature;
 
     }
