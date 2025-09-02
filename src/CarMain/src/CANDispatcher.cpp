@@ -36,7 +36,7 @@ namespace BajaWildcatRacing
                     droppedCommands++;
                     std::cout << "Commands Dropped: " << droppedCommands << std::endl;
                     // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
-                    responses.erase(commandID);
+                    
                     // Proper way to continue iterating over the map
                     it = responses.erase(it);
             }
