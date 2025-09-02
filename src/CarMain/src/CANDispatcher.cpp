@@ -19,7 +19,7 @@ namespace BajaWildcatRacing
 
 
     void CANDispatcher::execute(){
-        
+        //TODO: this should be time based, rather than 6 per car cycle (i.e. decouple execute() from the car frequency)
         //Send 6 commands per cycle to avoid saturating the output buffer
         for(int i = 0; i < 6; i++){
             sendNextCanCommand();
@@ -27,6 +27,7 @@ namespace BajaWildcatRacing
         
         std::lock_guard<std::mutex> lock(callbacks_mutex);
 
+        //Iterate over all pending responses and drop ones over 100 cycles
         for(auto it = responses.begin(); it != responses.end();){
             uint32_t commandID = it->first;
 
@@ -307,7 +308,7 @@ namespace BajaWildcatRacing
             ///////////////////////////////////////////////
 
 
-
+            //Read the next frame from the CAN interface
             int nbytes = read(can_socket_fd, &frame, sizeof(struct can_frame));
 
             if (nbytes < 0) {
@@ -326,8 +327,16 @@ namespace BajaWildcatRacing
 
                 // Check to see if the can frame is actually meant for us.
                 if(responses.find(messageID) != responses.end()){
+                    uint32_t difference = messageID - responses[messageID]->firstUID;
+                    memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, nbytes);
+
+                    //TODO: error handling
+                    responses[messageID]->framesLeft--;
+                    if(responses[messageID]->framesLeft == 0){
+                        responses[messageID]->callback(responses[messageID]->recievedData.get());
+                    }
                     // Invoke the registered callback and pass the destination variable
-                    responses[messageID]->callback(frame.data);
+                    
                     
                     responses.erase(messageID);
                 }
