@@ -68,11 +68,11 @@ namespace BajaWildcatRacing
         //     drivetrainSubsystem, dashSubsystem, dataStorage, coms
         // );
 
-        // procedureScheduler.bindCommand<RPMLoggingProcedure>(
-        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
-        //     std::unordered_set<Command>({Command::END_LOG}),
-        //     drivetrainSubsystem, dataStorage, coms
-        // );
+        procedureScheduler.bindCommand<RPMLoggingProcedure>(
+            std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+            std::unordered_set<Command>({Command::END_LOG}),
+            drivetrainSubsystem, dataStorage, coms
+        );
         // procedureScheduler.bindCommand<SpeedLoggingProcedure>(
         //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
         //     std::unordered_set<Command>({Command::END_LOG}),

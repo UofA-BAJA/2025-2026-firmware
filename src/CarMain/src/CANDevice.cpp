@@ -64,7 +64,7 @@ namespace BajaWildcatRacing
 
         //This is the unique identifier for device + datatype that is used in the CAN ID for the CANT Protocol.
         //This is also used as a key in the activeCommandTimes map to keep track of when each command was last sent.
-        u_int16_t deviceCommandKey = (deviceId << 5) | (dataType);
+        u_int16_t deviceCommandKey = (deviceId << 4) | (dataType);
 
 
         //If this is being called quicker than the minimum repeat threshold, don't send a new CAN command
@@ -135,7 +135,7 @@ namespace BajaWildcatRacing
 
         //This is the unique identifier for device + datatype that is used in the CAN ID for the CANT Protocol.
         //This is also used as a key in the activeCommandTimes map to keep track of when each command was last sent.
-        u_int16_t deviceCommandKey = (deviceId << 5) | (dataType);
+        u_int16_t deviceCommandKey = (deviceId << 4) | (dataType);
 
 
         //If this is being called quicker than the minimum repeat threshold, don't send a new CAN command
@@ -183,7 +183,7 @@ namespace BajaWildcatRacing
 
         //This is the unique identifier for device + datatype that is used in the CAN ID for the CANT Protocol.
         //This is also used as a key in the activeCommandTimes map to keep track of when each command was last sent.
-        u_int16_t deviceCommandKey = (deviceId << 5) | (dataType);
+        u_int16_t deviceCommandKey = (deviceId << 4) | (dataType);
 
 
         //If this is being called quicker than the minimum repeat threshold, don't send a new CAN command

@@ -38,11 +38,23 @@ namespace BajaWildcatRacing
                     std::cout << "Commands Dropped: " << droppedCommands << std::endl;
                     // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
                     
-                    // Proper way to continue iterating over the map
-                    it = responses.erase(it);
+                    //Erase ALL frames for multi-part responses
+                    int numFrames = responses[currUID]->numFrames;
+                    for(int i = 0; i < numFrames; i++){
+                        // Proper way to continue iterating over the map
+                        it = responses.erase(it);
+                    }
+                    //TODO: resend for dropped lossless command
             }
             else{
-                ++it;
+                //Skip frames that correspond to the same response 
+                // int numFrames = responses[currUID]->numFrames;
+                // for(int i = 0; i < numFrames; i++){
+                    ++it;
+                // }
+
+                //TODO: make it so that multi-part responses don't get incremented multiple times. 
+                
             }
         } 
 
@@ -185,6 +197,17 @@ namespace BajaWildcatRacing
 
             //Update the CAN frame with the callback ID (or-ing it will include the lower 20 bits)
             frame.can_id |= currUID;
+
+            //Prepare response object
+            int numFrames = (recievedDataLength / 8) + 1; //8 bytes in a can frame, do integer division then add one because we have to round up
+            std::shared_ptr<CANResponse> response(new CANResponse());
+            response->firstUID = currUID; //We don't want the full can_id
+            response->framesLeft = numFrames; 
+            response->numFrames = numFrames;
+            response->recievedDataLength = recievedDataLength; //Used to avoid segfaults from malformed frames
+            response->callback = callback;
+            response->commandCycles = 0;
+            response->recievedData = std::make_unique<unsigned char[]>(recievedDataLength);
     
             // Thread safety (callbacks are handled in another thread)
             std::lock_guard<std::mutex> lock(callbacks_mutex);
@@ -194,43 +217,40 @@ namespace BajaWildcatRacing
             if(responses.find(currUID) != responses.end()){
                 std::cerr << "Error: Sending CAN requests too fast! Slow down!" << std::endl;
                 return;
-            }
-
-            /* 
-            * Note about extremely bizzare bug and the order of code execution:
-            *
-            * Very rarely, if we wrote to the can bus, the device would respond so quickly that
-            * callbacks map and commandCycles wouldn't have time to be written to. To fix this, 
-            * I just had to add them to those maps before the command is written over the can socket.
-            * That's why the three lines are called before the write and not after.
-            *    
-            */
-
-            //Prepare response 
-            std::shared_ptr<CANResponse> response(new CANResponse());
-            // CANResponse response;
-            response->firstUID = currUID;
-            response->framesLeft = 1;
-            response->numFrames = 1;
-            response->callback = callback;
-            response->commandCycles = 0;
-            response->recievedData = std::make_unique<unsigned char[]>(recievedDataLength);
+            }            
             
-            // std::shared_ptr<CANResponse> responsePtr(response);
             responses[currUID] = response;
 
             // (eventually) used for drop rate tracking & alerting
             totalCommands++;
 
             //If we're expecting something super long back, reserve more callback IDs
-            if(recievedDataLength > 8){
-                //TODO: do this
+            if(numFrames > 1){
+                //Reserve more message IDs in a loop
+                for(int i = 0; i < numFrames - 1; i++){
+                    uint32_t messageID = currUID + 1;   // The unique messageID that the device will send back to the PI to perform a callback
+    
+                    if(messageID > MAX_UID_BOUND){
+                        messageID = MIN_UID_BOUND; //Wraparound
+                    }
+                    currUID = messageID;
+                    responses[currUID]  = response;
+                }
             }
-
-            //TODO: migrate commandCycles to the response struct
         }
 
+        /* 
+        * Note about extremely bizzare bug and the order of code execution:
+        *
+        * Very rarely, if we wrote to the can bus, the device would respond so quickly that
+        * callbacks map and commandCycles wouldn't have time to be written to. To fix this, 
+        * I just had to add them to those maps before the command is written over the can socket.
+        * That's why the three lines are called before the write and not after.
+        *    
+        */
+
         // Send the CAN frame
+        std::cout << std::hex << frame.can_id << std::dec << std::endl;
         ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
 
         // std::cout << result << std::endl;
@@ -250,7 +270,8 @@ namespace BajaWildcatRacing
                 // Erase what we just wrote from the callbacks and commandCycles if it fails to send
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
                 uint32_t firstUID = responses[currUID]->firstUID;
-                for(int i = 0; i < responses[currUID]->numFrames; i++){
+                int numFrames = responses[currUID]->numFrames;
+                for(int i = 0; i < numFrames; i++){
                     responses.erase(firstUID + i);
                 }
             } 
@@ -316,29 +337,37 @@ namespace BajaWildcatRacing
                     std::cout << "CAN interface shutting down." << std::endl;
                     break;
                 }
-                std::cerr << "Error reading CAN frame: " << strerror(errno) << std::endl;
+                std::cerr << "ERROR reading CAN frame: " << strerror(errno) << std::endl;
                 continue;
             }
 
             if(nbytes > 0){
-                uint32_t messageID = frame.can_id & CAN_EFF_MASK; // Mask to get only the 29-bit ID
+                uint32_t messageID = frame.can_id & CAN_EFF_MASK; // AND to get only the 29-bit ID
                 
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
 
                 // Check to see if the can frame is actually meant for us.
                 if(responses.find(messageID) != responses.end()){
                     uint32_t difference = messageID - responses[messageID]->firstUID;
-                    memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, nbytes);
 
-                    //TODO: error handling
-                    responses[messageID]->framesLeft--;
-                    if(responses[messageID]->framesLeft == 0){
-                        responses[messageID]->callback(responses[messageID]->recievedData.get());
+                    //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
+                    if(difference*8 + nbytes > responses[messageID]->recievedDataLength){
+                        std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
+                        responses.erase(messageID);
+                    }else{
+                        //Copy the frame data into the right place in the array
+                        memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, nbytes);
+
+                        
+                        responses[messageID]->framesLeft--;
+                        //Run the callback if we've gotten all the frames
+                        if(responses[messageID]->framesLeft == 0){
+                            responses[messageID]->callback(responses[messageID]->recievedData.get());
+                        }
+
+                        //Always erase the messageID from the list now that we've recieved it      
+                        responses.erase(messageID);
                     }
-                    // Invoke the registered callback and pass the destination variable
-                    
-                    
-                    responses.erase(messageID);
                 }
             }
         }

@@ -59,8 +59,9 @@ namespace BajaWildcatRacing
             typedef struct CANResponse{
                 uint32_t firstUID;
                 std::unique_ptr<unsigned char[]> recievedData;
-                int framesLeft;
+                int recievedDataLength;
                 int numFrames;
+                int framesLeft;  
                 std::function<void(void*)> callback;
                 int commandCycles;
             } CANResponse;
