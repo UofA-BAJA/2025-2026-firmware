@@ -2,7 +2,7 @@
 	(version 20250114)
 	(generator "eeschema")
 	(generator_version "9.0")
-	(uuid "f3862278-dbaa-4915-863f-979ed2d84b86")
+	(uuid "61fae62f-fe9f-4a24-bcc0-8c246aaffd86")
 	(paper "A4")
 	(lib_symbols
 		(symbol "Device:Battery"
@@ -538,86 +538,76 @@
 	)
 	(wire
 		(pts
-			(xy 127 96.52) (xy 127 93.98)
+			(xy 96.52 95.25) (xy 96.52 106.68)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "0794540b-48c8-4065-819e-f3532da0c284")
+		(uuid "0234647c-e79b-4ebc-a7e8-1dd0bef7d905")
 	)
 	(wire
 		(pts
-			(xy 153.67 96.52) (xy 148.59 96.52)
+			(xy 72.39 106.68) (xy 86.36 106.68)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "1423d9cd-95d6-439b-94e6-ed63e577bf32")
+		(uuid "46170ae1-f7b3-4977-8fa2-4ddf4d4bf7f3")
 	)
 	(wire
 		(pts
-			(xy 153.67 82.55) (xy 148.59 82.55)
+			(xy 96.52 95.25) (xy 92.71 95.25)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "56bb0822-815b-402c-9231-ae596e2062ba")
+		(uuid "752b805e-fa6a-44cd-b187-516db9d90e43")
 	)
 	(wire
 		(pts
-			(xy 140.97 96.52) (xy 127 96.52)
+			(xy 72.39 95.25) (xy 85.09 95.25)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "7e353850-5711-44eb-b039-fd386f1ab176")
+		(uuid "993f98eb-3987-472a-9d6f-c7af09e8b7e1")
 	)
 	(wire
 		(pts
-			(xy 127 82.55) (xy 140.97 82.55)
+			(xy 96.52 106.68) (xy 93.98 106.68)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "93862574-2d90-499f-b225-13ce46afae62")
+		(uuid "9c1f5a48-eb78-4ea4-8655-c691fbeadc4a")
 	)
 	(wire
 		(pts
-			(xy 127 82.55) (xy 127 83.82)
+			(xy 72.39 95.25) (xy 72.39 96.52)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "9c6cc502-8b31-4951-b3e3-10c62dff25f2")
-	)
-	(wire
-		(pts
-			(xy 153.67 82.55) (xy 153.67 96.52)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e8226f40-6090-469e-9af0-d418ca147cd8")
+		(uuid "bdd2a3e8-f8e3-4ba4-8e16-f04ab4b0915e")
 	)
 	(symbol
 		(lib_id "Device:Battery")
-		(at 127 88.9 0)
+		(at 72.39 101.6 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "252a91c6-8231-4ee1-b98a-1eda966db802")
+		(uuid "2c87f6ef-4059-425e-9436-94ac5540c3da")
 		(property "Reference" "BT1"
-			(at 130.81 87.0584 0)
+			(at 76.2 99.7584 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -626,7 +616,7 @@
 			)
 		)
 		(property "Value" "Battery"
-			(at 130.81 89.5984 0)
+			(at 76.2 102.2984 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -635,7 +625,7 @@
 			)
 		)
 		(property "Footprint" "Battery:Battery_Panasonic_CR2032-HFN_Horizontal_CircularHoles"
-			(at 127 87.376 90)
+			(at 72.39 100.076 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -644,7 +634,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 127 87.376 90)
+			(at 72.39 100.076 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -653,7 +643,7 @@
 			)
 		)
 		(property "Description" "Multiple-cell battery"
-			(at 127 88.9 0)
+			(at 72.39 101.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -662,14 +652,14 @@
 			)
 		)
 		(pin "1"
-			(uuid "1ff971fe-6a16-4c70-b313-d57c264fea79")
+			(uuid "316e2c40-c54e-4c0d-a780-2eff007c3908")
 		)
 		(pin "2"
-			(uuid "67852b51-bc03-49e0-9eb8-7fa0bc1e8b3a")
+			(uuid "d00ae8de-c315-4c39-9249-fd3ca6c07970")
 		)
 		(instances
 			(project ""
-				(path "/f3862278-dbaa-4915-863f-979ed2d84b86"
+				(path "/61fae62f-fe9f-4a24-bcc0-8c246aaffd86"
 					(reference "BT1")
 					(unit 1)
 				)
@@ -677,85 +667,17 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 144.78 82.55 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "a2fa162f-d8ac-4f17-a265-2753faf1bfbc")
-		(property "Reference" "R1"
-			(at 144.78 76.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "R"
-			(at 144.78 78.74 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal"
-			(at 144.78 84.328 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 144.78 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 144.78 82.55 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "635935aa-a70f-418b-b506-24d3ceaba01c")
-		)
-		(pin "2"
-			(uuid "39a22f27-34d1-4552-9338-36b159446c26")
-		)
-		(instances
-			(project ""
-				(path "/f3862278-dbaa-4915-863f-979ed2d84b86"
-					(reference "R1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:LED")
-		(at 144.78 96.52 0)
+		(at 90.17 106.68 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
-		(uuid "a75d2bcb-57f6-4822-af33-44ce5ce9af02")
+		(uuid "4ddcee75-f1bb-426a-8555-390d6b80f1fa")
 		(property "Reference" "D1"
-			(at 143.1925 90.17 0)
+			(at 88.5825 100.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -763,7 +685,7 @@
 			)
 		)
 		(property "Value" "LED"
-			(at 143.1925 92.71 0)
+			(at 88.5825 102.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -771,7 +693,7 @@
 			)
 		)
 		(property "Footprint" "LED_THT:LED_D5.0mm"
-			(at 144.78 96.52 0)
+			(at 90.17 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -780,7 +702,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 144.78 96.52 0)
+			(at 90.17 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -789,7 +711,7 @@
 			)
 		)
 		(property "Description" "Light emitting diode"
-			(at 144.78 96.52 0)
+			(at 90.17 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -798,7 +720,7 @@
 			)
 		)
 		(property "Sim.Pins" "1=K 2=A"
-			(at 144.78 96.52 0)
+			(at 90.17 106.68 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -807,15 +729,83 @@
 			)
 		)
 		(pin "2"
-			(uuid "88b83aed-4afd-45bb-b80d-804ab193cef3")
+			(uuid "6ee324b3-b029-4823-8ce8-b15777cbeb66")
 		)
 		(pin "1"
-			(uuid "e9455304-3676-410a-a9e2-ecc926cdbf96")
+			(uuid "cf1f5a6a-6b44-4f4d-a05d-dcdf3c0aa47c")
 		)
 		(instances
 			(project ""
-				(path "/f3862278-dbaa-4915-863f-979ed2d84b86"
+				(path "/61fae62f-fe9f-4a24-bcc0-8c246aaffd86"
 					(reference "D1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 88.9 95.25 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "e57f64e1-4052-40db-894b-5408c1661dce")
+		(property "Reference" "R1"
+			(at 88.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "R"
+			(at 88.9 91.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_Trimmer_Voltronics_JV"
+			(at 88.9 97.028 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 88.9 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 88.9 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3b692ea2-1ac4-4266-9a68-9d2a55fe2a23")
+		)
+		(pin "2"
+			(uuid "559f8f38-7485-48c4-ac1c-ca8330d5abe3")
+		)
+		(instances
+			(project ""
+				(path "/61fae62f-fe9f-4a24-bcc0-8c246aaffd86"
+					(reference "R1")
 					(unit 1)
 				)
 			)
