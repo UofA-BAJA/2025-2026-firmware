@@ -5,13 +5,14 @@ namespace BajaWildcatRacing
 {
 
     // Define structs that are to be sent over the CAN bus.
-    // These structs are very important
+    // These structs need to be synced across CAN devices and the main 
+    // car computer.
 
     struct imu
     {
-        float ax,
-        float ay,
-        float az,
+        float ax;
+        float ay;
+        float az;
         // other stuff idk
     };
 
@@ -25,7 +26,7 @@ namespace BajaWildcatRacing
         float rpm;
 
     };
-    
+
 }
 
 #endif
