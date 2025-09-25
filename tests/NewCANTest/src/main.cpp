@@ -93,7 +93,7 @@ void loop()
     while (CAN_MSGAVAIL == CAN.checkReceive()){
         float onBoardTemp = 69;
         CAN.readMsgBuf(&rxId, &len, rxBuf); // Read message
-        byte dataType = (byte) (rxId & 0x00F00000) >> 20; 
+        byte dataType = (byte) ((rxId & 0x00F00000) >> 20); 
         unsigned long canCallback = (rxId & 0x000FFFFF);
         Serial.print("Data Type: ");
         Serial.println(dataType, HEX);
@@ -123,21 +123,22 @@ void loop()
                 byte part1[8];
                 byte part2[8];
                 byte part3[4];
-                memcpy(&part1, &e, 8);
-                memcpy(&part2, (&e) + 8, 8);
-                memcpy(&part3, (&e) + 16, 4);
+                byte* structPtr = (byte*) &e;
+                memcpy(&part1, structPtr, 8);                
+                memcpy(&part2, structPtr + 8, 8);
+                memcpy(&part3, structPtr + 16, 4);
 
                 byte sendMSG = CAN.sendMsgBuf(canCallback, 1, 8, part1);
                 if(sendMSG != CAN_OK){
                     Serial.print("Error Sending Message 1...");
                     Serial.println(sendMSG);
                 }
-                sendMSG = CAN.sendMsgBuf(canCallback, 1, 8, part2);
+                sendMSG = CAN.sendMsgBuf(canCallback+1, 1, 8, part2);
                 if(sendMSG != CAN_OK){
                     Serial.print("Error Sending Message 2...");
                     Serial.println(sendMSG);
                 }
-                sendMSG = CAN.sendMsgBuf(canCallback, 1, 4, part3);
+                sendMSG = CAN.sendMsgBuf(canCallback+2, 1, 4, part3);
                 if(sendMSG != CAN_OK){
                     Serial.print("Error Sending Message 3...");
                     Serial.println(sendMSG);
