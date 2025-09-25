@@ -31,30 +31,30 @@ namespace BajaWildcatRacing
         for(auto it = responses.begin(); it != responses.end();){
             uint32_t commandID = it->first;
 
-            responses[commandID]->commandCycles++;
+            //If it's not the first command of a multi-part response, ignore to avoid incremented the cycles multiple times
+            if(responses[commandID]->firstUID == commandID){
+                responses[commandID]->commandCycles++;
 
-            if(responses[commandID]->commandCycles >= cycleThreshold){
-                    droppedCommands++;
-                    std::cout << "Commands Dropped: " << droppedCommands << std::endl;
-                    // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
-                    
-                    //Erase ALL frames for multi-part responses
-                    int numFrames = responses[currUID]->numFrames;
-                    for(int i = 0; i < numFrames; i++){
-                        // Proper way to continue iterating over the map
-                        it = responses.erase(it);
-                    }
-                    //TODO: resend for dropped lossless command
-            }
-            else{
-                //Skip frames that correspond to the same response 
-                // int numFrames = responses[currUID]->numFrames;
-                // for(int i = 0; i < numFrames; i++){
+                if(responses[commandID]->commandCycles >= cycleThreshold){
+                        droppedCommands++;
+                        std::cout << "Commands Dropped: " << droppedCommands << std::endl;
+                        // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
+                        
+                        //Erase ALL frames for multi-part responses
+                        int numFrames = responses[currUID]->numFrames;
+                        for(int i = 0; i < numFrames; i++){
+                            // Proper way to continue iterating over the map
+                            it = responses.erase(it);
+                        }
+                        //TODO: resend for dropped lossless command
+                }
+                else{
                     ++it;
-                // }
 
-                //TODO: make it so that multi-part responses don't get incremented multiple times. 
-                
+                    
+                }
+            }else{
+                ++it;
             }
         } 
 
@@ -74,7 +74,7 @@ namespace BajaWildcatRacing
     *  Purpose: 
     *
     *  Pre-Condition:  There is a device on the CAN bus with ID deviceID; The size of the data
-    *                  vector is 4 or less
+    *                  vector is 8 or less
     *
     *  Post-Condition: The data is successfully sent over the CAN bus to the device with deviceID;
     *                  When a message is received, the given callback function will be executed
@@ -116,7 +116,7 @@ namespace BajaWildcatRacing
     *           represents a command that the device should respond to. 
     * 
     *  Pre-Condition:  There is a device on the CAN bus with ID deviceID; The size of the data
-    *                  vector is 4 or less
+    *                  vector is 8 or less
     *
     *  Post-Condition: The data is successfully sent over the CAN bus to the device with deviceID;
     *

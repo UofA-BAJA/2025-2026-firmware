@@ -12,6 +12,8 @@ namespace BajaWildcatRacing
             TestSubsystem(CANDispatcher& canDispatcher);
             TestDevice::TestStruct getTestStruct();
 
+            void test(bool lossless);
+
         private:
             TestDevice dev;
     };

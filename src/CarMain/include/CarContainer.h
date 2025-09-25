@@ -40,6 +40,8 @@ namespace BajaWildcatRacing
 
             DrivetrainSubsystem drivetrainSubsystem;
 
+            TestSubsystem testSubsystem;
+
     };
 
 }

@@ -22,7 +22,9 @@ namespace BajaWildcatRacing
                 float e;
             } TestStruct;
 
+
             TestStruct getTestStruct();
+            void test(bool lossless);
 
         private:
             TestStruct test;
