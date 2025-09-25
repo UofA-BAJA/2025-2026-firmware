@@ -344,22 +344,26 @@ namespace BajaWildcatRacing
                 
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
 
-                
+                byte frameLength = (byte) frame.len;
                 // Check to see if the can frame is actually meant for us.
                 if(responses.find(messageID) != responses.end()){
                     uint32_t difference = messageID - responses[messageID]->firstUID;
-                    std::cout << std::dec;
-                    std::cout << "messageID: " << messageID << " difference: " << difference << " nbytes: " << nbytes << " Len: " << frame.len << std::endl;
-                    std::cout << frame.can_dlc << " " << frame.can_id << " " << frame.len << " " << frame.len8_dlc << std::endl;
-                    std::cout << "expected length: " << difference*8 + nbytes << " max length: " << responses[messageID]->recievedDataLength << std::endl;
+                    // std::cout << std::dec;
+                    // std::cout << "messageID: " << messageID << " difference: " << difference << " nbytes: " << nbytes << " Len: " << frame.len << std::endl;
+                    // std::cout << (int) frame.can_dlc << " " << frame.can_id << " " << (int) frame.len << " " << (int) frame.len8_dlc << std::endl;
+                    std::cout << "expected length: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
 
                     //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
-                    if(difference*8 + nbytes > responses[messageID]->recievedDataLength){
+                    if(difference*8 + frameLength > responses[messageID]->recievedDataLength){
                         std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
                         responses.erase(messageID);
                     }else{
                         //Copy the frame data into the right place in the array
-                        memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, nbytes);
+                        std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
+                        float test = 0;
+                        memcpy(&test, frame.data, 4);
+                        std::cout << test << std::endl;
+                        memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, frameLength);
 
                         
                         responses[messageID]->framesLeft--;
