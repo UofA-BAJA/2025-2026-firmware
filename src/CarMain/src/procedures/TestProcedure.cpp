@@ -13,7 +13,7 @@ class TestProcedure : public Procedure{
 
 
 
-        TemperatureLoggingProcedure(TestSubsystem& testSubsystem)
+        TestProcedure(TestSubsystem& testSubsystem)
         : testSubsystem(testSubsystem)
         {
             this->frequency = 1; 
@@ -30,11 +30,11 @@ class TestProcedure : public Procedure{
             TestDevice::TestStruct st = testSubsystem.getTestStruct();
 
 
-            testSubsystem.test(true);
-            testSubsystem.test(false);
+            // testSubsystem.test(true);
+            // testSubsystem.test(false);
             std::cout << std::fixed;
             std::cout << std::setprecision(2);
-            std::cout << "Test Struct: " << st.a << st.b << st.c << st.d << st.e << endl;
+            std::cout << "Test Struct: " << st.a << " " << st.b << " " <<  st.c << " " << st.d << " " << st.e << std::endl;
         }
 
         void end() override {

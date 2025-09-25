@@ -4,7 +4,12 @@ namespace BajaWildcatRacing
 {
 
     TestDevice::TestDevice(CANDispatcher& canDispatcher, byte deviceId) : CANDevice(canDispatcher, deviceId) {
-        cvtTemp = 0;
+        test.a = 0;
+        test.b = 0;
+        test.c = 0;
+        test.d = 0;
+        test.e = 0;
+
     }
 
     TestDevice::TestStruct TestDevice::getTestStruct(){
@@ -12,7 +17,7 @@ namespace BajaWildcatRacing
         return test;
     }
 
-    void test(bool lossless){
+    void TestDevice::sendTest(bool lossless){
         if(lossless){
             sendLosslessCanCommand(0x02);
         }else{

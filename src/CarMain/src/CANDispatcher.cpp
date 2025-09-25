@@ -31,31 +31,24 @@ namespace BajaWildcatRacing
         for(auto it = responses.begin(); it != responses.end();){
             uint32_t commandID = it->first;
 
-            //If it's not the first command of a multi-part response, ignore to avoid incremented the cycles multiple times
+            //Only increment the cycles if it's the first UID 
             if(responses[commandID]->firstUID == commandID){
                 responses[commandID]->commandCycles++;
-
-                if(responses[commandID]->commandCycles >= cycleThreshold){
-                        droppedCommands++;
-                        std::cout << "Commands Dropped: " << droppedCommands << std::endl;
-                        // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
-                        
-                        //Erase ALL frames for multi-part responses
-                        int numFrames = responses[currUID]->numFrames;
-                        for(int i = 0; i < numFrames; i++){
-                            // Proper way to continue iterating over the map
-                            it = responses.erase(it);
-                        }
-                        //TODO: resend for dropped lossless command
-                }
-                else{
-                    ++it;
-
-                    
-                }
-            }else{
-                ++it;
             }
+            if(responses[commandID]->commandCycles >= cycleThreshold){
+                    droppedCommands++;
+                    std::cout << "Commands Dropped: " << droppedCommands << std::endl;
+                    // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
+                    
+                    // Proper way to continue iterating over the map
+                    it = responses.erase(it);
+                    
+                    //TODO: resend for dropped lossless command
+            }
+            else{
+                ++it;     
+            }
+            
         } 
 
         // float droppedCommandRatio = (float) droppedCommands / totalCommands * 100.0;
@@ -332,6 +325,7 @@ namespace BajaWildcatRacing
             //Read the next frame from the CAN interface
             int nbytes = read(can_socket_fd, &frame, sizeof(struct can_frame));
 
+
             if (nbytes < 0) {
                 if (errno == EBADF || errno == ECONNRESET) {
                     std::cout << "CAN interface shutting down." << std::endl;
@@ -341,14 +335,23 @@ namespace BajaWildcatRacing
                 continue;
             }
 
+            
+
+            //TODO: Don't try to store stuff if it's a lossless *command*
+            //TODO: clean this shit up
             if(nbytes > 0){
                 uint32_t messageID = frame.can_id & CAN_EFF_MASK; // AND to get only the 29-bit ID
                 
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
 
+                
                 // Check to see if the can frame is actually meant for us.
                 if(responses.find(messageID) != responses.end()){
                     uint32_t difference = messageID - responses[messageID]->firstUID;
+                    std::cout << std::dec;
+                    std::cout << "messageID: " << messageID << " difference: " << difference << " nbytes: " << nbytes << " Len: " << frame.len << std::endl;
+                    std::cout << frame.can_dlc << " " << frame.can_id << " " << frame.len << " " << frame.len8_dlc << std::endl;
+                    std::cout << "expected length: " << difference*8 + nbytes << " max length: " << responses[messageID]->recievedDataLength << std::endl;
 
                     //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
                     if(difference*8 + nbytes > responses[messageID]->recievedDataLength){

@@ -190,9 +190,8 @@ namespace BajaWildcatRacing
         steady_clock::time_point now = steady_clock::now();
         double timeDifference = duration_cast<milliseconds>(now-activeCommandTimes[deviceCommandKey]).count();
         if(timeDifference > minimumRepeatThreshold){
-            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //TODO: The CANDispatcher currently has no idea about a "lossless" command, just a "lossy" command and a request
             activeCommandTimes[deviceCommandKey] = now;
+            m_canDispatcher.sendLosslessCanCommand(deviceCommandKey, data);
         }
     }
 

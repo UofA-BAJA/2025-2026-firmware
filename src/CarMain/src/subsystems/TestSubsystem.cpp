@@ -10,8 +10,8 @@ namespace BajaWildcatRacing{
         return dev.getTestStruct();
     }
 
-    void test(bool lossless){
-        dev.test(lossless);
+    void TestSubsystem::test(bool lossless){
+        dev.sendTest(lossless);
     }
 
 }

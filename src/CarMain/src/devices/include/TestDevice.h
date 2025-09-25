@@ -24,7 +24,7 @@ namespace BajaWildcatRacing
 
 
             TestStruct getTestStruct();
-            void test(bool lossless);
+            void sendTest(bool lossless);
 
         private:
             TestStruct test;
