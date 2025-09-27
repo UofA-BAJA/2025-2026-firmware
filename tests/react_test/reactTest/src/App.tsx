@@ -8,17 +8,18 @@ import {
   YAxis,
   Tooltip,
   CartesianGrid,
+  Legend,
 } from "recharts";
 import "./App.css";
 
 function App() {
   const [count, setCount] = useState(0);
   const data = [
-    { id: 1, time: 0, speed: 3 },
-    { id: 2, time: 5, speed: 8 },
-    { id: 3, time: 10, speed: 14 },
-    { id: 4, time: 15, speed: 19 },
-    { id: 5, time: 20, speed: 17 },
+    { id: 1, time: 0, RPM: 3 },
+    { id: 2, time: 5, RPM: 8 },
+    { id: 3, time: 10, RPM: 14 },
+    { id: 4, time: 15, RPM: 19 },
+    { id: 5, time: 20, RPM: 17 },
   ];
   return (
     <div className="App">
@@ -34,9 +35,16 @@ function App() {
         </a>
       </div>
       <h1>Line Graph Test</h1>
-
+      <LineChart width={500} height={300} data={data}>
+        <Line type="monotone" dataKey="RPM" stroke="#8884d8" strokeWidth={3} />
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="time" />
+        <YAxis />
+        <Tooltip />
+        <Legend />
+      </LineChart>
       <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+        Click on the Baja and React logos to learn more
       </p>
     </div>
   );
