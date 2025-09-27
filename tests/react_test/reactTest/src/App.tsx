@@ -1,12 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import './App.css'
+import { useState } from "react";
+import reactLogo from "./assets/react.svg";
+import React from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
+  const [count, setCount] = useState(0);
+  const data = [
+    { id: 1, time: 0, speed: 3 },
+    { id: 2, time: 5, speed: 8 },
+    { id: 3, time: 10, speed: 14 },
+    { id: 4, time: 15, speed: 19 },
+    { id: 5, time: 20, speed: 17 },
+  ];
   return (
     <div className="App">
       <div>
@@ -30,7 +43,7 @@ function App() {
         Click on the Vite and React logos to learn more
       </p>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
