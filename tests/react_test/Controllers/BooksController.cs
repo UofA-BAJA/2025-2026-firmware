@@ -46,6 +46,11 @@ namespace WebApplication1.Controllers
         YearPublished = "1851"
     }
         };
+        [HttpGet]
+        public ActionResult<List<Book>> GetBooks()
+        {
+            return Ok(books);
+        }
 
     }
 }

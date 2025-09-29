@@ -1,0 +1,5 @@
+@react_test_HostAddress = http://localhost:5140
+
+###
+GET {{{{react_test_HostAddress}}/api/books}}
+Accept: application/json
