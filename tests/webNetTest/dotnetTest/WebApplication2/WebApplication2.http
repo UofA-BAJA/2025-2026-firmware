@@ -1,0 +1,23 @@
+@rootURL = http://localhost:5269
+
+GET {{rootURL}}/weatherforecast/
+Accept: application/json
+
+###
+GET {{rootURL}}/api/books
+Accept: application/json
+
+###
+GET {{rootURL}}/api/books/2
+Accept: application/json
+
+###
+POST {{rootURL}}/api/books
+Content-Type: application/json
+
+{
+    "id": 12,
+    "title": "Hello Word2!",
+    "author": "Nile",
+    "yearPublished": 2026
+}
