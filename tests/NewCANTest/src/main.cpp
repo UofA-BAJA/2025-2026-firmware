@@ -55,7 +55,7 @@ void setup()
 
     CAN.init_Mask(0, 1, 0x1F000000);
     CAN.init_Filt(0, 1, 0x1F000000);
-    CAN.init_Filt(0, 1, 0x1F000000);
+    CAN.init_Filt(1, 1, 0x1F000000);
 
     CAN.init_Mask(1, 1, 0x1F000000);
     CAN.init_Filt(2, 1, 0x1F000000);
