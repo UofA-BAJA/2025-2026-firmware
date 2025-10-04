@@ -243,7 +243,7 @@ namespace BajaWildcatRacing
         */
 
         // Send the CAN frame
-        std::cout << std::hex << frame.can_id << std::dec << std::endl;
+        // std::cout << std::hex << frame.can_id << std::dec << std::endl;
         ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
 
         // std::cout << result << std::endl;
@@ -338,7 +338,6 @@ namespace BajaWildcatRacing
             
 
             //TODO: Don't try to store stuff if it's a lossless *command*
-            //TODO: clean this shit up
             if(nbytes > 0){
                 uint32_t messageID = frame.can_id & CAN_EFF_MASK; // AND to get only the 29-bit ID
                 
@@ -348,11 +347,7 @@ namespace BajaWildcatRacing
                 // Check to see if the can frame is actually meant for us.
                 if(responses.find(messageID) != responses.end()){
                     uint32_t difference = messageID - responses[messageID]->firstUID;
-                    // std::cout << std::dec;
-                    // std::cout << "messageID: " << messageID << " difference: " << difference << " nbytes: " << nbytes << " Len: " << frame.len << std::endl;
-                    // std::cout << (int) frame.can_dlc << " " << frame.can_id << " " << (int) frame.len << " " << (int) frame.len8_dlc << std::endl;
-                    std::cout << "expected length: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
-
+                   
                     //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
                     if(difference*8 + frameLength > responses[messageID]->recievedDataLength){
                         std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
