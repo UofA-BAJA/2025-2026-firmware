@@ -16,7 +16,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem)
         : testSubsystem(testSubsystem)
         {
-            this->frequency = 1; 
+            this->frequency = 30; 
 
         }
         
@@ -30,7 +30,7 @@ class TestProcedure : public Procedure{
             TestDevice::TestStruct st = testSubsystem.getTestStruct();
 
 
-            // testSubsystem.test(true);
+            testSubsystem.test(true);
             // testSubsystem.test(false);
             std::cout << std::fixed;
             std::cout << std::setprecision(2);

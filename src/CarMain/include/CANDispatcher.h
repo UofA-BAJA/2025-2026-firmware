@@ -68,7 +68,6 @@ namespace BajaWildcatRacing
 
             std::unordered_map<uint32_t, std::shared_ptr<CANResponse>> responses;
             // Maps a command to the amount of cycles it has been waiting for a response
-            std::unordered_map<uint32_t, int> commandCycles;
             int cycleThreshold = 100;     // A command can be in queue for 100 cycles until it is considered dropped.
 
             

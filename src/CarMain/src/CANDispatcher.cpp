@@ -243,7 +243,7 @@ namespace BajaWildcatRacing
         */
 
         // Send the CAN frame
-        std::cout << std::hex << frame.can_id << std::dec << std::endl;
+        // std::cout << std::hex << frame.can_id << std::dec << std::endl;
         ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
 
         // std::cout << result << std::endl;
@@ -351,7 +351,7 @@ namespace BajaWildcatRacing
                     // std::cout << std::dec;
                     // std::cout << "messageID: " << messageID << " difference: " << difference << " nbytes: " << nbytes << " Len: " << frame.len << std::endl;
                     // std::cout << (int) frame.can_dlc << " " << frame.can_id << " " << (int) frame.len << " " << (int) frame.len8_dlc << std::endl;
-                    std::cout << "expected length: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
+                    // std::cout << "expected length: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
 
                     //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
                     if(difference*8 + frameLength > responses[messageID]->recievedDataLength){
@@ -359,10 +359,10 @@ namespace BajaWildcatRacing
                         responses.erase(messageID);
                     }else{
                         //Copy the frame data into the right place in the array
-                        std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
+                        // std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
                         float test = 0;
                         memcpy(&test, frame.data, 4);
-                        std::cout << test << std::endl;
+                        // std::cout << test << std::endl;
                         memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, frameLength);
 
                         
