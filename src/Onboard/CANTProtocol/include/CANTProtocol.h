@@ -3,7 +3,7 @@
 
 #include <mcp_can.h>
 #include <Arduino.h>
-#include <map>
+#include <queue>
 #include <functional>
 
 
@@ -48,8 +48,10 @@ template <typename T> class CANTProtocol{
             std::function<void(byte[] incomingData)> onRecieved; //
         }
         
-        std::queue<PendingCANRequest> pendingRequests;
-        std::queue<PendingCANCommand> pendingCommands;
+
+        volatile PendingCANRequest[16] pendingRequests;
+        
+        volatile PendingCANCommand[16] pendingCommands;
 
 };
 
