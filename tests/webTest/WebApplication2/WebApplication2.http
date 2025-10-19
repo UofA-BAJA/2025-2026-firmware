@@ -16,8 +16,8 @@ POST {{rootURL}}/api/books
 Content-Type: application/json
 
 {
-    "id": 12,
-    "title": "Hello Word2!",
-    "author": "Nile",
+    "id": 11,
+    "title": "Hello World!",
+    "author": "Nile Young",
     "yearPublished": 2026
 }
