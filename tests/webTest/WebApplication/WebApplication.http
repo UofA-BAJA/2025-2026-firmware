@@ -1,0 +1,34 @@
+@rootURL = http://localhost:5269
+
+GET {{rootURL}}/weatherforecast/
+Accept: application/json
+
+###
+GET {{rootURL}}/api/books
+Accept: application/json
+
+###
+GET {{rootURL}}/api/books/2
+Accept: application/json
+
+###
+POST {{rootURL}}/api/books
+Content-Type: application/json
+{
+    "id": 11,
+    "title": "Hello World!",
+    "author": "Nile Young",
+    "yearPublished": 2026
+}
+
+### get all belts
+GET http://localhost:5269/Belts
+Accept: application/json
+
+### add a new belt
+POST http://localhost:5269/Belts
+Content-Type: application/json
+
+{
+  "name": "Belt D"
+}
