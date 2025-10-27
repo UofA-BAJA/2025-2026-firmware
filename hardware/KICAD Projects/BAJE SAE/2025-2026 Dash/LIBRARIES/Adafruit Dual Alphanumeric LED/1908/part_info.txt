@@ -1,0 +1,9 @@
+Manufacturer=Adafruit
+PartNumber=1908
+PartCategory=Display
+PackageCategory=Other
+PinCount=18
+Version=1.2
+Released=2025-07-21 07:43:19
+Downloaded=2025-10-11 19:02:32
+3D=Y

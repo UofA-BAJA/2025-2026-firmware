@@ -1,0 +1,41 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model 1908
+#/811800/1566167/2.50/18/3/Display
+DEF 1908 DS 0 30 Y Y 1 F N
+F0 "DS" 1750 300 50 H V L CNN
+F1 "1908" 1750 200 50 H V L CNN
+F2 "1908" 1750 100 50 H I L CNN
+F3 "https://cdn-shop.adafruit.com/product-files/1908/P1908_KWA-541XBB_datasheet.pdf" 1750 0 50 H I L CNN
+F4 "Adafruit Accessories Dual Alphanumeric Display - Blue 0.54 Digit Height - Pack of 2" 1750 -100 50 H I L CNN "Description"
+F5 "7.95" 1750 -200 50 H I L CNN "Height"
+F6 "Adafruit" 1750 -300 50 H I L CNN "Manufacturer_Name"
+F7 "1908" 1750 -400 50 H I L CNN "Manufacturer_Part_Number"
+F8 "485-1908" 1750 -500 50 H I L CNN "Mouser Part Number"
+F9 "https://www.mouser.co.uk/ProductDetail/Adafruit/1908?qs=GURawfaeGuBCHk15Euqw%252BA%3D%3D" 1750 -600 50 H I L CNN "Mouser Price/Stock"
+F10 "" 1750 -700 50 H I L CNN "Arrow Part Number"
+F11 "" 1750 -800 50 H I L CNN "Arrow Price/Stock"
+DRAW
+X A_E 1 0 0 200 R 50 50 0 0 P
+X A_L 2 0 -100 200 R 50 50 0 0 P
+X NO_CONNECTED 3 0 -200 200 R 50 50 0 0 P
+X A_M 4 0 -300 200 R 50 50 0 0 P
+X A_N 5 0 -400 200 R 50 50 0 0 P
+X A_G2 6 0 -500 200 R 50 50 0 0 P
+X A_D 7 0 -600 200 R 50 50 0 0 P
+X A_DP 8 0 -700 200 R 50 50 0 0 P
+X A_C 9 0 -800 200 R 50 50 0 0 P
+X A_B 10 1900 -800 200 L 50 50 0 0 P
+X COM_K_DIG._2 11 1900 -700 200 L 50 50 0 0 P
+X A_A 12 1900 -600 200 L 50 50 0 0 P
+X A_G1 13 1900 -500 200 L 50 50 0 0 P
+X A_K 14 1900 -400 200 L 50 50 0 0 P
+X A_J 15 1900 -300 200 L 50 50 0 0 P
+X COM_K_DIG._1 16 1900 -200 200 L 50 50 0 0 P
+X A_H 17 1900 -100 200 L 50 50 0 0 P
+X A_F 18 1900 0 200 L 50 50 0 0 P
+P 5 0 1 6 200 100 1700 100 1700 -900 200 -900 200 100 N
+ENDDRAW
+ENDDEF
+#
+#End Library

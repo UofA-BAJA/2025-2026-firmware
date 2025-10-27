@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 1427
+D LED Lighting Development Tools HT16K33 Breakout LED 16x8 Matrix Driver
+K
+F http://www.mouser.com/ds/2/737/ht16K33v110-932821.pdf
+$ENDCMP
+#
+#End Doc Library
