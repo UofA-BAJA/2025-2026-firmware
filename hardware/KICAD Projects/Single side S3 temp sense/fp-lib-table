@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "0_Custom")(type "KiCad")(uri "/Users/connorlarson/Documents/2025-2026-firmware/hardware/KICAD Projects/esp-32 s3 template/0_Custom.pretty")(options "")(descr ""))
+)

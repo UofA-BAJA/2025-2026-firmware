@@ -111,9 +111,9 @@
 			(subtractmaskfromsilk no)
 			(outputformat 1)
 			(mirror no)
-			(drillshape 1)
+			(drillshape 0)
 			(scaleselection 1)
-			(outputdirectory "")
+			(outputdirectory "Gerbers/")
 		)
 	)
 	(net 0 "")
@@ -5433,7 +5433,7 @@
 		(descr "module CMS SOT223 4 pins")
 		(tags "CMS SOT")
 		(property "Reference" "U1"
-			(at -0.2 -4.4 90)
+			(at -1.9 -5.2 90)
 			(layer "F.SilkS")
 			(uuid "c1e525af-f92b-4b8d-b45a-2f048fb83b8a")
 			(effects

@@ -133,7 +133,7 @@
         "min_track_width": 0.0,
         "min_via_annular_width": 0.1,
         "min_via_diameter": 0.5,
-        "solder_mask_to_copper_clearance": 0.005,
+        "solder_mask_to_copper_clearance": 0.0,
         "use_height_for_length_calcs": true
       },
       "teardrop_options": [
@@ -226,36 +226,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      [
-        "pin_not_connected|1866900|2286000|6e780ce8-834d-4f8e-9c9e-beb760a6769e|00000000-0000-0000-0000-000000000000|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|",
-        ""
-      ],
-      [
-        "pin_not_connected|1866900|2311400|0c57fd5e-79a9-4cf3-99bd-9d22a20aa568|00000000-0000-0000-0000-000000000000|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|",
-        ""
-      ],
-      [
-        "pin_not_connected|1866900|2336800|9b722c8f-ea08-49df-b711-5c4e18dbb2df|00000000-0000-0000-0000-000000000000|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|",
-        ""
-      ],
-      [
-        "pin_not_connected|1866900|2362200|d49c4a2a-8994-4f2a-a14a-cd6bce136d63|00000000-0000-0000-0000-000000000000|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|",
-        ""
-      ],
-      [
-        "pin_not_connected|1866900|2387600|ba0b8617-ab98-4d12-9991-0609e7485ba3|00000000-0000-0000-0000-000000000000|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|",
-        ""
-      ],
-      [
-        "pin_not_connected|1866900|2413000|2facc3a0-4789-478c-8475-7758cf6daa34|00000000-0000-0000-0000-000000000000|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|/f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2|",
-        ""
-      ],
-      [
-        "unannotated|1917700|2336800|4fc25967-8439-45ca-86d7-9ff53473c73b|00000000-0000-0000-0000-000000000000|||",
-        ""
-      ]
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
@@ -469,7 +440,6 @@
       "single_global_label": "ignore",
       "unannotated": "error",
       "unconnected_wire_endpoint": "warning",
-      "undefined_netclass": "error",
       "unit_value_mismatch": "error",
       "unresolved_variable": "error",
       "wire_dangling": "error"
@@ -480,7 +450,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "esp-32 s3 template.kicad_pro",
+    "filename": "Single side S3 temp sense.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -502,20 +472,6 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
-      },
-      {
-        "clearance": 0.2,
-        "diff_pair_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "usb_c",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
-        "via_diameter": 0.6,
-        "via_drill": 0.3
       }
     ],
     "meta": {
@@ -537,7 +493,7 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "Gerbers/",
+      "plot": "",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",
@@ -570,340 +526,16 @@
           "show": true
         },
         {
-          "group_by": true,
-          "label": "Value",
-          "name": "Value",
-          "show": true
-        },
-        {
-          "group_by": true,
-          "label": "Footprint",
-          "name": "Footprint",
-          "show": true
-        },
-        {
-          "group_by": false,
-          "label": "Datasheet",
-          "name": "Datasheet",
-          "show": true
-        },
-        {
-          "group_by": false,
-          "label": "Description",
-          "name": "Description",
-          "show": false
-        },
-        {
           "group_by": false,
           "label": "Qty",
           "name": "${QUANTITY}",
           "show": true
         },
         {
-          "group_by": false,
-          "label": "#",
-          "name": "${ITEM_NUMBER}",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "2ND SOURCE PART NUMBER",
-          "name": "2ND SOURCE PART NUMBER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "2ND SOURCE SUPPLIER",
-          "name": "2ND SOURCE SUPPLIER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "ADD INTO BOM",
-          "name": "ADD INTO BOM",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "ALTIUM_VALUE",
-          "name": "ALTIUM_VALUE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "ARTIKKELNR NOCA",
-          "name": "ARTIKKELNR NOCA",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "ARTIKKELNR SIMPRO",
-          "name": "ARTIKKELNR SIMPRO",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "AVAILABILITY",
-          "name": "AVAILABILITY",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Availability",
-          "name": "Availability",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "CHECK_PRICES",
-          "name": "CHECK_PRICES",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "CONVERT TO PCB",
-          "name": "CONVERT TO PCB",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Check_prices",
-          "name": "Check_prices",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Comment",
-          "name": "Comment",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "DATASHEET",
-          "name": "DATASHEET",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "DEVICE",
-          "name": "DEVICE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Description_1",
-          "name": "Description_1",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "EU_RoHS_Compliance",
-          "name": "EU_RoHS_Compliance",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "FOOTPRINT DOC",
-          "name": "FOOTPRINT DOC",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "JLCPCB PART CLASS",
-          "name": "JLCPCB PART CLASS",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "LATESTREVISIONDATE",
-          "name": "LATESTREVISIONDATE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "LCSC PART NAME",
-          "name": "LCSC PART NAME",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MANUFACTURER",
-          "name": "MANUFACTURER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MANUFACTURER PART",
-          "name": "MANUFACTURER PART",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MANUFACTURER PART NUMBER",
-          "name": "MANUFACTURER PART NUMBER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MAXIMUM_PACKAGE_HEIGHT",
-          "name": "MAXIMUM_PACKAGE_HEIGHT",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MF",
-          "name": "MF",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "MP",
-          "name": "MP",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "NAME",
-          "name": "NAME",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "NOTE",
-          "name": "NOTE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PACKAGE",
-          "name": "PACKAGE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PART NUMBER",
-          "name": "PART NUMBER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PARTREV",
-          "name": "PARTREV",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PIN COUNT",
-          "name": "PIN COUNT",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PRICE",
-          "name": "PRICE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PUBLISHED",
-          "name": "PUBLISHED",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "PUBLISHER",
-          "name": "PUBLISHER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Package",
-          "name": "Package",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Price",
-          "name": "Price",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SNAPEDA_LINK",
-          "name": "SNAPEDA_LINK",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SNAPEDA_PN",
-          "name": "SNAPEDA_PN",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "STANDARD",
-          "name": "STANDARD",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SUPPLIER",
-          "name": "SUPPLIER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SUPPLIER FOOTPRINT",
-          "name": "SUPPLIER FOOTPRINT",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SUPPLIER PART",
-          "name": "SUPPLIER PART",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SUPPLIER PART NUMBER",
-          "name": "SUPPLIER PART NUMBER",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SYMBOL",
-          "name": "SYMBOL",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Sim.Device",
-          "name": "Sim.Device",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "Sim.Pins",
-          "name": "Sim.Pins",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "SnapEDA_Link",
-          "name": "SnapEDA_Link",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "TYPE",
-          "name": "TYPE",
-          "show": false
-        },
-        {
-          "group_by": false,
-          "label": "VOLTS",
-          "name": "VOLTS",
-          "show": false
+          "group_by": true,
+          "label": "Value",
+          "name": "Value",
+          "show": true
         },
         {
           "group_by": true,
@@ -922,12 +554,24 @@
           "label": "Exclude from Board",
           "name": "${EXCLUDE_FROM_BOARD}",
           "show": true
+        },
+        {
+          "group_by": true,
+          "label": "Footprint",
+          "name": "Footprint",
+          "show": true
+        },
+        {
+          "group_by": false,
+          "label": "Datasheet",
+          "name": "Datasheet",
+          "show": true
         }
       ],
       "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": true,
-      "name": "",
+      "name": "Default Editing",
       "sort_asc": true,
       "sort_field": "Reference"
     },
@@ -973,7 +617,7 @@
   },
   "sheets": [
     [
-      "f0fd11b9-8caf-40d5-aefa-a6a7ead4f7d2",
+      "b3d8d665-261e-49b0-8bc6-7604b3972c17",
       "Root"
     ]
   ],
