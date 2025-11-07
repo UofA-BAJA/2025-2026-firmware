@@ -1,4 +1,5 @@
 #include "CANTProtocol.h"
+#define DEBUG_CAN 1
 
 bool CANTProtocol::begin(){
     //Check for valid CAN ID
@@ -12,7 +13,9 @@ bool CANTProtocol::begin(){
     if(canInitResult != CAN_OK){
         return false;
     }
-
+    #if DEBUG_CAN
+        Serial.println(CAN_DEVICE_ID << 24, BIN);
+    #endif
     //Filter to just the commands we want
     CAN.init_Mask(0, 1, 0x1F000000);
     CAN.init_Filt(0, 1, CAN_DEVICE_ID << 24);
@@ -30,83 +33,105 @@ bool CANTProtocol::begin(){
         return false;
     }
 
-    attachInterrupt(digitalPinToInterrupt(CAN_INTERRUPT_PIN), ISR, FALLING);
+    pinMode(CAN_INTERRUPT_PIN, INPUT);
+
+    //having to pass in this as a parameter to the function sucks!!!!!!
+    attachInterrupt(digitalPinToInterrupt(CAN_INTERRUPT_PIN), ISRHandler, FALLING, this);
     return true;
 }
-        
-bool CANTProtocol::registerRequest(byte commandID, std:function<T(byte[] incomingData)> dataBuilder){
+
+//registerRequest() is currently implemented in CANTProtocol.h
+
+bool CANTProtocol::registerCommand(byte commandID, void (*onRecieved) (unsigned char dataLength, byte* incomingData) ){
     //Check for valid command ID
     if(commandID & ~(0b1111) > 0){
         return false;
     }
 
-    RegisteredCANMessage r;
-    r.isRequest = true;
-    r.dataBuilder = dataBuilder;
-
-    return true;
-}
-
-bool CANTProtocol::registerCommand(byte commandID, std:function<void(byte[] incomingData)> onRecieved){
-    //Check for valid command ID
-    if(commandID & ~(0b1111) > 0){
-        return false;
-    }
-
-    RegisteredCANMessage r;
-    r.isRequest = false;
+    RegisteredCommand r;
     r.onRecieved = onRecieved;
-    registeredMessage[commandID] = r;
+    r.CAN = &(this->CAN);
+
+    registeredMessages[commandID] = r;
+
     return true;
 }
 
+
+//Call in the loop() function to execute pending CAN requests and commands
 void CANTProtocol::execute(){
+    //Sort all the incoming CAN frames into their respective queues 
+    while(frameQueueLength > 0){
+        PendingCANFrame f;
+        memcpy(f.data, pendingFrames[frameQueueFront].data, pendingFrames[frameQueueFront].dataLength);
+        f.dataLength = pendingFrames[frameQueueFront].dataLength;
+        f.callbackID = pendingFrames[frameQueueFront].callbackID;
+        f.dataID = pendingFrames[frameQueueFront].dataID;
+        if(registeredMessages[f.dataID] != nullptr){
+            //Segfault or something similar at this line:
+            registeredMessages[f.dataID]->isRequest();
+            // if(){
+        //         //If the length of the queue is 32 frames or greater (max size), drop it. 
+        //         if(requestQueueFront > 31) break;
+
+        //         int insertLocation = requestQueueFront + requestQueueLength;
+        //         //If we're trying to insert at an index off the end of the array, wraparound to the front
+        //         if(insertLocation > 31) insertLocation = insertLocation - 32;
+
+        //         pendingRequests[insertLocation] = f;
+        //         requestQueueLength++;
+        //     }else{
+        //         //If the length of the queue is 32 frames or greater (max size), drop it. 
+        //         if(commandQueueFront > 31) break;
+
+        //         int insertLocation = commandQueueFront + commandQueueLength;
+        //         //If we're trying to insert at an index off the end of the array, wraparound to the front
+        //         if(insertLocation > 31) insertLocation = insertLocation - 32;
+
+        //         pendingCommands[insertLocation] = f;
+        //         commandQueueLength++;
+            // }
+        }
+        // frameQueueFront++;
+        // frameQueueLength--;
+        // if(frameQueueFront == 32) frameQueueFront = 0;
+    }
+
+
     //Execute up to 2 pending requests
     for(int i = 0; i < 2; i++){
-        if(!pendingRequests.empty()){
-            PendingCANRequest r = pendingRequests.front();
-            pendingRequests.pop();
-            T data = r.dataBuilder(r.data);
-            
-            //If there is a callback, respond, otherwise do nothing
-            if(r.callbackID > 0){
-                byte outputBuffer[8];
-                //If we need to send multiple frames back
-                if(sizeof(T) > 8){
-                    int numFrames = (sizeof(T) / 8) + 1;
-                    byte* ptr = (byte*) &data; //Get a pointer that increments by bytes
-                    for(int j = 0; j < numFrames; j++){
-                        //(this could be one line but I was having trouble thinking of the right way to do it)
-                        //If this is the last frame, memcpy the right amount
-                        if(j == numFrames - 1){
-                            memcpy(&outputBuffer, ptr + (j * 8), sizeof(T) - (j * 8));
-                            byte sendMSG = CAN.sendMsgBuf(r.callbackID + j, 1, sizeof(T) - (j * 8), outputBuffer);
-                        }
-                        //Otherwise, copy 8 bytes
-                        else {
-                            memcpy(&outputBuffer, ptr + (j * 8), 8);
-                            byte sendMSG = CAN.sendMsgBuf(r.callbackID + j, 1, 8, outputBuffer);
-                        }
-                    
-                    }
-                }
+        if(requestQueueLength > 0){
+            #if DEBUG_CAN
+                Serial.println("executing requests");
+            #endif
+            PendingCANFrame* r = &pendingRequests[requestQueueFront];
+            requestQueueFront++;
+            requestQueueLength--;
+            if(requestQueueFront == 32) requestQueueFront = 0;
+
+            RegisteredBase* request = registeredMessages[r->dataID];
+            if(request != nullptr){
+                //Handler code is in the header because cringe
+                request->call(r->dataLength, r->data, r->callbackID);
             }
+            
         }
     }
 
-    //Execute all pending commands
-    int commandQueueSize = pendingCommands.size();
-    for(int i = 0; i < commandQueueSize; i++){
-        if(!pendingCommands.empty()){
-            PendingCANCommand r = pendingCommands.front();
-            pendingCommands.pop();
-            r.onRecieved(r.data);
+    //Execute up to 6 pending commands
+    for(int i = 0; i < 6; i++){
+        if(commandQueueLength > 0){
+            #if DEBUG_CAN
+                Serial.println("executing commnads");
+            #endif
+            PendingCANFrame* r = &pendingCommands[commandQueueFront];
+            commandQueueFront++;
+            commandQueueLength--;
+            if(commandQueueFront == 32) commandQueueFront = 0;
             
-            //If there is a callback, send ack bit. Otherwise do nothing
-            if(r.callbackID > 0){
-                byte outputBuffer[8];
-                outputBuffer[0] = 0x69; //TODO: PROPERLY DEFINE THIS
-
+            RegisteredBase* command = registeredMessages[r->dataID];
+            if(command != nullptr){
+                command->call(r->dataLength, r->data, r->callbackID);
             }
         }
     }
@@ -116,31 +141,38 @@ void CANTProtocol::execute(){
 bool CANTProtocol::end(){
     detachInterrupt(digitalPinToInterrupt(CAN_INTERRUPT_PIN));
     CAN.setMode(MCP_SLEEP);
-
 }
 
-void CANTProtocol::ISR(){
-    
+//ISRs have to be static functions. This calls the ISR of a specific instance of the CANT protocol
+//This does currently limit the amount of independent CAN controllers a device can have to 1, shouldn't be an issue for 2025-26
+static void CANTProtocol::ISRHandler(CANTProtocol* ref){
+    ref->InterruptSubroutine();
+}
+
+//DON'T CALL THIS YOURSELF. THIS WILL MESS THINGS UP
+void CANTProtocol::InterruptSubroutine(){
+    noInterrupts();
+    long unsigned int rxId = 0;
+    unsigned char len = 0;
+    unsigned char rxBuf[8];
+
     //Interrupt goes low and stays low until all buffers are empty
-    while(CAN_MSGAVAIL == CAN.checkReceive()){
-        long unsigned int rxId = 0;
-        unsigned char len = 0;
-        unsigned char rxBuf[8];
+    while(CAN.readMsgBuf(&rxId, &len, rxBuf) != CAN_NOMSG){
+        PendingCANFrame p;
+        memcpy(&p.data, &rxBuf, len);
+        p.dataLength = len;
+        p.callbackID = (rxId & 0x000FFFFF);
+        p.dataID = ((rxId & 0x00F00000) >> 20); 
 
-        CAN.readMsgBuf(&rxId, &len, rxBuf);
-        byte dataType = (byte) ((rxId & 0x00F00000) >> 20); 
-        unsigned long canCallback = (rxId & 0x000FFFFF);
+        //If the length of the queue is 32 frames or greater (max size), drop it. 
+        if(frameQueueLength > 31) break;
 
-        if (registeredMessages[dataType] != nullptr){
-            if(registeredMessages[dataType] -> isRequest){
-                PendingCANRequest p = {rxBuf, canCallback, registeredMessage[dataType] -> dataBuilder};
-                pendingRequests.push_back(p);
-            }else{
-                PendingCANCommand p = {rxBuf, canCallback, registeredMessage[dataType] -> onRecieved};
-                pendingCommands.push_back(p);
-            }
-        }
+        int insertLocation = frameQueueFront + frameQueueLength;
+        //If we're trying to insert at an index off the end of the array, wraparound to the front
+        if(insertLocation > 31) insertLocation = insertLocation - 32;
+
+        pendingFrames[frameQueueFront + frameQueueLength] = p;
+        frameQueueLength++;
     }
-
-    
+    interrupts();
 }
