@@ -28,19 +28,33 @@ class CANTProtocol{
                 byte outputBuffer[8];
                 //If we need to send multiple frames back
                 if(sizeof(T) > 8){
+                    // Serial.print("Responding to ");
+                    // Serial.println(callbackID, HEX);
                     int numFrames = (sizeof(T) / 8) + 1;
                     byte* ptr = (byte*) &data; //Get a pointer that increments by bytes
                     for(int j = 0; j < numFrames; j++){
                         //(this could be one line but I was having trouble thinking of the right way to do it)
                         //If this is the last frame, memcpy the right amount
                         if(j == numFrames - 1){
+                            // Serial.print("Sending end frame of length: ");
+                            // Serial.print(sizeof(T) - (j * 8));
+                            // Serial.print(" and ID ");
+                            // Serial.println(callbackID + j, HEX);
                             memcpy(&outputBuffer, ptr + (j * 8), sizeof(T) - (j * 8));
                             byte sendMSG = CAN.sendMsgBuf(callbackID + j, 1, sizeof(T) - (j * 8), outputBuffer);
+                            // if(sendMSG == CAN_GETTXBFTIMEOUT) Serial.println("Get TX Buffer Timeout");
+                            // else if(sendMSG == CAN_SENDMSGTIMEOUT) Serial.println("Send Message Timeout");
+                            // else if(sendMSG != CAN_OK) Serial.println("Send message failed unknown");
                         }
                         //Otherwise, copy 8 bytes
                         else {
+                            // Serial.print("Sending start/mid frame of length: 8 and ID ");
+                            // Serial.println(callbackID + j, HEX);
                             memcpy(&outputBuffer, ptr + (j * 8), 8);
                             byte sendMSG = CAN.sendMsgBuf(callbackID + j, 1, 8, outputBuffer);
+                            // if(sendMSG == CAN_GETTXBFTIMEOUT) Serial.println("Get TX Buffer Timeout");
+                            // else if(sendMSG == CAN_SENDMSGTIMEOUT) Serial.println("Send Message Timeout");
+                            // else if(sendMSG != CAN_OK) Serial.println("Send message failed unknown");
                         }
                         //TODO: do something if it fails to send 
                     }

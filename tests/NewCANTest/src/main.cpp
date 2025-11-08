@@ -42,7 +42,7 @@ void setup()
     bool requestReg = CAN.registerRequest(0x01, builderA);
     if(!requestReg) Serial.println("Request registriation failed!!!");
 
-    requestReg = CAN.registerRequest(0x02, builderB);
+    requestReg = CAN.registerCommand(0x02, builderB);
     if(!requestReg) Serial.println("Command registriation failed!!!");
 
     bool canInitResult = CAN.begin();

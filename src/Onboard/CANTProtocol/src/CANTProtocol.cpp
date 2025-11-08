@@ -160,7 +160,7 @@ void CANTProtocol::execute(){
                 if(r->callbackID > 0){
                     byte outputBuffer[8];
                     outputBuffer[0] = 0x43; //TODO: PROPERLY DEFINE THE ACK BIT
-                    byte sendMSG = CAN.sendMsgBuf(r->callbackID, 1, 0, outputBuffer);
+                    byte sendMSG = CAN.sendMsgBuf(r->callbackID, 1, 1, outputBuffer);
 
                 }
             }
