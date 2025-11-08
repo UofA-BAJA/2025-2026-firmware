@@ -16,7 +16,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem)
         : testSubsystem(testSubsystem)
         {
-            this->frequency = 2; 
+            this->frequency = 1; 
 
         }
         

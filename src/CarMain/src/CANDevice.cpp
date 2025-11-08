@@ -118,7 +118,6 @@ namespace BajaWildcatRacing
     *
     *   @param deviceID: The CAN ID of the device to send the command to
     *   @param commandByte: The byte representing the type of the data being sent to the device.
-    *   **USED FOR TRACKING ONLY - YOU MUST INCLUDE AN IDENTIFYING BYTE IN rawData IF ONE IS NEEDED BY THE DEVICE**
     *   @param rawData: The data to send to the device. At most 8 bytes.    
     *
     *   @returns None

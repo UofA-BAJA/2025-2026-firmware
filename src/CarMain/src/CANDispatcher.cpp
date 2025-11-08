@@ -243,7 +243,7 @@ namespace BajaWildcatRacing
         */
 
         // Send the CAN frame
-        // std::cout << std::hex << frame.can_id << std::dec << std::endl;
+        // std::cout << std::hex << frame.can_id << std::dec << std::endl; //Debugging print statement
         ssize_t result = write(can_socket_fd, &frame, sizeof(frame));
 
         // std::cout << result << std::endl;
@@ -346,34 +346,37 @@ namespace BajaWildcatRacing
                 byte frameLength = (byte) frame.len;
                 // Check to see if the can frame is actually meant for us.
                 if(responses.find(messageID) != responses.end()){
-                    uint32_t difference = messageID - responses[messageID]->firstUID;
-                    // std::cout << std::dec;
-                    // std::cout << "messageID: " << messageID << " difference: " << difference << " nbytes: " << nbytes << " Len: " << frame.len << std::endl;
-                    // std::cout << (int) frame.can_dlc << " " << frame.can_id << " " << (int) frame.len << " " << (int) frame.len8_dlc << std::endl;
-                    // std::cout << "expected length: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
+                    //Don't copy anything if we aren't expecting to copy anything
+                    if(responses[messageID]->recievedDataLength > 0){
+                        uint32_t difference = messageID - responses[messageID]->firstUID;
 
-                    //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
-                    if(difference*8 + frameLength > responses[messageID]->recievedDataLength){
-                        std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
-                        responses.erase(messageID);
-                    }else{
-                        //Copy the frame data into the right place in the array
-                        // std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
-                        float test = 0;
-                        memcpy(&test, frame.data, 4);
-                        // std::cout << test << std::endl;
-                        memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, frameLength);
+                        //**** Print Statements for debugging below
+                        // std::cout << "messageID: " << std::hex << messageID << std::dec << " difference: " << difference << std::endl;
+                        // std::cout << (int) frame.can_dlc << " " << frame.can_id << " " << (int) frame.len << " " << (int) frame.len8_dlc << std::endl;
+                        // std::cout << "frame.len" << (int)frame.len << " frameLength " << (int)frameLength << std::endl;
+                        // std::cout << "expected end point: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
 
-                        
-                        responses[messageID]->framesLeft--;
-                        //Run the callback if we've gotten all the frames
-                        if(responses[messageID]->framesLeft == 0){
-                            responses[messageID]->callback(responses[messageID]->recievedData.get());
+                        //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
+                        if(difference*8 + frameLength > responses[messageID]->recievedDataLength){
+                            std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
+                        }else{
+                            //Copy the frame data into the right place in the array
+                            //*******Print statement for debugging
+                            // std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
+
+                            memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, frameLength);
+
+                            
+                            responses[messageID]->framesLeft--;
+                            //Run the callback if we've gotten all the frames
+                            if(responses[messageID]->framesLeft == 0){
+                                responses[messageID]->callback(responses[messageID]->recievedData.get());
+                            }
+
                         }
-
-                        //Always erase the messageID from the list now that we've recieved it      
-                        responses.erase(messageID);
                     }
+                    //Always erase the messageID from the list now that we've recieved it      
+                    responses.erase(messageID);
                 }
             }
         }
