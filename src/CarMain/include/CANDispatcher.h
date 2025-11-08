@@ -57,7 +57,7 @@ namespace BajaWildcatRacing
 
             // Stores each response that we're waiting for (may be multiple CAN frames)
             typedef struct CANResponse{
-                uint32_t firstUID;
+                uint32_t firstUID; 
                 std::unique_ptr<unsigned char[]> recievedData;
                 int recievedDataLength;
                 int numFrames;
@@ -66,8 +66,9 @@ namespace BajaWildcatRacing
                 int commandCycles;
             } CANResponse;
 
-            std::unordered_map<uint32_t, std::shared_ptr<CANResponse>> responses;
-            // Maps a command to the amount of cycles it has been waiting for a response
+
+            CANResponse responses[0xFFF];
+            
             int cycleThreshold = 100;     // A command can be in queue for 100 cycles until it is considered dropped.
 
             
