@@ -338,7 +338,6 @@ namespace BajaWildcatRacing
             
 
             //TODO: Don't try to store stuff if it's a lossless *command*
-            //TODO: clean this shit up
             if(nbytes > 0){
                 uint32_t messageID = frame.can_id & CAN_EFF_MASK; // AND to get only the 29-bit ID
                 
