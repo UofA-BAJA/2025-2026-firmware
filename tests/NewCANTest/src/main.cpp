@@ -24,8 +24,13 @@ typedef struct TestStruct_s{
 
 // MLX90614 mlx = MLX90614(MLX90614_BROADCASTADDR);
 
-TestStruct builderA(unsigned char dataLength, byte* incomingData){
-    return TestStruct{69.0, 70.0, 71.0, 72.0, 73.0};
+void builderA(unsigned char dataLength, byte* incomingData, unsigned long callbackID){
+    TestStruct bruh = {69.0, 70.0, 71.0, 72.0, 73.0};
+    CAN.sendRequestResponse(bruh, callbackID);
+}
+
+void builderB(unsigned char dataLength, byte* incomingData, unsigned long callbackID){
+
 }
 
 
@@ -37,6 +42,9 @@ void setup()
     bool requestReg = CAN.registerRequest(0x01, builderA);
     if(!requestReg) Serial.println("Request registriation failed!!!");
 
+    requestReg = CAN.registerRequest(0x02, builderB);
+    if(!requestReg) Serial.println("Command registriation failed!!!");
+
     bool canInitResult = CAN.begin();
 
 
@@ -45,30 +53,6 @@ void setup()
         while (1) ;
     }
     
-    // CAN.begin(MCP_STDEXT, CAN_500KBPS, MCP_8MHZ);
-    // unsigned long CAN_ID = (0x1Fl << 24);
-    // CAN.init_Mask(0, 1, 0x1F000000);
-    // CAN.init_Filt(0, 1, CAN_ID);
-    // CAN.init_Filt(1, 1, CAN_ID);
-
-    // CAN.init_Mask(1, 1, 0x1F000000);
-    // CAN.init_Filt(2, 1, CAN_ID);
-    // CAN.init_Filt(3, 1, CAN_ID);
-    // CAN.init_Filt(4, 1, CAN_ID);
-    // CAN.init_Filt(5, 1, CAN_ID);
-
-    // CAN.init_Mask(0, 1, 0x1F000000);
-    // CAN.init_Filt(0, 1, 0x1F000000);
-    // CAN.init_Filt(1, 1, 0x1F000000);
-
-    // CAN.init_Mask(1, 1, 0x1F000000);
-    // CAN.init_Filt(2, 1, 0x1F000000);
-    // CAN.init_Filt(3, 1, 0x1F000000);
-    // CAN.init_Filt(4, 1, 0x1F000000);
-    // CAN.init_Filt(5, 1, 0x1F000000);
-    
-    // Serial.println(CAN_ID, BIN);
-    // CAN.setMode(MCP_NORMAL);
 
     //---------------------------------------------------
 
@@ -77,20 +61,9 @@ void setup()
     Serial.println("Init OK!");
 }
 
-// byte data[8] = {0x01, 0x01, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
-
 
 void loop()
 {
-    CAN.execute();
-    // long unsigned int rxId = 0;
-    // unsigned char len = 0;
-    // unsigned char rxBuf[8];
-    // while(CAN.checkReceive() == CAN_MSGAVAIL){
-    //     CAN.readMsgBuf(&rxId, &len, rxBuf);
-    //     Serial.println(rxId, BIN);
-
-    // }
-      
+    CAN.execute();      
 }
 

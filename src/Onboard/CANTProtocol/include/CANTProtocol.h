@@ -12,28 +12,41 @@ class CANTProtocol{
         bool end();
         
 
-        //this sucks
-        //See https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
-        template <typename T>
-        bool registerRequest(byte commandID, T (*dataBuilder) (unsigned char dataLength, byte* incomingData)){
-            //Check for valid command ID
-            if(commandID & ~(0b1111) > 0){
-                return false;
-            }
-
-            RegisteredRequest<T> r;
-            r.dataBuilder = dataBuilder;
-            r.CAN = &(this->CAN);
-
-            registeredMessages[commandID] = &r;
-
-            return true;
-        };
-
-
-        bool registerCommand(byte commandID, void (*onRecieved) (unsigned char dataLength, byte* incomingData));
+        bool registerRequest(byte commandID, void (*onRecieved) (unsigned char dataLength, byte* incomingData, unsigned long callbackID));
+        bool registerCommand(byte commandID, void (*onRecieved) (unsigned char dataLength, byte* incomingData, unsigned long callbackID));
         
         void execute();
+
+        //TODO: move this into a new file
+        //Why is it in the header file? https://stackoverflow.com/questions/495021/why-can-templates-only-be-implemented-in-the-header-file
+
+        //Call this method with your built data at the end of a CAN *Request* onRecieved method.
+        //Do NOT call this method for CAN commands (what would the data be anyway?)
+        template <typename T>
+        void sendRequestResponse(T data, unsigned long callbackID){
+            if(callbackID > 0){
+                byte outputBuffer[8];
+                //If we need to send multiple frames back
+                if(sizeof(T) > 8){
+                    int numFrames = (sizeof(T) / 8) + 1;
+                    byte* ptr = (byte*) &data; //Get a pointer that increments by bytes
+                    for(int j = 0; j < numFrames; j++){
+                        //(this could be one line but I was having trouble thinking of the right way to do it)
+                        //If this is the last frame, memcpy the right amount
+                        if(j == numFrames - 1){
+                            memcpy(&outputBuffer, ptr + (j * 8), sizeof(T) - (j * 8));
+                            byte sendMSG = CAN.sendMsgBuf(callbackID + j, 1, sizeof(T) - (j * 8), outputBuffer);
+                        }
+                        //Otherwise, copy 8 bytes
+                        else {
+                            memcpy(&outputBuffer, ptr + (j * 8), 8);
+                            byte sendMSG = CAN.sendMsgBuf(callbackID + j, 1, 8, outputBuffer);
+                        }
+                        //TODO: do something if it fails to send 
+                    }
+                }
+            }
+        }
 
         static void ISRHandler(CANTProtocol* ref);
         void InterruptSubroutine();
@@ -46,9 +59,6 @@ class CANTProtocol{
         const unsigned long CAN_DEVICE_ID;
         
 
-        
-        
-
         //Chat-assisted code begins here
         /*
             Basically, in order to have one function to call, but multiple different implementations (one including a template) in the same array,
@@ -58,68 +68,13 @@ class CANTProtocol{
             without it breaking the templates (see above: registerRequest())
         */
         struct RegisteredBase {
-            virtual ~RegisteredBase() {}
-            virtual void call(unsigned char dataLength, byte* incomingData, unsigned long callbackID) = 0;
-            virtual bool isRequest() = 0;
-            MCP_CAN* CAN; //Need to pass a reference to the CAN object to use CAN in here
-        };
-
-        struct RegisteredCommand : RegisteredBase {
-            void (*onRecieved) (unsigned char dataLength, byte* incomingData);
-
-            void call(unsigned char dataLength, byte* incomingData, unsigned long callbackID) override{
-                if(onRecieved) onRecieved(dataLength, incomingData);
-                if(CAN == nullptr) return;
-
-                //If there is a callback, send ack bit. Otherwise do nothing
-                if(callbackID > 0){
-                    byte outputBuffer[8];
-                    outputBuffer[0] = 0x69; //TODO: PROPERLY DEFINE THE ACK BIT
-                    byte sendMSG = CAN->sendMsgBuf(callbackID, 1, 1, outputBuffer);
-
-                }
-            }
-
-            bool isRequest() override {return false;}
-        };
-
-        template <typename T>
-        struct RegisteredRequest : RegisteredBase {
-            T (*dataBuilder) (unsigned char dataLength, byte* incomingData); 
-            
-            void call(unsigned char dataLength, byte* incomingData, unsigned long callbackID) override{
-                if(!dataBuilder) return;
-                T data = dataBuilder(dataLength, incomingData);
-                if(CAN == nullptr) return;
-                if(callbackID > 0){
-                    byte outputBuffer[8];
-                    //If we need to send multiple frames back
-                    if(sizeof(T) > 8){
-                        int numFrames = (sizeof(T) / 8) + 1;
-                        byte* ptr = (byte*) &data; //Get a pointer that increments by bytes
-                        for(int j = 0; j < numFrames; j++){
-                            //(this could be one line but I was having trouble thinking of the right way to do it)
-                            //If this is the last frame, memcpy the right amount
-                            if(j == numFrames - 1){
-                                memcpy(&outputBuffer, ptr + (j * 8), sizeof(T) - (j * 8));
-                                byte sendMSG = CAN->sendMsgBuf(callbackID + j, 1, sizeof(T) - (j * 8), outputBuffer);
-                            }
-                            //Otherwise, copy 8 bytes
-                            else {
-                                memcpy(&outputBuffer, ptr + (j * 8), 8);
-                                byte sendMSG = CAN->sendMsgBuf(callbackID + j, 1, 8, outputBuffer);
-                            }
-                            //TODO: do something if it fails to send 
-                        }
-                    }
-                }
-            }
-
-            bool isRequest() override {return true;}
+            bool exists = false;
+            void (*onRecieved) (unsigned char dataLength, byte* incomingData, unsigned long callbackID) = 0;
+            bool isRequest = false;
         };
 
         //A list of all the messages we can recieve. Each array index is a datatype as defined in the CANT spec 
-        RegisteredBase* registeredMessages[16] = {nullptr};
+        RegisteredBase registeredMessages[16];
         //Chat-assisted code ends here
 
  
