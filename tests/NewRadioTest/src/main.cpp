@@ -57,53 +57,55 @@ void setup()
   // then you can configure the power transmitter power for 0 to 15 dBm and with useRFO true. 
   // Failure to do that will result in extremely low transmit powers.
 //  rf95.setTxPower(14, true);
-    // while (!Serial.available());
-    // String s = Serial.readString();
-    // if(s == "c"){
-    //   mode = 0;
-    //   Serial.println("Set to client");
-    // }else if(s == "s"){
-    //   mode = 1;
-    //   Serial.println("Set to server");
-    // }
+    Serial.println("***Which Radio is This?***\nEnter 0 for client, 1 for server.");
+    while (!Serial.available());
+    
+    int input = Serial.parseInt();
+    if(input == 0){
+      mode = 0;
+      Serial.println("Set to client");
+    }else if(input == 1){
+      mode = 1;
+      Serial.println("Set to server");
+    }
 
 }
 
 void loop()
 {
-  // if(mode == 0){
+  if(mode == 0){
     //client
-  //   Serial.println("Sending to rf95_server");
-  //   // Send a message to rf95_server
-  //   uint8_t data[] = "Hello World!";
-  //   rf95.send(data, sizeof(data));
+    Serial.println("Sending to rf95_server");
+    // Send a message to rf95_server
+    uint8_t data[] = "Hello World!";
+    rf95.send(data, sizeof(data));
     
-  //   rf95.waitPacketSent();
-  //   // Now wait for a reply
-  //   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-  //   uint8_t len = sizeof(buf);
+    rf95.waitPacketSent();
+    // Now wait for a reply
+    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+    uint8_t len = sizeof(buf);
 
-  //   if (rf95.waitAvailableTimeout(3000))
-  //   { 
-  //     // Should be a reply message for us now   
-  //     if (rf95.recv(buf, &len))
-  //   {
-  //       Serial.print("got reply: ");
-  //       Serial.println((char*)buf);
-  // //      Serial.print("RSSI: ");
-  // //      Serial.println(rf95.lastRssi(), DEC);    
-  //     }
-  //     else
-  //     {
-  //       Serial.println("recv failed");
-  //     }
-  //   }
-  //   else
-  //   {
-  //     Serial.println("No reply, is rf95_server running?");
-  //   }
+    if (rf95.waitAvailableTimeout(3000))
+    { 
+      // Should be a reply message for us now   
+      if (rf95.recv(buf, &len))
+    {
+        Serial.print("got reply: ");
+        Serial.println((char*)buf);
+  //      Serial.print("RSSI: ");
+  //      Serial.println(rf95.lastRssi(), DEC);    
+      }
+      else
+      {
+        Serial.println("recv failed");
+      }
+    }
+    else
+    {
+      Serial.println("No reply, is rf95_server running?");
+    }
     delay(400);
-  // }else if(mode == 1){
+  }else if(mode == 1){
       if (rf95.available()) {
         // Should be a message for us now   
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
@@ -127,5 +129,5 @@ void loop()
           Serial.println("recv failed");
         }
     }
-  // }
+  }
 }
