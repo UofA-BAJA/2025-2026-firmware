@@ -24,6 +24,7 @@ int mode = 0; //for testing: 0 = client, 1 = server
 
 // Need this on Arduino Zero with SerialUSB port (eg RocketScream Mini Ultra Pro)
 //#define Serial SerialUSB
+void setTxPower(int8_t power, bool useRFO = false);
 
 void setup() 
 {
@@ -31,7 +32,7 @@ void setup()
   // Ensure serial flash is not interfering with radio communication on SPI bus
 //  pinMode(4, OUTPUT);
 //  digitalWrite(4, HIGH);
-
+rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
   Serial.begin(115200);
 
 
@@ -80,31 +81,39 @@ void loop()
     uint8_t data[] = "Hello World!";
     rf95.send(data, sizeof(data));
     
-    rf95.waitPacketSent();
-    // Now wait for a reply
-    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(buf);
+    // rf95.waitPacketSent();
+    // // Now wait for a reply
+    // uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+    // uint8_t len = sizeof(buf);
 
-    if (rf95.waitAvailableTimeout(3000))
-    { 
-      // Should be a reply message for us now   
-      if (rf95.recv(buf, &len))
-    {
-        Serial.print("got reply: ");
-        Serial.println((char*)buf);
-  //      Serial.print("RSSI: ");
-  //      Serial.println(rf95.lastRssi(), DEC);    
-      }
-      else
-      {
-        Serial.println("recv failed");
-      }
-    }
-    else
-    {
-      Serial.println("No reply, is rf95_server running?");
-    }
-    delay(400);
+  //   if (rf95.waitAvailableTimeout(3000))
+  //   { 
+  //     // Should be a reply message for us now   
+  //     if (rf95.recv(buf, &len))
+  //   {
+  //       Serial.print("got reply: ");
+  //       Serial.println((char*)buf);
+  // //      Serial.print("RSSI: ");
+  // //      Serial.println(rf95.lastRssi(), DEC);    
+  //     }
+  //     else
+  //     {
+  //       Serial.println("recv failed");
+  //     }
+  //   }
+  //   else
+  //   {
+  //     Serial.println("No reply, is rf95_server running?");
+  //   }
+    delay(50);
+
+
+
+
+
+
+
+
   }else if(mode == 1){
       if (rf95.available()) {
         // Should be a message for us now   
@@ -117,13 +126,6 @@ void loop()
           Serial.println((char*)buf);
     //      Serial.print("RSSI: ");
     //      Serial.println(rf95.lastRssi(), DEC);
-          
-          // Send a reply
-          uint8_t data[] = "And hello back to you";
-          rf95.send(data, sizeof(data));
-          rf95.waitPacketSent();
-          Serial.println("Sent a reply");
-          // digitalWrite(led, LOW);
         }
         else {
           Serial.println("recv failed");
