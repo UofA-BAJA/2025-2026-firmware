@@ -25,21 +25,86 @@ function App() {
     yearPublished: number;
   };
 
-  const [count, setCount] = useState(0);
-  const [books, setBooks] = useState<Book[]>([]);
-  // get data from localHost
-  async function getAllBooks() {
+  type Temp = {
+    id: number;
+    epoch: number;
+    value: number;
+    beltId: number;
+  };
+
+  type Belt = {
+    id: number;
+    name: string;
+  };
+
+  const [beltName, setBeltName] = useState("");
+  const [beltRef, setTempRef] = useState(0);
+  const [tempValue, setTempValue] = useState(0);
+
+  //post request to add a new belt
+  async function createBelt(e: React.FormEvent) {
+    e.preventDefault();
     try {
-      const response = await axios.get(`${rootURL}/api/books`);
-      console.log(response.data)
-      setBooks(response.data);
-    } catch (error) {
-      console.error("Error fetching books:", error);
+      const response = await axios.post(`${rootURL}/Belts`, {
+        name: beltName,
+      });
+      //clear form input
+      setBeltName("");
+      alert("Belt Added");
+    } catch (err) {
+      alert(err);
     }
   }
 
+  //post request to add a new belt
+  async function createTemp(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const response = await axios.post(`${rootURL}/temp`, {
+        BeltId: beltRef,
+        Value: tempValue,
+      });
+
+      alert("Temp Added");
+    } catch (err) {
+      alert(err);
+    }
+  }
+
+  const [count, setCount] = useState(0);
+  const [belts, setBelts] = useState<Belt[]>([]);
+  const [temps, setTemps] = useState<Temp[]>([]);
+
+  // get data from localHost
+  async function getAllBelts() {
+    try {
+      const response = await axios.get(`${rootURL}/Belts`);
+      // console.log(response.data);, might be in containers?
+      setBelts(response.data);
+    } catch (error) {
+      console.error("Error fetching belts:", error);
+    }
+  }
+
+  // get data from localHost
+  async function getAllTemps() {
+    try {
+      const response = await axios.get(`${rootURL}/temp`);
+      // console.log(response.data);, might be in containers?
+      setTemps(response.data);
+    } catch (error) {
+      console.error("Error fetching Temps:", error);
+    }
+  }
+
+  // get all belts
   useEffect(() => {
-    getAllBooks();
+    getAllBelts();
+  }, []);
+
+  // get all temps
+  useEffect(() => {
+    getAllTemps();
   }, []);
 
   return (
@@ -56,32 +121,49 @@ function App() {
         </a>
       </div>
       <h1>Line Graph Test</h1>
-      <LineChart width={500} height={300} data={books}>
-        <Line type="monotone" dataKey="yearPublished" stroke="#8884d8" strokeWidth={3} />
+
+      <BarChart width={500} height={300} data={temps}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="id" />
+        <XAxis dataKey="beltId" />
         <YAxis />
         <Tooltip />
         <Legend />
-      </LineChart>
-      <p className="read-the-docs">
-        Click on the Baja and React logos to learn more
-      </p>
-      {/* <h1>Books Publication Years</h1>
-      <BarChart width={800} height={400} data={books}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="title" />
-        <YAxis />
-        <Tooltip
-          formatter={(value, name, props) => [value, "Year Published"]}
-          labelFormatter={(label) => {
-            const book = books.find((b) => b.title === label);
-            return book ? `${book.title} by ${book.author}` : label;
-          }}
-        />
-        <Legend />
-        <Bar dataKey="yearPublished" fill="#8884d8" />
-      </BarChart> */}
+        <Bar dataKey="value" fill="#8884d8" />
+      </BarChart>
+
+      <p className="read-the-docs">test</p>
+      <div>
+        <form onSubmit={createBelt}>
+          <label htmlFor="belt">Belt Name: </label>
+          <input
+            type="text"
+            id="belt"
+            value={beltName}
+            onChange={(e) => setBeltName(e.target.value)}
+          />
+          <button type="submit">Add belt</button>
+        </form>
+      </div>
+
+      <div>
+        <form onSubmit={createTemp}>
+          <label htmlFor="tempValue">Temp value: </label>
+          <input
+            type="number"
+            id="tempValue"
+            value={tempValue}
+            onChange={(e) => setTempValue(parseInt(e.target.value))}
+          />
+          <label htmlFor="beltRef">Belt Refrence: </label>
+          <input
+            type="number"
+            id="beltRef"
+            value={beltRef}
+            onChange={(e) => setTempRef(parseInt(e.target.value))}
+          />
+          <button type="submit">Add Temp</button>
+        </form>
+      </div>
     </div>
   );
 }

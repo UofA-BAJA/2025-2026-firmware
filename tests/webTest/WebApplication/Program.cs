@@ -62,24 +62,27 @@
 
 using WebApplication2.Data;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL;
-// var builder = WebApplication2.CreateBuilder(args);
 var builder = WebApplication.CreateBuilder(args);
 
-
-// Add services
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+
+// set up DB contect for postgresql
 builder.Services.AddDbContext<MyDbContext>(options =>
 {
+    // get the connecting string from the appsettings.json
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    // set up the connections string
     options.UseNpgsql(connectionString);
 });
 
+// set up connections from react
 builder.Services.AddCors(options =>
 {
+    // name the polciy
     options.AddPolicy("AllowReactDev", policy =>
     {
+        // configure the port and the allow all api calls from react
         policy
             .WithOrigins("http://localhost:5173")
             .AllowAnyHeader()

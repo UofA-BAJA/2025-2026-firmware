@@ -17,7 +17,7 @@ public class BeltsController : ControllerBase
     [HttpGet]
     public async Task<IEnumerable<Belt>> GetAll()
     {
-        return await _context.Belts.Include(b => b.Temperatures).ToListAsync();
+        return await _context.Belts.ToListAsync();
     }
 
     [HttpPost]
@@ -25,6 +25,7 @@ public class BeltsController : ControllerBase
     {
         _context.Belts.Add(belt);
         await _context.SaveChangesAsync();
+        // send back belt id
         return CreatedAtAction(nameof(GetAll), new { id = belt.Id }, belt);
     }
 }
