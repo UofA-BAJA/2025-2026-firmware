@@ -37,9 +37,9 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 0.8,
-          "height": 1.27,
-          "width": 2.54
+          "drill": 0.0,
+          "height": 1.8,
+          "width": 0.45
         },
         "silk_line_width": 0.1,
         "silk_text_italic": false,
@@ -488,10 +488,18 @@
         "wire_width": 6
       },
       {
+        "clearance": 0.2,
+        "name": "GND",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 1.0
+      },
+      {
         "clearance": 0.5,
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "priority": 1,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 1.0
       }
@@ -503,7 +511,7 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "Power",
+        "netclass": "GND",
         "pattern": "GND"
       },
       {
@@ -512,6 +520,30 @@
       },
       {
         "netclass": "Power",
+        "pattern": "+5V"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "U3-A1+"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "U3-A2+"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "U3-A3+"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "CAN_5V"
+      },
+      {
+        "netclass": "Default",
+        "pattern": "CAN_GND"
+      },
+      {
+        "netclass": "Default",
         "pattern": "+5V"
       }
     ]
