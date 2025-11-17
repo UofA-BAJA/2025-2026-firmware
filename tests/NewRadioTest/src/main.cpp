@@ -65,8 +65,14 @@ rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
     if(input == 0){
       mode = 0;
       Serial.println("Set to client");
+      // rf95.setHeaderFrom(0);
+      // rf95.setHeaderTo(1);
+      // rf95.setHeaderId(67);
+      // rf95.setHeaderFlags(0b10101010);
     }else if(input == 1){
       mode = 1;
+      // rf95.setHeaderFrom(1);
+      // rf95.setHeaderTo(0);
       Serial.println("Set to server");
     }
 
@@ -78,8 +84,11 @@ void loop()
     //client
     Serial.println("Sending to rf95_server");
     // Send a message to rf95_server
+
     uint8_t data[] = "Hello World!";
-    rf95.send(data, sizeof(data));
+    rf95.send(data, sizeof(data)); 
+
+   
     
     // rf95.waitPacketSent();
     // // Now wait for a reply
@@ -124,6 +133,11 @@ void loop()
     //      RH_RF95::printBuffer("request: ", buf, len);
           Serial.print("got request: ");
           Serial.println((char*)buf);
+          Serial.println(rf95.headerFrom());
+          Serial.println(rf95.headerTo());
+          Serial.println(rf95.headerId());
+          Serial.println(rf95.headerFlags(), BIN);
+        
     //      Serial.print("RSSI: ");
     //      Serial.println(rf95.lastRssi(), DEC);
         }
