@@ -65,14 +65,20 @@ rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
     if(input == 0){
       mode = 0;
       Serial.println("Set to client");
-      // rf95.setHeaderFrom(0);
-      // rf95.setHeaderTo(1);
-      // rf95.setHeaderId(67);
-      // rf95.setHeaderFlags(0b10101010);
+      rf95.setThisAddress(1);
+      rf95.setHeaderId(1); 
+      rf95.setHeaderTo(2);
+      rf95.setHeaderFrom(1);
+      rf95.setHeaderFlags(0x00); //clear flags
+      rf95.setHeaderFlags(0x01); //set flag to indicate client
     }else if(input == 1){
       mode = 1;
-      // rf95.setHeaderFrom(1);
-      // rf95.setHeaderTo(0);
+      rf95.setThisAddress(2);
+      rf95.setHeaderId(2);
+      rf95.setHeaderTo(1);
+      rf95.setHeaderFrom(2);
+      rf95.setHeaderFlags(0x00); //clear flags
+      rf95.setHeaderFlags(0x02); //set flag to indicate server
       Serial.println("Set to server");
     }
 
