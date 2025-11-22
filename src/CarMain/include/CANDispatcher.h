@@ -57,21 +57,23 @@ namespace BajaWildcatRacing
 
             // Stores each response that we're waiting for (may be multiple CAN frames)
             typedef struct CANResponse{
-                uint32_t firstUID; 
-                std::unique_ptr<unsigned char[]> recievedData;
-                int recievedDataLength;
-                int numFrames;
-                int framesLeft;  
-                std::function<void(void*)> callback;
-                int commandCycles;
+                uint32_t firstUID; //Reference to the first UID in the chain, if it's a multi-frame response
+                std::unique_ptr<unsigned char[]> recievedData; //Array that stores data recieved from the device 
+                std::unique_ptr<unsigned char[]> sentData; //Array that stores data sent to device, to be resent if this is a lossless command
+                int recievedDataLength; //Expected length of recieved data
+                int numFrames; //Expected number of recieved frames
+                int framesLeft; //Frames left to recieve 
+                std::function<void(void*)> callback; //Callback function (called when all frames are recieved)
+                int deviceCommandID; //The original command ID (upper 9 bits), used if we need a resend
+                int commandCycles; //Number of "cycles" the command has been waiting for a response
             } CANResponse;
 
-
-            CANResponse responses[0xFFF];
+            //Response storage. Maps using modulo (so every 65535 sent commands, it wraps around)
+            const int MAX_RESPONSE_ARRAY_BOUND = 0xFFFF;
+            std::shared_ptr<CANResponse> responses[MAX_RESPONSE_ARRAY_BOUND];
+            
             
             int cycleThreshold = 100;     // A command can be in queue for 100 cycles until it is considered dropped.
-
-            
 
             const char* interfaceName;
 

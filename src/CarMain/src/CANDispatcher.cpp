@@ -28,27 +28,23 @@ namespace BajaWildcatRacing
         std::lock_guard<std::mutex> lock(callbacks_mutex);
 
         //Iterate over all pending responses and drop ones over 100 cycles
-        for(auto it = responses.begin(); it != responses.end();){
-            uint32_t commandID = it->first;
+        for(int i = 0; i < MAX_RESPONSE_ARRAY_BOUND; i++){
 
             //Only increment the cycles if it's the first UID 
-            if(responses[commandID]->firstUID == commandID){
-                responses[commandID]->commandCycles++;
+            if((responses[i]->firstUID) % MAX_RESPONSE_ARRAY_BOUND == i){
+                responses[i]->commandCycles++;
             }
-            if(responses[commandID]->commandCycles >= cycleThreshold){
+            if(responses[i]->commandCycles >= cycleThreshold){
                     droppedCommands++;
                     std::cout << "Commands Dropped: " << droppedCommands << std::endl;
                     // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
                     
                     // Proper way to continue iterating over the map
-                    it = responses.erase(it);
+                    responses[i] = nullptr;
                     
                     //TODO: resend for dropped lossless command
             }
-            else{
-                ++it;     
-            }
-            
+            i++; 
         } 
 
         // float droppedCommandRatio = (float) droppedCommands / totalCommands * 100.0;
@@ -201,18 +197,29 @@ namespace BajaWildcatRacing
             response->callback = callback;
             response->commandCycles = 0;
             response->recievedData = std::make_unique<unsigned char[]>(recievedDataLength);
+            response->deviceCommandID = deviceCommandID;
+
+            //Only store sent data for lossless command (we need it if we need to resend)
+            if(lossless){
+                response->sentData = std::make_unique<unsigned char[]>(data.size());
+                for(int i = 0; i < data.size(); i++){   // Copy data from vector to array
+                    response->sentData[i] = data.at(i);         // (surely there's a better way to do this)
+                }
+
+            }
+
     
             // Thread safety (callbacks are handled in another thread)
             std::lock_guard<std::mutex> lock(callbacks_mutex);
             
             // This line doesn't seem to do anything at all
             // Supposedly it stops if we've wrapped over the available callback IDs but the callbacks at the end haven't been recieved or timed out
-            if(responses.find(currUID) != responses.end()){
+            if(responses[currUID % MAX_RESPONSE_ARRAY_BOUND] != nullptr){
                 std::cerr << "Error: Sending CAN requests too fast! Slow down!" << std::endl;
                 return;
             }            
             
-            responses[currUID] = response;
+            responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
 
             // (eventually) used for drop rate tracking & alerting
             totalCommands++;
@@ -227,7 +234,7 @@ namespace BajaWildcatRacing
                         messageID = MIN_UID_BOUND; //Wraparound
                     }
                     currUID = messageID;
-                    responses[currUID]  = response;
+                    responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
                 }
             }
         }
@@ -261,11 +268,11 @@ namespace BajaWildcatRacing
 
             if(recievedDataLength > 0 || lossless == true){
                 // Erase what we just wrote from the callbacks and commandCycles if it fails to send
-                std::lock_guard<std::mutex> lock(callbacks_mutex);
-                uint32_t firstUID = responses[currUID]->firstUID;
-                int numFrames = responses[currUID]->numFrames;
+                std::lock_guard<std::mutex> lock(callbacks_mutex); //Mutex is unlocked when it goes out of scope, need to relock
+                uint32_t firstUID = responses[currUID % MAX_RESPONSE_ARRAY_BOUND]->firstUID;
+                int numFrames = responses[currUID % MAX_RESPONSE_ARRAY_BOUND]->numFrames;
                 for(int i = 0; i < numFrames; i++){
-                    responses.erase(firstUID + i);
+                    responses[(currUID + i) % MAX_RESPONSE_ARRAY_BOUND] = nullptr;
                 }
             } 
         }
@@ -345,10 +352,10 @@ namespace BajaWildcatRacing
 
                 byte frameLength = (byte) frame.len;
                 // Check to see if the can frame is actually meant for us.
-                if(responses.find(messageID) != responses.end()){
+                if(responses[messageID % MAX_RESPONSE_ARRAY_BOUND] != nullptr){
                     //Don't copy anything if we aren't expecting to copy anything
-                    if(responses[messageID]->recievedDataLength > 0){
-                        uint32_t difference = messageID - responses[messageID]->firstUID;
+                    if(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedDataLength > 0){
+                        uint32_t difference = messageID - responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->firstUID;
 
                         //**** Print Statements for debugging below
                         // std::cout << "messageID: " << std::hex << messageID << std::dec << " difference: " << difference << std::endl;
@@ -357,26 +364,26 @@ namespace BajaWildcatRacing
                         // std::cout << "expected end point: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
 
                         //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
-                        if(difference*8 + frameLength > responses[messageID]->recievedDataLength){
+                        if(difference*8 + frameLength > responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedDataLength){
                             std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
                         }else{
                             //Copy the frame data into the right place in the array
                             //*******Print statement for debugging
                             // std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
 
-                            memcpy(responses[messageID]->recievedData.get() + (difference*8), frame.data, frameLength);
+                            memcpy(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedData.get() + (difference*8), frame.data, frameLength);
 
                             
-                            responses[messageID]->framesLeft--;
+                            responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->framesLeft--;
                             //Run the callback if we've gotten all the frames
-                            if(responses[messageID]->framesLeft == 0){
-                                responses[messageID]->callback(responses[messageID]->recievedData.get());
+                            if(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->framesLeft == 0){
+                                responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->callback(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedData.get());
                             }
 
                         }
                     }
                     //Always erase the messageID from the list now that we've recieved it      
-                    responses.erase(messageID);
+                    responses[messageID % MAX_RESPONSE_ARRAY_BOUND] = nullptr;
                 }
             }
         }
