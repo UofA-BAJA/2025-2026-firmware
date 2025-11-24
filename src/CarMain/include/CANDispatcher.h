@@ -69,7 +69,7 @@ namespace BajaWildcatRacing
             } CANResponse;
 
             //Response storage. Maps using modulo (so every 65535 sent commands, it wraps around)
-            const int MAX_RESPONSE_ARRAY_BOUND = 0xFFFF;
+            const static int MAX_RESPONSE_ARRAY_BOUND = 0xFFFF;
             std::shared_ptr<CANResponse> responses[MAX_RESPONSE_ARRAY_BOUND];
             
             

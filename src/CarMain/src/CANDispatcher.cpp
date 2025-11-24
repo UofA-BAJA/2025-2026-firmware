@@ -31,20 +31,18 @@ namespace BajaWildcatRacing
         for(int i = 0; i < MAX_RESPONSE_ARRAY_BOUND; i++){
 
             //Only increment the cycles if it's the first UID 
-            if((responses[i]->firstUID) % MAX_RESPONSE_ARRAY_BOUND == i){
-                responses[i]->commandCycles++;
+            if(responses[i] != nullptr && ((responses[i]->firstUID) % MAX_RESPONSE_ARRAY_BOUND == i)){
+                (responses[i]->commandCycles)++;
             }
-            if(responses[i]->commandCycles >= cycleThreshold){
-                    droppedCommands++;
-                    std::cout << "Commands Dropped: " << droppedCommands << std::endl;
-                    // std::out << "Command Dropped: " << std::hex << commandID << std::endl;
-                    
-                    // Proper way to continue iterating over the map
-                    responses[i] = nullptr;
-                    
-                    //TODO: resend for dropped lossless command
+            if(responses[i] != nullptr && (responses[i]->commandCycles) >= cycleThreshold){
+                droppedCommands++;
+                std::cout << "Commands Dropped: " << droppedCommands << std::endl;
+                // std::cout << "Command Dropped: "  << (i) << std::endl;
+                
+                responses[i] = nullptr;
+                
+                //TODO: resend for dropped lossless command
             }
-            i++; 
         } 
 
         // float droppedCommandRatio = (float) droppedCommands / totalCommands * 100.0;
@@ -220,9 +218,10 @@ namespace BajaWildcatRacing
             }            
             
             responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
+            // std::cout << "reserved id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
 
             // (eventually) used for drop rate tracking & alerting
-            totalCommands++;
+            // totalCommands++;
 
             //If we're expecting something super long back, reserve more callback IDs
             if(numFrames > 1){
@@ -234,6 +233,7 @@ namespace BajaWildcatRacing
                         messageID = MIN_UID_BOUND; //Wraparound
                     }
                     currUID = messageID;
+                    // std::cout << "reserved additional id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
                     responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
                 }
             }
