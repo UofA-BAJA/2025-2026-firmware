@@ -1,6 +1,13 @@
 #include "CANTProtocol.h"
 #define DEBUG_CAN 0
 
+/*
+    begin() - Call this to start recieving and responding to CAN frames
+
+    @returns true if initialization succeeded, false if the inititalization failed due to: 
+        - Invalid device ID
+        - Failure to communicate to CAN chip (check wiring)
+*/
 bool CANTProtocol::begin(){
     //Check for valid CAN ID
     if(CAN_DEVICE_ID & ~(0b11111) > 0){

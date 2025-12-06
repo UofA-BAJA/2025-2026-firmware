@@ -7,6 +7,12 @@
 
 class CANTProtocol{
     public:
+        /*
+            Constructor
+            @param cs the pin number of the chip select pin
+            @param interrupt the interrupt number. **FOR DEV BOARDS, WRAP PARAMETER IN digitalPinToInterrupt(your_interrupt_pin)**
+            @param deviceID the 5 bit ID of the device. 
+        */
         CANTProtocol(int cs, int interrupt, unsigned long deviceID) : CAN_CS_PIN(cs), CAN_INTERRUPT_PIN(interrupt), CAN_DEVICE_ID(deviceID), CAN(cs){}
         bool begin();
         bool end();
