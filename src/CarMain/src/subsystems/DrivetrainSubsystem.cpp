@@ -4,9 +4,9 @@ namespace BajaWildcatRacing
 {
 
     DrivetrainSubsystem::DrivetrainSubsystem(CANDispatcher& canDispatcher)
-    : cvtTemperature(canDispatcher)
-    , tachometer(canDispatcher)
-    , spedometer(canDispatcher)
+    : cvtTemperature(canDispatcher, Device::Devices::CVT_TEMP)
+    , tachometer(canDispatcher, Device::Devices::TACHOMETER)
+    , spedometer(canDispatcher, Device::Devices::SPEDOMETER)
     {
 
     }
