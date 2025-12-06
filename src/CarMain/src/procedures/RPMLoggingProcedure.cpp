@@ -16,7 +16,7 @@ namespace BajaWildcatRacing{
             : drivetrainSubsystem(drivetrainSubsystem)
             , dataStorage(dataStorage)
             , coms(coms){
-                this->frequency = 30;
+                this->frequency = 360; //30
             }
 
             void init() override {

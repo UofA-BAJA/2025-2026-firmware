@@ -23,7 +23,7 @@ class TemperatureLoggingProcedure : public Procedure{
         {
 
 
-            this->frequency = 30;
+            this->frequency = 360; //30
 
         }
         

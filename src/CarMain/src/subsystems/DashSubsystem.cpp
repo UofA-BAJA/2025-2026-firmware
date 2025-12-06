@@ -3,7 +3,7 @@
 namespace BajaWildcatRacing
 {
 
-    DashSubsystem::DashSubsystem(CANDispatcher& canDispatcher) : dash(canDispatcher){
+    DashSubsystem::DashSubsystem(CANDispatcher& canDispatcher) : dash(canDispatcher, Device::Devices::DASH){
 
     }
 

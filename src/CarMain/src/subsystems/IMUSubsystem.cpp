@@ -4,7 +4,7 @@
 namespace BajaWildcatRacing
 {
 
-    IMUSubsystem::IMUSubsystem(CANDispatcher& canDispatcher) : imu(canDispatcher) {
+    IMUSubsystem::IMUSubsystem(CANDispatcher& canDispatcher) : imu(canDispatcher, Device::Devices::IMU) {
 
 
     }
