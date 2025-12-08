@@ -5,7 +5,8 @@
 .PHONY: down
 
 clean:
-	
+	docker container prune
+	docker system prune --volumes	
 down: 
 	docker compose down
 
