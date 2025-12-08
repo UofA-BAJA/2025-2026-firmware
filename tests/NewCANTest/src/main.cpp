@@ -9,10 +9,11 @@
 
 
 
-const int SPI_CS_PIN = 10; // CS pin for the MLX90614
+const int SPI_CS_PIN = 17; // CS pin
+const int SPI_INT_PIN = 16;
 // MCP_CAN CAN(SPI_CS_PIN);  // Create CAN object on CS pin
 
-CANTProtocol CAN(SPI_CS_PIN, 2, 0x1Fl);
+CANTProtocol CAN(SPI_CS_PIN, digitalPinToInterrupt(SPI_INT_PIN), 0x1Fl);
 
 typedef struct TestStruct_s{
     float a;
