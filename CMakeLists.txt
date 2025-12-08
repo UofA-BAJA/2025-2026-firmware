@@ -42,7 +42,8 @@ target_link_libraries(carComputer PRIVATE pthread)
 target_link_libraries(carComputer PRIVATE sqlite3)
 # radio library
 target_link_libraries(carComputer PRIVATE rf24)
-
+# new radio library
+target_link_libraries(carComputer PRIVATE radiohead)
 
 
 # Chat guide for installing
