@@ -1,0 +1,97 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64; rv:143.0) Gecko/20100101 Firefox/143.0" version="28.2.1">
+  <diagram name="Page-1" id="ak3ViS6_8fdzLUrSu9zR">
+    <mxGraphModel dx="970" dy="608" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-7" value="" style="image;aspect=fixed;perimeter=ellipsePerimeter;html=1;align=center;shadow=0;dashed=0;spacingTop=3;image=img/lib/active_directory/web_server.svg;" vertex="1" parent="1">
+          <mxGeometry x="370" y="478.25" width="70" height="87.5" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-8" value="" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/databases/Azure_Database_PostgreSQL_Server.svg;" vertex="1" parent="1">
+          <mxGeometry x="88.5" y="490" width="48" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;endArrow=none;endFill=0;dashed=1;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-11" target="kVMa-FpWhUTrMSlBEpI0-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;endArrow=none;endFill=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-11" target="kVMa-FpWhUTrMSlBEpI0-24">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="420" y="260" />
+              <mxPoint x="420" y="254" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-11" target="kVMa-FpWhUTrMSlBEpI0-46">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="270" />
+              <mxPoint x="390" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-11" value="" style="shape=mxgraph.signs.transportation.car_2;html=1;pointerEvents=1;fillColor=#FF0000;strokeColor=none;verticalLabelPosition=bottom;verticalAlign=top;align=center;direction=east;" vertex="1" parent="1">
+          <mxGeometry x="240" y="250" width="100" height="33" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=0;exitY=0.798;exitDx=0;exitDy=0;exitPerimeter=0;endArrow=none;endFill=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-14" target="kVMa-FpWhUTrMSlBEpI0-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-14" value="" style="image;points=[];aspect=fixed;html=1;align=center;shadow=0;dashed=0;image=img/lib/allied_telesis/computer_and_terminals/Personal_Computer.svg;" vertex="1" parent="1">
+          <mxGeometry x="690" y="438.23" width="75.6" height="102.46" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-23" target="kVMa-FpWhUTrMSlBEpI0-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-23" value="&lt;font size=&quot;1&quot;&gt;Data can be directly imported into the PostgreSQL database, assuming you have access to the server (which most people won&#39;t)&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="20" y="330" width="131.5" height="87" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-24" value="&lt;font size=&quot;1&quot;&gt;Live data is gathered from the car via radio, which the client running the web app interprets&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="530" y="210" width="131.5" height="87" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-29" target="kVMa-FpWhUTrMSlBEpI0-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-29" value="&lt;font size=&quot;1&quot;&gt;The web server has a private connection to the PostgreSQL database.&amp;nbsp;&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="190" y="492" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.956;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-29" target="kVMa-FpWhUTrMSlBEpI0-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;endArrow=none;endFill=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-36" target="kVMa-FpWhUTrMSlBEpI0-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-36" value="&lt;font size=&quot;1&quot;&gt;The server sends database data back to the client after a successful request&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="490" y="450" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-37" target="kVMa-FpWhUTrMSlBEpI0-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-37" value="&lt;font size=&quot;1&quot;&gt;Clients can send requests for data (queries) which will be send to the database. Clients can also provide data to be ingested in the database&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="490" y="554" width="120" height="106" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-38" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.115;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-36" target="kVMa-FpWhUTrMSlBEpI0-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-42" value="&amp;nbsp;" style="text;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="340" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-46" value="&lt;font size=&quot;1&quot;&gt;Data stored locally on the car can be ingested to the PostgreSQL database via a web app interface&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="470" y="316.5" width="131.5" height="87" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-50" value="" style="fontColor=#0066CC;verticalAlign=top;verticalLabelPosition=bottom;labelPosition=center;align=center;html=1;outlineConnect=0;fillColor=#CCCCCC;strokeColor=#6881B3;gradientColor=none;gradientDirection=north;strokeWidth=2;shape=mxgraph.networks.radio_tower;" vertex="1" parent="1">
+          <mxGeometry x="430" y="230.78" width="25" height="45.45" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-51" value="" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.devices.hard_disk;gradientColor=none;" vertex="1" parent="1">
+          <mxGeometry x="420" y="346.25" width="25" height="33.75" as="geometry" />
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-24">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kVMa-FpWhUTrMSlBEpI0-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.286;entryY=-0.026;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="kVMa-FpWhUTrMSlBEpI0-46" target="kVMa-FpWhUTrMSlBEpI0-14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
