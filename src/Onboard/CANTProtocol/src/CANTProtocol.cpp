@@ -43,7 +43,7 @@ bool CANTProtocol::begin(){
     pinMode(CAN_INTERRUPT_PIN, INPUT);
 
     //having to pass in this as a parameter to the function sucks!!!!!!
-    attachInterrupt(digitalPinToInterrupt(CAN_INTERRUPT_PIN), ISRHandler, LOW, this);
+    attachInterrupt(CAN_INTERRUPT_PIN, ISRHandler, LOW, this);
     return true;
 }
 
@@ -177,7 +177,7 @@ void CANTProtocol::execute(){
 }
 
 bool CANTProtocol::end(){
-    detachInterrupt(digitalPinToInterrupt(CAN_INTERRUPT_PIN));
+    detachInterrupt(CAN_INTERRUPT_PIN);
     CAN.setMode(MCP_SLEEP);
 }
 
