@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import reactLogo from "../assets/react.svg";
 import React from "react";
 import axios from "axios";
+import keycloak from "../Keycloak";
 const rootURL = "http://localhost:5269";
 
 import {
@@ -40,13 +41,26 @@ function Home() {
   const [beltRef, setTempRef] = useState(0);
   const [tempValue, setTempValue] = useState(0);
 
-  //post request to add a new belt
+  // post request to add a new belt
   async function createBelt(e: React.FormEvent) {
+    await keycloak.updateToken(30);
+
     e.preventDefault();
     try {
-      const response = await axios.post(`${rootURL}/Belts`, {
-        name: beltName,
-      });
+      
+      const response = await axios.post(
+        `${rootURL}/Belts`,
+        {
+          name: beltName,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
       //clear form input
       setBeltName("");
       alert("Belt Added");
@@ -55,14 +69,25 @@ function Home() {
     }
   }
 
-  //post request to add a new belt
+  // post request to add a new belt
   async function createTemp(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const response = await axios.post(`${rootURL}/temp`, {
-        BeltId: beltRef,
-        Value: tempValue,
-      });
+      await keycloak.updateToken(30);
+
+      const response = await axios.post(
+        `${rootURL}/temp`,
+        {
+          BeltId: beltRef,
+          Value: tempValue,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       alert("Temp Added");
     } catch (err) {
@@ -77,7 +102,13 @@ function Home() {
   // get data from localHost
   async function getAllBelts() {
     try {
-      const response = await axios.get(`${rootURL}/Belts`);
+      await keycloak.updateToken(30);
+      const response = await axios.get(`${rootURL}/Belts`, {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+          "Content-Type": "application/json",
+        },
+      });
       // console.log(response.data);, might be in containers?
       setBelts(response.data);
     } catch (error) {
@@ -88,7 +119,14 @@ function Home() {
   // get data from localHost
   async function getAllTemps() {
     try {
-      const response = await axios.get(`${rootURL}/temp`);
+      await keycloak.updateToken(30);
+
+      const response = await axios.get(`${rootURL}/temp`, {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+          "Content-Type": "application/json",
+        },
+      });
       // console.log(response.data);, might be in containers?
       setTemps(response.data);
     } catch (error) {
