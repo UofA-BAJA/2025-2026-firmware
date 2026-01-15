@@ -5,6 +5,8 @@
 #include <Wire.h>
 // #include <MLX90614.h>
 #include <Arduino.h>
+
+
 #include "CANTProtocol.h"
 
 
@@ -13,7 +15,7 @@ const int SPI_CS_PIN = 17; // CS pin
 const int SPI_INT_PIN = 16;
 // MCP_CAN CAN(SPI_CS_PIN);  // Create CAN object on CS pin
 
-CANTProtocol CAN(SPI_CS_PIN, digitalPinToInterrupt(SPI_INT_PIN), 0x1Fl);
+CANTProtocol CAN(SPI_CS_PIN, SPI_INT_PIN, 0x1Fl);
 
 typedef struct TestStruct_s{
     float a;
@@ -65,6 +67,7 @@ void setup()
 
 void loop()
 {
-    CAN.execute();      
+    CAN.execute();    
+    yield();  
 }
 
