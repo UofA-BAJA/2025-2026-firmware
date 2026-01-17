@@ -8,6 +8,12 @@
 //Shenanigans (apparently the linker gets unhappy, thanks chat)
 CANTProtocol* CANTProtocol::ref = nullptr;
 
+//Declare this up here so it can be used
+#if defined(CANT_ESP32)
+void ESP32ISRTrampoline(void* ref);
+volatile bool interruptRecieved = false;
+#endif
+
 /*
     begin() - Call this to start recieving and responding to CAN frames
 
@@ -50,11 +56,19 @@ bool CANTProtocol::begin(){
 
     pinMode(CAN_INTERRUPT_PIN, INPUT);
 
-    //having to pass in this as a parameter to the function sucks!!!!!!
+    //ESP32 and Arduino have two slightly different implemenetations of attachInterrupt()
+    //Also ESP32 needs its task defined 
     #if defined(CANT_ARDUINO)
         attachInterrupt(digitalPinToInterrupt(CAN_INTERRUPT_PIN), ISRHandler, LOW);
     #elif defined(CANT_ESP32)
-        attachInterrupt(CAN_INTERRUPT_PIN, ISRHandler, ONLOW);
+        // attachInterrupt(CAN_INTERRUPT_PIN, ISRHandler, ONLOW);
+        xTaskCreate(
+            ESP32ISRTrampoline,
+            "Interrupt Handler",
+            1024, 
+            (void*)ref,
+            3,
+            NULL);
     #endif
 
     return true;
@@ -206,10 +220,11 @@ Also, this ISR is not super quick (which is not ideal, but we need it to take hi
 
 For arduinos, we can just call the non-static version directly in the ISRHandler() function.
 
-ESP32s are a bit more complex because they have a whole RTOS that can distribute tasks, and have
-hardware watchdogs that prevent the ISR from taking too long. To get around this, we can create a task
-for the RTOS to run when the interrupt comes in, therefore we get the quick response but also don't 
-trigger the hardware watchdog.
+ESP32s are a bit more complex because they have a whole Real Time Operating System (RTOS) that can distribute tasks, 
+and it has hardware watchdogs that prevent the ISR from taking too long. 
+To get around this, we can create a task for the RTOS to run constantly, and the ISR simply sets a flag 
+that then causes the task to read the CAN bus.
+Therefore we get the quick response but also don't trigger the hardware watchdog.
 However, you can't give a member function to the task creater, so there's yet *another* method that
 calls the member function: ESP32ISRTrampoline() (this style of method that only calls another is a trampoline method)
 
@@ -220,26 +235,26 @@ IRAM_ATTR is a flag for ESP32 functions that tells the RTOS to keep it in RAM so
 
 #if defined(CANT_ESP32)
 void ESP32ISRTrampoline(void* ref){
-    // CANTProtocol* newRef = (CANTProtocol*)ref;
-    // newRef->InterruptSubroutine();
+    CANTProtocol* newRef = (CANTProtocol*)ref;
+    for(;;){
+        newRef->InterruptSubroutine();
+        delay(1);
+    }
+    
 }
 
-//The actual thing called when the interrupt comes in
-void IRAM_ATTR CANTProtocol::ISRHandler(){
-    xTaskCreate(
-        ESP32ISRTrampoline,
-        "Interrupt Handler",
-        1024, 
-        (void*)ref,
-        4,
-        NULL);
-}
+// //The actual thing called when the interrupt comes in
+// void IRAM_ATTR CANTProtocol::ISRHandler(){
+//     interruptRecieved = true;
+// }
 
 #else
 void CANTProtocol::ISRHandler(){ 
     ref->InterruptSubroutine();  
 }
-#endif  
+
+#endif
+
 
 
 
@@ -256,24 +271,24 @@ void CANTProtocol::InterruptSubroutine(){
     #if defined(CANT_ARDUINO)
         noInterrupts();
     #endif
-
+    
     long unsigned int rxId = 0;
     unsigned char len = 0;
     unsigned char rxBuf[8];
-
+    
     //Interrupt goes low and stays low until all buffers are empty
     while(CAN.readMsgBuf(&rxId, &len, rxBuf) != CAN_NOMSG){
         // #if DEBUG_CAN
         //  Serial.println("ISR");
         // #endif 
-
+        
         //If the length of the queue is 32 frames or greater (max size), drop it. 
         if(frameQueueLength > 31) break;
-
+        
         int insertLocation = frameQueueFront + frameQueueLength;
         //If we're trying to insert at an index off the end of the array, wraparound to the front
         if(insertLocation > 31) insertLocation = insertLocation - 32;
-
+        
         //memcpy doesn't like to copy into volatile, use a loop instead
         for(int i = 0; i < len; i++){
             pendingFrames[insertLocation].data[i] = rxBuf[i];
@@ -281,10 +296,11 @@ void CANTProtocol::InterruptSubroutine(){
         pendingFrames[insertLocation].dataLength = len;
         pendingFrames[insertLocation].callbackID = (rxId & 0x000FFFFF);
         pendingFrames[insertLocation].dataID = ((rxId & 0x00F00000) >> 20); 
-
+        
         frameQueueLength++;
     }
     #if defined(CANT_ARDUINO)
-        interrupts();
+    interrupts();
     #endif
+    
 }

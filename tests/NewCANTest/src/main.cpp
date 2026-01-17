@@ -68,6 +68,6 @@ void setup()
 void loop()
 {
     CAN.execute();    
-    yield();  
+    yield();
 }
 
