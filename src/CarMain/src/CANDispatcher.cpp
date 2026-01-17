@@ -28,8 +28,9 @@ namespace BajaWildcatRacing
         std::lock_guard<std::mutex> lock(callbacks_mutex);
 
         //Iterate over all pending responses and drop ones over 100 cycles
-        for(int i = 0; i < MAX_RESPONSE_ARRAY_BOUND; i++){
-
+        //Have to handle the edge case of the active range being split across the end and start of the array
+        int i = activeArrayLowerBound;
+        while(i != activeArrayUpperBound){
             //Only increment the cycles if it's the first UID 
             if(responses[i] != nullptr && ((responses[i]->firstUID) % MAX_RESPONSE_ARRAY_BOUND == i)){
                 (responses[i]->commandCycles)++;
@@ -43,7 +44,22 @@ namespace BajaWildcatRacing
                 
                 //TODO: resend for dropped lossless command
             }
-        } 
+
+            //Move up the lower bound if we're at a nullptr response
+            if(responses[i] == nullptr && i == activeArrayLowerBound){
+                activeArrayLowerBound++;
+                if(activeArrayLowerBound == MAX_RESPONSE_ARRAY_BOUND){
+                    activeArrayLowerBound = 0;
+                }
+            }
+
+            //Increment and wraparound
+            i++;
+            if(i == MAX_RESPONSE_ARRAY_BOUND){
+                i = 0;
+            }
+        }
+        
 
         // float droppedCommandRatio = (float) droppedCommands / totalCommands * 100.0;
 
@@ -218,11 +234,11 @@ namespace BajaWildcatRacing
             }            
             
             responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
+            
             // std::cout << "reserved id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
 
             // (eventually) used for drop rate tracking & alerting
             // totalCommands++;
-
             //If we're expecting something super long back, reserve more callback IDs
             if(numFrames > 1){
                 //Reserve more message IDs in a loop
@@ -237,6 +253,7 @@ namespace BajaWildcatRacing
                     responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
                 }
             }
+            activeArrayUpperBound = currUID % MAX_RESPONSE_ARRAY_BOUND;
         }
 
         /* 
