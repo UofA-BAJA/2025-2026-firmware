@@ -47,7 +47,6 @@ function Home() {
 
     e.preventDefault();
     try {
-      
       const response = await axios.post(
         `${rootURL}/Belts`,
         {
@@ -58,7 +57,7 @@ function Home() {
             Authorization: `Bearer ${keycloak.token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       //clear form input
@@ -86,7 +85,7 @@ function Home() {
             Authorization: `Bearer ${keycloak.token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       alert("Temp Added");
