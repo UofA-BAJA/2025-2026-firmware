@@ -6,7 +6,6 @@
 // Core libraries
 #include <Arduino.h>
 #include <UMS3.h>
-#include <string>
 
 // Configuration vars
 #include "config.h"
@@ -29,14 +28,13 @@ HT16K33 lower;
 
 // Create board object
 UMS3 board;
-int statusColor = 0;
 
 
 
 void TestScreen(const char *upper, const char *lower) {
   display.clear();
 
-  display.print(1,font_8x16, upper,ALIGN_RIGHT);
+  display.print(1,font_8x16, upper,ALIGN_CENTER);
 
   display.box(5,3,123,4,0xFF);
   
@@ -49,7 +47,7 @@ void setup() {
   // Board and Status LED setup
   board.begin();
   board.setPixelPower(true);
-  board.setPixelBrightness(64);
+  board.setPixelBrightness(32);
 
   // Set to initialization status
   board.setPixelColor(0,0,255);
@@ -73,7 +71,7 @@ void setup() {
   board.setPixelColor(255,128,0);
 
   int alphaCounter = 0;
-  while((upper.begin() == false || lower.begin() == false) && alphaCounter < 100) {
+  while((upper.begin() == false || lower.begin() == false) && alphaCounter < 50) {
     display.clear();
     display.print(0,font_8x16, "Waiting on alphas");
     alphaCounter++;
@@ -99,12 +97,6 @@ void setup() {
 void loop() {
 
   delay(30);
-  statusColor++;
-  upper.print(statusColor);
-  lower.print(statusColor);
-  for(byte i = 0; i < 8; i++){
-    upper.shiftRight();
-    lower.shiftLeft();
-    delay(100);
-  }
+  upper.print("UPPR");
+  lower.print("LOWR");
 }
