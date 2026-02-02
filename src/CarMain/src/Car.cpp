@@ -231,6 +231,7 @@ namespace BajaWildcatRacing
 
         //Gracefully exit on a normal "interrupt" or "terminate" signal
         if (signal_num == SIGINT || signal_num == SIGTERM) {
+            std::cout << "Interrupt/Terminate in progress..." << std::endl;
             g_running = false;
         }
         //Immediately die on a segfault or unknown exit code

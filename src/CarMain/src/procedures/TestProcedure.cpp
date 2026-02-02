@@ -16,7 +16,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem)
         : testSubsystem(testSubsystem)
         {
-            this->frequency = 120; 
+            this->frequency = 360; 
 
         }
         
@@ -32,9 +32,9 @@ class TestProcedure : public Procedure{
 
             testSubsystem.test(true);
             // testSubsystem.test(false);
-            std::cout << std::fixed;
-            std::cout << std::setprecision(2);
-            std::cout << "Test Struct: " << st.a << " " << st.b << " " <<  st.c << " " << st.d << " " << st.e << std::endl;
+            // std::cout << std::fixed;
+            // std::cout << std::setprecision(2);
+            // std::cout << "Test Struct: " << st.a << " " << st.b << " " <<  st.c << " " << st.d << " " << st.e << std::endl;
         }
 
         void end() override {
