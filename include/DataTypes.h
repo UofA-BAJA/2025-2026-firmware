@@ -8,23 +8,22 @@
 // It is also the code that will serve as the "smift amount" for the mask value,
 // as described in the live data packet protocol 
 enum DataTypes{
-    RPM_FRONT_L,
-    RPM_FRONT_R,
-    RPM_BACK,
-    MOTOR_RPM,
-    IMU_ROTATION_X,
-    IMU_ROTATION_Y,
-    IMU_ROTATION_Z,
-    //THE_FRIENDS_WE_MADE_ALONG_THE_WAY = 0x108,
-    BRAKE_PRESSURE_REAR,
-    BRAKE_PRESSURE_FRONT,
-    CAR_SPEED,
-    IMU_ACCELERATION_X,
-    IMU_ACCELERATION_Y,
-    IMU_ACCELERATION_Z,
-    CVT_TEMPERATURE,
+    WHEEL_RPM_FRONT_L = 0x01,
+    WHEEL_RPM_FRONT_R = 0x02,
+    WHEEL_RPM_BACK = 0x03,
+    CAR_SPEED = 0x04,
+    MOTOR_RPM = 0x05,
+    IMU_ROTATION_X = 0x06,
+    IMU_ROTATION_Y = 0x07,
+    IMU_ROTATION_Z = 0x08,
+    IMU_ACCELERATION_X = 0x09,
+    IMU_ACCELERATION_Y = 0x0A,
+    IMU_ACCELERATION_Z = 0x0B,
+    BRAKE_PRESSURE_REAR = 0x0C,
+    BRAKE_PRESSURE_FRONT = 0x0D,
+    CVT_TEMPERATURE = 0x0E,
     // The reserves are here because we can have a total of 32 data types that can be transmitted live
-    DISTANCE,
+    DISTANCE = 0x0F,
     RESERVE_16,
     RESERVE_17,
     RESERVE_18,
@@ -42,7 +41,7 @@ enum DataTypes{
     RESERVE_30,
     RESERVE_31,
     RESERVE_32
-    // Do not add more data types! Replace one of the reserved slots with it!
+    // Datatypes at or below 255 (0xFF) are the only ones that can be sent via radio, others will be ignored
 };
 
 #endif

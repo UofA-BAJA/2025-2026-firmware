@@ -372,20 +372,20 @@ namespace BajaWildcatRacing
         });
 
         dataTypesInDB.push_back({
-            DataTypes::RPM_FRONT_L,
-            "RPM Front Left",
+            DataTypes::WHEEL_RPM_FRONT_L,
+            "Wheel RPM Front Left",
             "rev/s"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::RPM_FRONT_R,
-            "RPM Front Right",
+            DataTypes::WHEEL_RPM_FRONT_R,
+            "Wheel RPM Front Right",
             "rev/s"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::RPM_BACK,
-            "RPM Back",
+            DataTypes::WHEEL_RPM_BACK,
+            "Wheel RPM Back",
             "rev/s"
         });
 
