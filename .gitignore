@@ -273,3 +273,6 @@ crashlytics-build.properties
 ###########################################################
 #                END OF UNITY GITIGNORE
 ###########################################################
+hardware/KICAD Projects/2025-2026 Dash/Dash-Fixed/Dash.kicad_sch
+hardware/KICAD Projects/2025-2026 Dash/Dash-Fixed/Dash.kicad_pro
+hardware/KICAD Projects/2025-2026 Dash/Dash-Fixed/Dash.kicad_pcb
