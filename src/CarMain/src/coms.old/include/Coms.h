@@ -22,22 +22,24 @@
 #include <memory>
 
 // Radio library
-#include <RH_RF95.h>
-
-const int RADIO_CS_PIN = 11;
-const int RADIO_INT_PIN = 21;
-
-RH_RF95 rf95(RADIO_CS_PIN, RADIO_INT_PIN);
+#include <RF24/RF24.h>
 
 namespace BajaWildcatRacing
 {
 
     class Coms{
 
+        struct DataPacket{
+            int streamMask = 0;
+            float timestamp;
+            float data[6];
+        };
+
+
         enum PitCommandState{
             IDLE,
             LIVE_DATA_TRANSMIT,
-            WAIT_COMMAND_RECIEVE
+            DATABASE_TRANSMIT
         };
 
 
@@ -56,35 +58,39 @@ namespace BajaWildcatRacing
             // This radio should only be accessed from the radioThread
             // We do not want a mutex to protect it, as it would bee very slow
             // and defeat the purpose of multithreading
-            RH_RF95 rf95;
+            RF24 radio;
 
-            
+            void addNewLiveDataStream(std::shared_ptr<LiveDataStream> stream);
             
             const bool RADIO_ACTIVE = true;
 
-            PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
+            PitCommandState currentPitCommandState = PitCommandState::IDLE;
 
             float currTimestamp = 0;
             void executeRadio();
             void radioTransmit();
 
             void transmitLiveData();
-            void recieveCommand();
+            void transmitDatabase();
             void idle();
 
             void tryUpdateState();
 
+            const int maxPackets = 6;
+            void sortPackets(DataPacket packets[]);
 
             ProcedureScheduler& procedureScheduler;
+            std::shared_ptr<LiveDataStream> liveDataStreams[32];
+            std::unordered_map<DataTypes, std::shared_ptr<LiveDataStream>> liveDataStreamMap;
 
             int liveStreamCount = 0;
 
-            //Mutexes for multithreaded safety
             std::mutex timestampMutex;
             std::mutex procedureSchedulerMutex;
-            std::mutex dataQueueMutex;
 
-            //Actual 2nd thread
+
+
+            std::mutex dataStreamMutex;
             std::thread radioThread;
             std::atomic<bool> running = RADIO_ACTIVE;
 
