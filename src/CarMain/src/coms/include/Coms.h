@@ -3,11 +3,11 @@
 
 #include "Commands.h"
 #include "ProcedureScheduler.h"
-#include "LiveDataStream.h"
 #include "CarLogger.h"
 
 #include "Commands.h"
 #include "Constants.h"
+#include "DataTypes.h"
 
 #include <iostream>
 
@@ -24,10 +24,6 @@
 // Radio library
 #include <RH_RF95.h>
 
-const int RADIO_CS_PIN = 11;
-const int RADIO_INT_PIN = 21;
-
-RH_RF95 rf95(RADIO_CS_PIN, RADIO_INT_PIN);
 
 namespace BajaWildcatRacing
 {
@@ -62,7 +58,7 @@ namespace BajaWildcatRacing
             
             const bool RADIO_ACTIVE = true;
 
-            PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
+            PitCommandState currentPitCommandState = PitCommandState::IDLE;
 
             float currTimestamp = 0;
             void executeRadio();

@@ -7,8 +7,8 @@ comments
 
 */
 
-#define RADIO_CS_PIN 11;
-#define RADIO_INT_PIN 21;
+#define RADIO_CS_PIN 11
+#define RADIO_INT_PIN 21
 
 #include "Coms.h"
 
@@ -17,11 +17,11 @@ namespace BajaWildcatRacing {
     Coms::Coms(ProcedureScheduler& procedureScheduler)
     :rf95(RADIO_CS_PIN, RADIO_INT_PIN)
     ,procedureScheduler(procedureScheduler) {
-
+        radioThread = std::thread(&Coms::executeRadio, this);
     }
 
 
-    void Coms::execute(){
+    void Coms::execute(float timestamp){
 
     }
 
@@ -46,6 +46,8 @@ namespace BajaWildcatRacing {
         rf95.setHeaderFrom(1);
         rf95.setHeaderTo(2);
     
+
+        int waitTimems = (1.0 / RADIO_CLOCK_FREQUENCY) * 1000;
         while(running){
             if(currentPitCommandState == PitCommandState::IDLE){
                 idle();

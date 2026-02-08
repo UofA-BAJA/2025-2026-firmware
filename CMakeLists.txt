@@ -16,6 +16,9 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/src/CarMain/src/subsystems/include
 )
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(RADIOHEAD REQUIRED IMPORTED_TARGET radiohead)
+
 
 # ! Apparently using GLOB is discouraged in cmake. It's working for now, but I guess I need to figure out
 #   the correct way to do it.
@@ -41,9 +44,9 @@ target_link_libraries(carComputer PRIVATE pthread)
 # SQLite library
 target_link_libraries(carComputer PRIVATE sqlite3)
 # radio library
-target_link_libraries(carComputer PRIVATE rf24)
+# target_link_libraries(carComputer PRIVATE rf24)
 # new radio library
-target_link_libraries(carComputer PRIVATE radiohead)
+target_link_libraries(carComputer PRIVATE PkgConfig::RADIOHEAD)
 
 
 # Chat guide for installing
