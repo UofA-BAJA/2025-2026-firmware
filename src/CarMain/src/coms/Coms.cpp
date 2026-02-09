@@ -22,7 +22,10 @@ namespace BajaWildcatRacing {
 
 
     void Coms::execute(float timestamp){
-
+        //All this does is updates the timestamp
+        //Actual sending is done in executeRadio() so it's a different thread
+        std::lock_guard<std::mutex> lock(timestampMutex);
+        currTimestamp = timestamp;
     }
 
     void Coms::end(){
@@ -59,7 +62,7 @@ namespace BajaWildcatRacing {
                 recieveCommand();
             }
 
-            
+            //TODO: make this dynamic wait like the main loop
             std::this_thread::sleep_for(std::chrono::milliseconds(waitTimems));
         }
         //run correct function depending on state
@@ -68,6 +71,7 @@ namespace BajaWildcatRacing {
 
     void Coms::transmitLiveData(){
         //take stuff from queue and transmit as fast as possible
+
     }
 
     void Coms::recieveCommand(){
@@ -81,10 +85,23 @@ namespace BajaWildcatRacing {
         //this is different to setting running = false 
     }
 
-    void Coms::sendData(DataTypes dataType, float data){
-        //Get current timestamp
-        //Save data into a data queue
-        //Maybe a way to throttle the live data update?
-        //In the future, maybe have a state as to what datatypes we want and only enqueue those?
+    void Coms::sendData(DataTypes dataType, byte data[]){
+        //Only send if less than 256
+        if(dataType < 256){
+            std::unique_lock<std::mutex> lock(dataTypeMaskMutex);
+            if(dataTypeMask[dataType]){
+                lock.unlock();
+                
+                std::unique_lock<std::mutex> lock(dataQueueMutex);
+                if(queuedDataPointers[dataType] == nullptr){
+
+                }
+
+            }
+        }
+        
+        //If we're allowing this datatype through right now:
+            //Get current timestamp
+            //Save data into a data "queue"
     }
 }

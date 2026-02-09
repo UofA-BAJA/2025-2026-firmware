@@ -1,6 +1,7 @@
 #ifndef COMS_H
 #define COMS_H
 
+//Baja Includes
 #include "Commands.h"
 #include "ProcedureScheduler.h"
 #include "CarLogger.h"
@@ -9,7 +10,9 @@
 #include "Constants.h"
 #include "DataTypes.h"
 
+//Standard Includes
 #include <iostream>
+#include <queue>
 
 // For multithreading
 #include <mutex>
@@ -18,8 +21,8 @@
 
 #include <chrono> // I believe this is used for the sleep function in the executeRadio loop
 #include <bitset> // No idea what this is for, but I think it's important for something
-#include <unordered_set>
-#include <memory>
+#include <memory> // unique_ptr, etc
+
 
 // Radio library
 #include <RH_RF95.h>
@@ -27,6 +30,7 @@
 
 namespace BajaWildcatRacing
 {
+    using byte = unsigned char;
 
     class Coms{
 
@@ -44,7 +48,7 @@ namespace BajaWildcatRacing
             void execute(float timestamp);
             void end();
 
-            void sendData(DataTypes dataType, float data);
+            void sendData(DataTypes dataType, byte data[])
 
 
         private:
@@ -68,17 +72,30 @@ namespace BajaWildcatRacing
             void recieveCommand();
             void idle();
 
-            void tryUpdateState();
+        
 
 
             ProcedureScheduler& procedureScheduler;
 
-            int liveStreamCount = 0;
+            typedef struct DataFrame_s{
+                byte id;
+                float timestamp;
+                byte data;
+                int dataLength;
+            } DataFrame;
+
+            //Data Queueing Stuff
+            bool dataTypeMask[256]; //Should we send this datatype??
+            std::shared_ptr<DataFrame> queuedDataPointers[256]; //A way to make sure we have the latest data in the queue (and a pointer to update it)
+            std::queue<DataFrame> queuedData;
+            
 
             //Mutexes for multithreaded safety
             std::mutex timestampMutex;
             std::mutex procedureSchedulerMutex;
             std::mutex dataQueueMutex;
+            std::mutex dataTypeMaskMutex;
+
 
             //Actual 2nd thread
             std::thread radioThread;
