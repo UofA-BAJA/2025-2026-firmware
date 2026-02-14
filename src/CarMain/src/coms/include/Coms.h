@@ -48,7 +48,7 @@ namespace BajaWildcatRacing
             void execute(float timestamp);
             void end();
 
-            void sendData(DataTypes dataType, byte data[])
+            void sendData(DataTypes dataType, byte data[], int dataLength)
 
 
         private:
@@ -64,7 +64,7 @@ namespace BajaWildcatRacing
 
             PitCommandState currentPitCommandState = PitCommandState::IDLE;
 
-            float currTimestamp = 0;
+            std::atomic<float> currTimestamp = 0;
             void executeRadio();
             void radioTransmit();
 
@@ -80,26 +80,22 @@ namespace BajaWildcatRacing
             typedef struct DataFrame_s{
                 byte id;
                 float timestamp;
-                byte data;
+                std::shared_ptr<byte[]> data;
                 int dataLength;
             } DataFrame;
 
             //Data Queueing Stuff
             bool dataTypeMask[256]; //Should we send this datatype??
             std::shared_ptr<DataFrame> queuedDataPointers[256]; //A way to make sure we have the latest data in the queue (and a pointer to update it)
-            std::queue<DataFrame> queuedData;
+            std::queue<DataFrame> queuedData; //The queue
             
 
-            //Mutexes for multithreaded safety
-            std::mutex timestampMutex;
-            std::mutex procedureSchedulerMutex;
+            //Mutex for multithreaded safety
             std::mutex dataQueueMutex;
-            std::mutex dataTypeMaskMutex;
-
 
             //Actual 2nd thread
             std::thread radioThread;
-            std::atomic<bool> running = RADIO_ACTIVE;
+            bool running = RADIO_ACTIVE;
 
     };
 

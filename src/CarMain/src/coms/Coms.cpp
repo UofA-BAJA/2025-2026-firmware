@@ -24,8 +24,7 @@ namespace BajaWildcatRacing {
     void Coms::execute(float timestamp){
         //All this does is updates the timestamp
         //Actual sending is done in executeRadio() so it's a different thread
-        std::lock_guard<std::mutex> lock(timestampMutex);
-        currTimestamp = timestamp;
+        currTimestamp = timestamp; //Protected by atomic
     }
 
     void Coms::end(){
@@ -71,6 +70,37 @@ namespace BajaWildcatRacing {
 
     void Coms::transmitLiveData(){
         //take stuff from queue and transmit as fast as possible
+        std::unique_lock<std::mutex> lock(dataQueueMutex);
+        //Quickly swap the queues so that stuff can still be queued while sending
+        std::queue<DataFrame> localQueue;
+        std::swap(localQueue, queuedData);
+
+        //Clear the queued data pointers
+        for(int i = 0; i < 256; i++){
+            queuedDataPointers[i] = nullptr;
+        }
+        lock.unlock();
+
+        while(!localQueue.empty()){
+            DataFrame nextFrame = localQueue.front();
+            localQueue.pop();
+
+            //Add timestamp and actual data to data to send
+            int sentDataLength = sizeof(float) + nextFrame.dataLength;
+            byte data[sentDataLength];
+            memcpy(data, &nextFrame.timestamp, sizeof(float));
+            memcpy(&data[sizeof(float)], nextFrame.data.get(), nextFrame.dataLength);
+
+            //todo: set the flag for the switchover if needed
+            rf95.setHeaderFlags(0x00);
+            rf95.setHeaderId(nextFrame.id);
+
+            //Actually send the data
+            if(!rf95.send(data, sizeof(sentDataLength))){
+                //Failed to send
+                std::cout << "Failed to send data with id " << nextFrame.id << std::endl;
+            }
+        }
 
     }
 
@@ -85,23 +115,49 @@ namespace BajaWildcatRacing {
         //this is different to setting running = false 
     }
 
-    void Coms::sendData(DataTypes dataType, byte data[]){
+    void Coms::sendData(DataTypes dataType, byte data[], int dataLength){
         //Only send if less than 256
-        if(dataType < 256){
-            std::unique_lock<std::mutex> lock(dataTypeMaskMutex);
-            if(dataTypeMask[dataType]){
-                lock.unlock();
-                
-                std::unique_lock<std::mutex> lock(dataQueueMutex);
-                if(queuedDataPointers[dataType] == nullptr){
-
-                }
-
-            }
+        if(dataType >= 256){
+            //Print for debugging, should be resolved before actual use
+            std::cout << "Error: Cannot send datatype >= 256 over radio! (attempted to send " << dataType << ")" << std::endl;
+            return;
         }
-        
-        //If we're allowing this datatype through right now:
-            //Get current timestamp
-            //Save data into a data "queue"
+
+        if(dataLength >= 252){
+            //Print for debugging, should be resolved before actual use
+            std::cout << "Error: Cannot send data with length >= 252 over radio! (attempted to send data length " << dataLength << ")" << std::endl;
+            return;
+        }
+
+        //Do we want to send this data?
+        if(!dataTypeMask[dataType]){
+            //Don't print anything as this will frequently happen in live events
+            return;
+        }
+
+        std::unique_lock<std::mutex> lock(dataQueueMutex);
+        if(queuedDataPointers[dataType] == nullptr){
+            //Build up the new frame
+            DataFrame newFrame;
+            newFrame.id = dataType;
+            newFrame.timestamp = currTimestamp;
+            newFrame.data = std::make_unique<byte[]>(dataLength);
+            memcpy(newFrame.data.get(), data, dataLength);
+            newFrame.dataLength = dataLength;
+
+            //Push onto queue
+            queuedData.push(newFrame);
+
+            //Add to pointers list
+            queuedDataPointers[dataType] = std::make_shared<DataFrame>(newFrame);
+        }else{
+            //Overwrite the current thing in the queue, rather than adding a new thing
+            queuedDataPointers[dataType]->id = dataType;
+            queuedDataPointers[dataType]->timestamp = currTimestamp;
+            queuedDataPointers[dataType]->data = std::make_unique<byte[]>(dataLength);
+            memcpy(queuedDataPointers[dataType]->data.get(), data, dataLength);
+            queuedDataPointers[dataType]->dataLength = dataLength;
+        }
+        lock.unlock();
     }
 }
