@@ -129,6 +129,10 @@ namespace BajaWildcatRacing {
             return;
         }
 
+        if(data == nullptr){
+            return;
+        }
+
         //Do we want to send this data?
         if(!dataTypeMask[dataType]){
             //Don't print anything as this will frequently happen in live events
@@ -154,10 +158,17 @@ namespace BajaWildcatRacing {
             //Overwrite the current thing in the queue, rather than adding a new thing
             queuedDataPointers[dataType]->id = dataType;
             queuedDataPointers[dataType]->timestamp = currTimestamp;
-            queuedDataPointers[dataType]->data = std::make_unique<byte[]>(dataLength);
+            queuedDataPointers[dataType]->data = std::make_shared<byte[]>(dataLength);
             memcpy(queuedDataPointers[dataType]->data.get(), data, dataLength);
             queuedDataPointers[dataType]->dataLength = dataLength;
         }
         lock.unlock();
+    }
+
+    //Legacy support so I don't have to reconfigure a bunch of stuff rn (please don't use this)
+    void Coms::sendData(DataTypes dataType, float data){
+        byte newData[sizeof(float)];
+        memcpy(newData, &data, sizeof(float));
+        sendData(dataType, newData, sizeof(float));
     }
 }

@@ -48,8 +48,8 @@ namespace BajaWildcatRacing
             void execute(float timestamp);
             void end();
 
-            void sendData(DataTypes dataType, byte data[], int dataLength)
-
+            void sendData(DataTypes dataType, byte data[], int dataLength);
+            void sendData(DataTypes dataType, float data); //Legacy overload
 
         private:
 

@@ -1,5 +1,6 @@
 #include "Procedure.h"
 #include "TestSubsystem.h"
+#include "Coms.h"
 
 
 #include <iomanip>
@@ -10,6 +11,8 @@ namespace BajaWildcatRacing
 class TestProcedure : public Procedure{
     public:
         TestSubsystem& testSubsystem;
+      
+
 
 
 
@@ -29,8 +32,12 @@ class TestProcedure : public Procedure{
             
             TestDevice::TestStruct st = testSubsystem.getTestStruct();
 
+            byte data[sizeof(st)];
+            memcpy(data, &st, sizeof(st));
 
-            testSubsystem.test(true);
+            // coms.sendData(DataTypes::CVT_TEMPERATURE,  data, sizeof(st));
+
+            // testSubsystem.test(true);
             // testSubsystem.test(false);
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);
