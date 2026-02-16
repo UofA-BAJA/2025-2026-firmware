@@ -73,12 +73,12 @@ rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
       rf95.setHeaderFlags(0x01); //set flag to indicate client
     }else if(input == 1){
       mode = 1;
-      rf95.setThisAddress(2);
-      rf95.setHeaderId(2);
-      rf95.setHeaderTo(1);
-      rf95.setHeaderFrom(2);
+      // rf95.setThisAddress(2);
+      // rf95.setHeaderId(2);
+      // rf95.setHeaderTo(1);
+      // rf95.setHeaderFrom(2);
       rf95.setHeaderFlags(0x00); //clear flags
-      rf95.setHeaderFlags(0x02); //set flag to indicate server
+      // rf95.setHeaderFlags(0x02); //set flag to indicate server
       Serial.println("Set to server");
     }
 
@@ -130,15 +130,26 @@ void loop()
 
 
   }else if(mode == 1){
-      if (rf95.available()) {
+      if (rf95.waitAvailableTimeout(1000)) {
         // Should be a message for us now   
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
         uint8_t len = sizeof(buf);
         if (rf95.recv(buf, &len)){
           // digitalWrite(led, HIGH);
     //      RH_RF95::printBuffer("request: ", buf, len);
-          Serial.print("got request: ");
-          Serial.println((char*)buf);
+          Serial.print("got RX with id: ");
+          Serial.println(rf95.headerId());
+          
+          float timestamp;
+          memcpy(&timestamp, buf, sizeof(float));
+          Serial.print("timestamp: ");
+          Serial.println(timestamp);
+          Serial.println("data 1 byte at a time: ");
+          for(int i = sizeof(float); i < len; i++){
+            Serial.print(buf[i], HEX);
+            Serial.print(",");
+          }
+          Serial.println("headers: from, to, id, flag (binary)");
           Serial.println(rf95.headerFrom());
           Serial.println(rf95.headerTo());
           Serial.println(rf95.headerId());
@@ -150,6 +161,8 @@ void loop()
         else {
           Serial.println("recv failed");
         }
+    }else{
+      Serial.println("nothing available for us");
     }
   }
 }
