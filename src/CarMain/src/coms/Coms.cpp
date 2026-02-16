@@ -17,7 +17,11 @@ namespace BajaWildcatRacing {
     Coms::Coms(ProcedureScheduler& procedureScheduler)
     :rf95(RADIO_CS_PIN, RADIO_INT_PIN)
     ,procedureScheduler(procedureScheduler) {
+
+        std::fill(dataTypeMask, dataTypeMask+256, true);
         radioThread = std::thread(&Coms::executeRadio, this);
+        
+
     }
 
 
@@ -33,6 +37,7 @@ namespace BajaWildcatRacing {
 
     void Coms::executeRadio(){
         //init radio 
+        std::cout << "RF95 init..." << std::endl;
         if (!rf95.init()){
             std::cout << "RF95 is not responding!!!" << std::endl;
             //TODO: log error/panic
@@ -44,10 +49,11 @@ namespace BajaWildcatRacing {
         rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
 
         //TODO: define what the addresses we are using are
-        rf95.setThisAddress(1);
-        rf95.setHeaderFrom(1);
-        rf95.setHeaderTo(2);
+        // rf95.setThisAddress(1);
+        // rf95.setHeaderFrom(1);
+        // rf95.setHeaderTo(2);
     
+        std::cout << "RF95 initialized!!!" << std::endl;
 
         int waitTimems = (1.0 / RADIO_CLOCK_FREQUENCY) * 1000;
         while(running){
@@ -72,7 +78,7 @@ namespace BajaWildcatRacing {
         //take stuff from queue and transmit as fast as possible
         std::unique_lock<std::mutex> lock(dataQueueMutex);
         //Quickly swap the queues so that stuff can still be queued while sending
-        std::queue<DataFrame> localQueue;
+        std::queue<std::shared_ptr<DataFrame>> localQueue;
         std::swap(localQueue, queuedData);
 
         //Clear the queued data pointers
@@ -82,24 +88,28 @@ namespace BajaWildcatRacing {
         lock.unlock();
 
         while(!localQueue.empty()){
-            DataFrame nextFrame = localQueue.front();
+            std::shared_ptr<DataFrame> nextFrame = localQueue.front();
             localQueue.pop();
+            // std::cout << "Sending frame with id " << nextFrame->id << std::endl;
 
             //Add timestamp and actual data to data to send
-            int sentDataLength = sizeof(float) + nextFrame.dataLength;
+            int sentDataLength = sizeof(float) + nextFrame->dataLength;
             byte data[sentDataLength];
-            memcpy(data, &nextFrame.timestamp, sizeof(float));
-            memcpy(&data[sizeof(float)], nextFrame.data.get(), nextFrame.dataLength);
+            memcpy(data, &nextFrame->timestamp, sizeof(float));
+            memcpy(&data[sizeof(float)], nextFrame->data.get(), nextFrame->dataLength);
 
             //todo: set the flag for the switchover if needed
             rf95.setHeaderFlags(0x00);
-            rf95.setHeaderId(nextFrame.id);
+            rf95.setHeaderId(nextFrame->id);
 
+            std::cout << "about to send the data" << std::endl;
             //Actually send the data
+            rf95.setModeIdle();
             if(!rf95.send(data, sizeof(sentDataLength))){
                 //Failed to send
-                std::cout << "Failed to send data with id " << nextFrame.id << std::endl;
+                std::cout << "Failed to send data with id " << nextFrame->id << std::endl;
             }
+            std::cout << "sent the data" << std::endl;
         }
 
     }
@@ -125,42 +135,49 @@ namespace BajaWildcatRacing {
 
         if(dataLength >= 252){
             //Print for debugging, should be resolved before actual use
-            std::cout << "Error: Cannot send data with length >= 252 over radio! (attempted to send data length " << dataLength << ")" << std::endl;
+            std::cout << "Error: Cannot send data with length >= 252 over radio! (attempted to send data length " << dataLength << ", datatype " << dataType << ")" << std::endl;
             return;
         }
 
         if(data == nullptr){
+            std::cout << "Error: data cannot be null when sending to radio (datatype " << dataType << ")" << std::endl;
             return;
         }
 
         //Do we want to send this data?
         if(!dataTypeMask[dataType]){
             //Don't print anything as this will frequently happen in live events
+            //Temporary do print something until the radio is working
+            std::cout << "Not sending this data of datatype " << dataType << std::endl;
             return;
         }
 
         std::unique_lock<std::mutex> lock(dataQueueMutex);
         if(queuedDataPointers[dataType] == nullptr){
             //Build up the new frame
-            DataFrame newFrame;
-            newFrame.id = dataType;
-            newFrame.timestamp = currTimestamp;
-            newFrame.data = std::make_unique<byte[]>(dataLength);
-            memcpy(newFrame.data.get(), data, dataLength);
-            newFrame.dataLength = dataLength;
+            auto newFrame = std::make_shared<DataFrame>();
+            newFrame->id = dataType;
+            newFrame->timestamp = currTimestamp;
+            std::shared_ptr<byte[]> sp(new byte[dataLength]);
+            newFrame->data = sp;
+            memcpy(newFrame->data.get(), data, dataLength);
+            newFrame->dataLength = dataLength;
 
             //Push onto queue
             queuedData.push(newFrame);
 
             //Add to pointers list
-            queuedDataPointers[dataType] = std::make_shared<DataFrame>(newFrame);
+            queuedDataPointers[dataType] = newFrame;
+            // std::cout << "successfully queued " << dataType << std::endl;
         }else{
             //Overwrite the current thing in the queue, rather than adding a new thing
             queuedDataPointers[dataType]->id = dataType;
             queuedDataPointers[dataType]->timestamp = currTimestamp;
-            queuedDataPointers[dataType]->data = std::make_shared<byte[]>(dataLength);
+            std::shared_ptr<byte[]> sp(new byte[dataLength]);
+            queuedDataPointers[dataType]->data = sp;
             memcpy(queuedDataPointers[dataType]->data.get(), data, dataLength);
             queuedDataPointers[dataType]->dataLength = dataLength;
+            // std::cout << "successfully override queued " << dataType << std::endl;
         }
         lock.unlock();
     }

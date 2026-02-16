@@ -62,7 +62,7 @@ namespace BajaWildcatRacing
             
             const bool RADIO_ACTIVE = true;
 
-            PitCommandState currentPitCommandState = PitCommandState::IDLE;
+            PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
 
             std::atomic<float> currTimestamp = 0;
             void executeRadio();
@@ -87,7 +87,7 @@ namespace BajaWildcatRacing
             //Data Queueing Stuff
             bool dataTypeMask[256]; //Should we send this datatype??
             std::shared_ptr<DataFrame> queuedDataPointers[256]; //A way to make sure we have the latest data in the queue (and a pointer to update it)
-            std::queue<DataFrame> queuedData; //The queue
+            std::queue<std::shared_ptr<DataFrame>> queuedData; //The queue
             
 
             //Mutex for multithreaded safety

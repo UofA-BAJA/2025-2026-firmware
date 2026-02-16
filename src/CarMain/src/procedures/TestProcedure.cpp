@@ -11,13 +11,13 @@ namespace BajaWildcatRacing
 class TestProcedure : public Procedure{
     public:
         TestSubsystem& testSubsystem;
-      
+        Coms& coms;
 
 
 
 
-        TestProcedure(TestSubsystem& testSubsystem)
-        : testSubsystem(testSubsystem)
+        TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
+        : testSubsystem(testSubsystem), coms(coms)
         {
             this->frequency = 2; 
 
@@ -35,7 +35,7 @@ class TestProcedure : public Procedure{
             byte data[sizeof(st)];
             memcpy(data, &st, sizeof(st));
 
-            // coms.sendData(DataTypes::CVT_TEMPERATURE,  data, sizeof(st));
+            coms.sendData(DataTypes::CVT_TEMPERATURE,  data, sizeof(st));
 
             // testSubsystem.test(true);
             // testSubsystem.test(false);
