@@ -10,10 +10,14 @@ class CANTProtocol{
         /*
             Constructor
             @param cs the pin number of the chip select pin
-            @param interrupt the interrupt number. **FOR DEV BOARDS, WRAP PARAMETER IN digitalPinToInterrupt(your_interrupt_pin)**
+            @param interrupt the interrupt pin. For arduinos, this is later wrapped in digitalPinToInterrupt()
             @param deviceID the 5 bit ID of the device. 
         */
-        CANTProtocol(int cs, int interrupt, unsigned long deviceID) : CAN_CS_PIN(cs), CAN_INTERRUPT_PIN(interrupt), CAN_DEVICE_ID(deviceID), CAN(cs){}
+        CANTProtocol(int cs, int interrupt, unsigned long deviceID) : CAN_CS_PIN(cs), CAN_INTERRUPT_PIN(interrupt), CAN_DEVICE_ID(deviceID), CAN(cs){
+            //Set reference object to itself
+            CANTProtocol::ref = this;
+        }
+        
         bool begin();
         bool end();
         
@@ -68,7 +72,7 @@ class CANTProtocol{
             }
         }
 
-        static void ISRHandler(CANTProtocol* ref);
+        static void ISRHandler();
         void InterruptSubroutine();
 
         MCP_CAN CAN;
@@ -78,6 +82,9 @@ class CANTProtocol{
         const int CAN_INTERRUPT_PIN; 
         const unsigned long CAN_DEVICE_ID;
         
+        //ISRs are static, but we need a specific reference to a CANTProtocol object
+        //This does sadly prevent more than 1 can chip right now
+        static CANTProtocol* ref;
 
         //Chat-assisted code begins here
         /*
