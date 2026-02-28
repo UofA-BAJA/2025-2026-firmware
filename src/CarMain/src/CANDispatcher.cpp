@@ -30,6 +30,7 @@ namespace BajaWildcatRacing
         //Iterate over all pending responses and drop ones over 100 cycles
         //Have to handle the edge case of the active range being split across the end and start of the array
         int i = activeArrayLowerBound;
+        std::cout << "search range " << activeArrayLowerBound << " to " << activeArrayUpperBound << std::endl;
         while(i != activeArrayUpperBound){
             //Only increment the cycles if it's the first UID 
             if(responses[i] != nullptr && ((responses[i]->firstUID) % MAX_RESPONSE_ARRAY_BOUND == i)){
@@ -38,6 +39,7 @@ namespace BajaWildcatRacing
             if(responses[i] != nullptr && (responses[i]->commandCycles) >= cycleThreshold){
                 droppedCommands++;
                 std::cout << "Commands Dropped: " << droppedCommands << std::endl;
+                
                 // std::cout << "Command Dropped: "  << (i) << std::endl;
                 
                 responses[i] = nullptr;
@@ -235,7 +237,7 @@ namespace BajaWildcatRacing
             
             responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
             
-            // std::cout << "reserved id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
+            // std::cout << "reserved array id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
 
             // (eventually) used for drop rate tracking & alerting
             // totalCommands++;
@@ -249,7 +251,7 @@ namespace BajaWildcatRacing
                         messageID = MIN_UID_BOUND; //Wraparound
                     }
                     currUID = messageID;
-                    // std::cout << "reserved additional id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
+                    // std::cout << "reserved additional array id " << currUID % MAX_RESPONSE_ARRAY_BOUND << std::endl;
                     responses[currUID % MAX_RESPONSE_ARRAY_BOUND] = response;
                 }
             }
@@ -367,12 +369,14 @@ namespace BajaWildcatRacing
                 
                 std::lock_guard<std::mutex> lock(callbacks_mutex);
 
+                std::shared_ptr<CANResponse> currentResponse = responses[messageID % MAX_RESPONSE_ARRAY_BOUND];
+
                 byte frameLength = (byte) frame.len;
                 // Check to see if the can frame is actually meant for us.
-                if(responses[messageID % MAX_RESPONSE_ARRAY_BOUND] != nullptr){
+                if(currentResponse != nullptr){
                     //Don't copy anything if we aren't expecting to copy anything
-                    if(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedDataLength > 0){
-                        uint32_t difference = messageID - responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->firstUID;
+                    if(currentResponse->recievedDataLength > 0){
+                        uint32_t difference = messageID - currentResponse->firstUID;
 
                         //**** Print Statements for debugging below
                         // std::cout << "messageID: " << std::hex << messageID << std::dec << " difference: " << difference << std::endl;
@@ -381,26 +385,36 @@ namespace BajaWildcatRacing
                         // std::cout << "expected end point: " << difference*8 + frameLength << " max length: " << responses[messageID]->recievedDataLength << std::endl;
 
                         //If the data we're getting back exceeds the area allocated, error out. Segfault prevention.
-                        if(difference*8 + frameLength > responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedDataLength){
+                        if(difference*8 + frameLength > currentResponse->recievedDataLength){
                             std::cerr << "ERROR: A response exceeded the area allocated for response data." << std::endl;
                         }else{
                             //Copy the frame data into the right place in the array
                             //*******Print statement for debugging
                             // std::cout << (int)frame.data[0] << " " << (int)frame.data[1] << " " << (int)frame.data[2] << " " << (int)frame.data[3] << std::endl;
 
-                            memcpy(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedData.get() + (difference*8), frame.data, frameLength);
+                            memcpy(currentResponse->recievedData.get() + (difference*8), frame.data, frameLength);
 
                             
-                            responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->framesLeft--;
+                            currentResponse->framesLeft--;
+                            
                             //Run the callback if we've gotten all the frames
-                            if(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->framesLeft == 0){
-                                responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->callback(responses[messageID % MAX_RESPONSE_ARRAY_BOUND]->recievedData.get());
+                            if(currentResponse->framesLeft == 0){
+                                currentResponse->callback(currentResponse->recievedData.get());
+
+                                //We can delete the frames from the pending array now
+                                //This is to avoid deleting only the first frame, which messes up the "dropped" logic
+                                for(int pos = 0; pos < currentResponse->numFrames; pos++){
+                                    responses[(currentResponse->firstUID + pos) % MAX_RESPONSE_ARRAY_BOUND] = nullptr; 
+                                }
                             }
 
                         }
+                    }else{
+                        //Erase this one (there aren't any other frames to worry about)
+                        responses[messageID % MAX_RESPONSE_ARRAY_BOUND] = nullptr;
                     }
-                    //Always erase the messageID from the list now that we've recieved it      
-                    responses[messageID % MAX_RESPONSE_ARRAY_BOUND] = nullptr;
+                 
+                    
                 }
             }
         }
