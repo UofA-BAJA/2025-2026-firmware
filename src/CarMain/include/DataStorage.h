@@ -15,7 +15,9 @@
 #include <mutex>
 #include <thread>
 #include <atomic>
-
+#include <format>
+#include <fstream>
+#include <sstream>
 #include <chrono>
 
 
@@ -70,7 +72,7 @@ namespace BajaWildcatRacing
 
             void setupDatabase(const char* path);
             void setupDataTypes();
-
+            void executeSqlFile(sqlite3* db, const std::string& filename) 
             void updateDatabase();
     };
 

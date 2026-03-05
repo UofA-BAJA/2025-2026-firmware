@@ -27,14 +27,15 @@
 
 
 
--- Why aren't foreign keys enabled by default? No clue.
-PRAGMA foreign_keys = ON;
+-- I think doing foreign key checks while running the car are a waste of resources
+-- PRAGMA foreign_keys = ON;
 
 -- Performance optimization (add more information here)
 PRAGMA journal_mode = WAL;
 -- Another performance optimization. Should probably give some more information
 PRAGMA synchronous = NORMAL;
 
+PRAGMA compile_options;
 
 PRAGMA foreign_keys = ON;
 PRAGMA journal_mode = WAL;
