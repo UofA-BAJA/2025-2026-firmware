@@ -18,7 +18,7 @@ namespace BajaWildcatRacing {
     :rf95(RADIO_CS_PIN, RADIO_INT_PIN)
     ,procedureScheduler(procedureScheduler) {
 
-        std::fill(dataTypeMask, dataTypeMask+256, true);
+        std::fill(dataTypeMask, dataTypeMask+32, 0xFF);
         radioThread = std::thread(&Coms::executeRadio, this);
         
 
@@ -104,7 +104,7 @@ namespace BajaWildcatRacing {
 
             std::cout << "about to send the data" << std::endl;
             //Actually send the data
-            rf95.setModeIdle();
+            // rf95.setModeIdle(); //if interrupt for "sent" is missed, this doesn't get reset and send() hangs. Force reset for now
             if(!rf95.send(data, sizeof(sentDataLength))){
                 //Failed to send
                 std::cout << "Failed to send data with id " << nextFrame->id << std::endl;
@@ -115,9 +115,46 @@ namespace BajaWildcatRacing {
     }
 
     void Coms::recieveCommand(){
+        //to do: better way to do this so it doesn't mess with the rest of the timing?
+        if(rf95.waitAvailableTimeout(100)){
+            uint8_t rxBuffer[RH_RF95_MAX_MESSAGE_LEN]; 
+            uint8_t rxLength = sizeof(rxBuffer);
+            if(rf95.recv(rxBuffer, &rxLength)){
+                rxSuccessful = true;
+                currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
+                
+                if(rxLength = 0){
+                    //Zero length: no commands, go back to live data transmit, set flag
+                    return;
+                }else{
+                    //Actual command recieved
+                    for(int i = 0; i < rxLength; i++){
+                        if(rxBuffer[i] == 0){
+                            //Change frequency 
+                            //TODO: how are we encoding this lmao
+                        }else if(rxBuffer[i] == 1){
+                            //Change commands
+                            i++;
+                            if(rxLength - i < 32){
+                                //Not enough i's left 
+                                std::cerr << "Error: recieved too short of a frame for the data change command" << std::endl;
+                                return;
+                            }
+                        
+                            memcpy(dataTypeMask, rxBuffer, 32);
+                            i += 31; //don't want to skip over the end, only skip 31 places
+                        }else{
+                            //Non-special command
+                            procedureScheduler.receiveComCommand((Command)rxBuffer[i]);
+                        }
+                    }
+                }
+            }
+        }
         //check for RX on radio with short timeout
         //do procedurescheduler command / radio command (or nothing)
         //switch back to LIVE_DATA_TRANSMIT (or IDLE if command is to go to IDLE)
+        
     }
 
     void Coms::idle(){
@@ -145,7 +182,9 @@ namespace BajaWildcatRacing {
         }
 
         //Do we want to send this data?
-        if(!dataTypeMask[dataType]){
+        //The LSB is the lower number (even though it's to the "right" when we write it down)
+        //This complicated mess basically finds the right spot
+        if(!(dataTypeMask[dataType % 8] & (1 << dataType % 8))){
             //Don't print anything as this will frequently happen in live events
             //Temporary do print something until the radio is working
             std::cout << "Not sending this data of datatype " << dataType << std::endl;

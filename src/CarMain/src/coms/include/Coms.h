@@ -85,7 +85,7 @@ namespace BajaWildcatRacing
             } DataFrame;
 
             //Data Queueing Stuff
-            bool dataTypeMask[256]; //Should we send this datatype??
+            byte dataTypeMask[32]; //"Should we send this datatype??""
             std::shared_ptr<DataFrame> queuedDataPointers[256]; //A way to make sure we have the latest data in the queue (and a pointer to update it)
             std::queue<std::shared_ptr<DataFrame>> queuedData; //The queue
             
@@ -96,6 +96,9 @@ namespace BajaWildcatRacing
             //Actual 2nd thread
             std::thread radioThread;
             bool running = RADIO_ACTIVE;
+
+            //RX Command stuff
+            bool rxSuccessful = false;
 
     };
 
