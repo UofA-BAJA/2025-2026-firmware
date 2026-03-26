@@ -20,7 +20,7 @@
 #include <atomic>
 
 #include <chrono> // I believe this is used for the sleep function in the executeRadio loop
-#include <bitset> // No idea what this is for, but I think it's important for something
+#include <bitset> // No idea what this is for, but I think it's important for something (editor's note: this was probably to print stuff in binary for debugging)
 #include <memory> // unique_ptr, etc
 
 

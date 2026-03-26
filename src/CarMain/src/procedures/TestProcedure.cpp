@@ -19,7 +19,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
         : testSubsystem(testSubsystem), coms(coms)
         {
-            this->frequency = 2; 
+            this->frequency = 15; 
 
         }
         
@@ -32,10 +32,11 @@ class TestProcedure : public Procedure{
             
             TestDevice::TestStruct st = testSubsystem.getTestStruct();
 
-            byte data[sizeof(st)];
-            memcpy(data, &st, sizeof(st));
+            byte data[2];
+            data[0] = 3;
+            // memcpy(data, &st, sizeof(st));
 
-            coms.sendData(DataTypes::CVT_TEMPERATURE,  data, sizeof(st));
+            coms.sendData(DataTypes::CVT_TEMPERATURE, data, 2);
 
             // testSubsystem.test(true);
             // testSubsystem.test(false);

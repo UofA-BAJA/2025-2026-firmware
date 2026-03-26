@@ -13,7 +13,7 @@
 
 #include <RH_RF95.h>
 
-
+#include <bitset>
 
 const int RADIO_CS_PIN = 11;
 const int RADIO_INT_PIN = 21;
@@ -24,7 +24,7 @@ RH_RF95 rf95(RADIO_CS_PIN, RADIO_INT_PIN);
 int mode = 0; //for testing: 0 = client, 1 = server
 
 int main(){
-  std::cout << "Piduino init in progress..." << std::endl;
+  // std::cout << "Piduino init in progress..." << std::endl;
   /*
     Below code is modified from Piduino.h
     We don't want the piduino setup() and loop() stuff, but we do want the arduino-style I/O setup
@@ -39,9 +39,19 @@ int main(){
   std::cout << "Radio init in progress..." << std::endl;
 
   if (!rf95.init()){
-    std::cout << "Radio init failed :(" << std::endl;
-    exit(EXIT_FAILURE);
+    // std::cout << "Radio init failed :(" << std::endl;
+    uint8_t irqFlags = rf95.spiRead(0x01);
+    std::cout << "mode flags: " << std::bitset<8>{irqFlags} << std::endl;
+
+    if(irqFlags & 0b00000011 > 0){
+        rf95.spiWrite(0x01, 0b10000000);
+        irqFlags = rf95.spiRead(0x01);
+        std::cout << "mode flags: " << std::bitset<8>{irqFlags} << std::endl;
+    }
+    // exit(EXIT_FAILURE);
   }
+  uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+  std::cout << "IRQ flags: " << std::bitset<8>{irqFlags} << std::endl;
 
   rf95.setFrequency(915.0);
   rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
