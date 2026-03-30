@@ -106,37 +106,64 @@ namespace BajaWildcatRacing {
             
             //Actually send the data
             //if interrupt for "sent" is missed (somehow, because something still resets the interrupt), this doesn't get reset and send() hangs. 
-            if(rf95.mode() != RH_RF95::RHModeIdle){
+            // if(rf95.mode() != RH_RF95::RHModeIdle){
                 
-                std::cout << "Not in IDLE mode ";
-                if (rf95.mode() == RH_RF95::RHModeTx) std::cout << "but in TX mode";
-                std::cout << std::endl; 
-                uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-                std::cout << "IRQ flags: " << std::bitset<8>{irqFlags} << std::endl;
+            //     std::cout << "Not in IDLE mode ";
+            //     if (rf95.mode() == RH_RF95::RHModeTx) std::cout << "but in TX mode";
+            //     std::cout << std::endl; 
+            //     uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+            //     std::cout << "IRQ flags: " << std::bitset<8>{irqFlags} << std::endl;
 
-                //If the IRQ flag is set, clear it
-                if(irqFlags & RH_RF95_TX_DONE){
+            //     //If the IRQ flag is set, clear it
+            //     if(irqFlags & RH_RF95_TX_DONE){
+            //         rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
+            //         std::cout << "Cleared flags" << std::endl;
+            //         //Set the mode to idle
+            //         rf95.setModeIdle();
+            //         //Wait a brief amount of time for the mode to change
+            //         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            //     }
+                
+                
+
+            //     //TODO: check if it actually swapped modes and if it didn't initiate reset
+                
+            // }
+
+            uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+            int repeats = 0;
+            if(rf95.mode() != RH_RF95::RHModeIdle){
+                while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 10){
+                    // std::cout << "repeat " << repeats << std::endl;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    repeats++;
+                    irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+                    
+                }
+
+                if(repeats >= 10){
+                    std::cout << "TIMEOUT Radio TX" << std::endl;
+                    continue;
+                }else{
                     rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
-                    std::cout << "Cleared flags" << std::endl;
+                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                    // std::cout << "Cleared flags" << std::endl;
                     //Set the mode to idle
                     rf95.setModeIdle();
                     //Wait a brief amount of time for the mode to change
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
-                
-                
-
-                //TODO: check if it actually swapped modes and if it didn't initiate reset
-                
             }
 
-            std::cout << "about to send the data" << std::endl;
+
+            // std::cout << "about to send the data" << std::endl;
             if(!rf95.send(data, sizeof(sentDataLength))){
                 //Failed to send
                 std::cout << "Failed to send data with id " << nextFrame->id << std::endl;
             }
 
-            std::cout << "sent the data (we hope)" << std::endl;
+            // std::cout << "sent the data (we hope)" << std::endl;
+        
             
         }
 
