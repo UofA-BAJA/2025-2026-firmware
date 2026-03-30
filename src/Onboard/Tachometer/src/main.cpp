@@ -1,9 +1,9 @@
 #include <Arduino.h>
-#include <mcp_can.h>
+#include "CANTProtocol.h"
 
 
-const int SPI_CS_PIN = 10;
-MCP_CAN CAN(SPI_CS_PIN  );
+// 10 and 2 refer to D10 and D2 for the CS and the interrupt pin respectively
+CANTProtocol CAN(10, 2, 0x1);
 
 // Define the analog pin and constant
 const int analogPin = A0;  // Analog input pin connected to the sensor
