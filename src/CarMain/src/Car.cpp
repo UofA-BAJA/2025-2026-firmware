@@ -229,8 +229,15 @@ namespace BajaWildcatRacing
     void Car::signal_handler(int signal_num) 
     { 
 
+        //Gracefully exit on a normal "interrupt" or "terminate" signal
         if (signal_num == SIGINT || signal_num == SIGTERM) {
+            std::cout << "Interrupt/Terminate in progress..." << std::endl;
             g_running = false;
+        }
+        //Immediately die on a segfault or unknown exit code
+        else if(signal_num == SIGSEGV){
+            std::cout << "Segmentation fault :(" << std::endl;
+            exit(signal_num);
         }
         else{
             std::cout << "Interrupt signal is (" << signal_num << ").\n"; 
