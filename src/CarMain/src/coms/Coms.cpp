@@ -7,7 +7,7 @@ comments
 
 */
 
-#define RADIO_CS_PIN 11
+#define RADIO_CS_PIN 27
 #define RADIO_INT_PIN 21
 
 #include "Coms.h"
@@ -136,16 +136,16 @@ namespace BajaWildcatRacing {
             //Wait up to 50 ms for it to be done
             uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
             int repeats = 0;
-            while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 10){
+            while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 100){
                 // std::cout << "repeat " << repeats << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 repeats++;
                 irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
                 
             }
 
             //Still not done??? Timeout
-            if(repeats >= 10){
+            if(repeats >= 100){
                 std::cout << "TIMEOUT Radio TX" << std::endl;
                 return;
             }
@@ -158,7 +158,7 @@ namespace BajaWildcatRacing {
                 //Set the mode to idle
                 rf95.setModeIdle();
                 //Wait a brief amount of time for the mode to change
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
             }
         }
 
