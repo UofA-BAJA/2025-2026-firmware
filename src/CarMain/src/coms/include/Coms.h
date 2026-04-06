@@ -65,13 +65,14 @@ namespace BajaWildcatRacing
             PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
 
             std::atomic<float> currTimestamp = 0;
-            void executeRadio();
-            void radioTransmit();
+            void executeRadio(); //Ran in a new thread to run the radio
+            void radioTransmit(byte data[], int sentDataLength); //Helper class for transmitLiveData()
 
-            void transmitLiveData();
+            //States------
+            void transmitLiveData(); 
             void recieveCommand();
             void idle();
-
+            //------------
         
 
 

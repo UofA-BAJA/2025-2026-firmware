@@ -46,7 +46,7 @@ namespace BajaWildcatRacing {
         }
 
         rf95.setFrequency(915.0);
-        rf95.setTxPower(23, false); //Sets maximum power for the LoRa module
+        rf95.setTxPower(23, false); //Selects maximum power for the LoRa module
         std::cout << "device version: " << rf95.spiRead(0x42) << std::endl;
 
         //TODO: define what the addresses we are using are
@@ -88,85 +88,89 @@ namespace BajaWildcatRacing {
         }
         lock.unlock();
 
+        //Start building up the array
+        byte data[RH_RF95_MAX_MESSAGE_LEN];
+        int sentDataLength = 0;
+        int dataStartPos = 0;
+
         while(!localQueue.empty()){
             std::shared_ptr<DataFrame> nextFrame = localQueue.front();
             localQueue.pop();
             // std::cout << "Sending frame with id " << nextFrame->id << std::endl;
 
-            //Add timestamp and actual data to data to send
-            int sentDataLength = sizeof(float) + nextFrame->dataLength;
-            byte data[sentDataLength];
-            memcpy(data, &nextFrame->timestamp, sizeof(float));
-            memcpy(&data[sizeof(float)], nextFrame->data.get(), nextFrame->dataLength);
+            int nextSize = 1 + sizeof(float) + nextFrame->dataLength;
 
-            //todo: set the flag for the switchover if needed
-            rf95.setHeaderFlags(0x00);
-            rf95.setHeaderId(nextFrame->id);
-
-            
-            //Actually send the data
-            //if interrupt for "sent" is missed (somehow, because something still resets the interrupt), this doesn't get reset and send() hangs. 
-            // if(rf95.mode() != RH_RF95::RHModeIdle){
-                
-            //     std::cout << "Not in IDLE mode ";
-            //     if (rf95.mode() == RH_RF95::RHModeTx) std::cout << "but in TX mode";
-            //     std::cout << std::endl; 
-            //     uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-            //     std::cout << "IRQ flags: " << std::bitset<8>{irqFlags} << std::endl;
-
-            //     //If the IRQ flag is set, clear it
-            //     if(irqFlags & RH_RF95_TX_DONE){
-            //         rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
-            //         std::cout << "Cleared flags" << std::endl;
-            //         //Set the mode to idle
-            //         rf95.setModeIdle();
-            //         //Wait a brief amount of time for the mode to change
-            //         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            //     }
-                
-                
-
-            //     //TODO: check if it actually swapped modes and if it didn't initiate reset
-                
-            // }
-
-            uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-            int repeats = 0;
-            if(rf95.mode() != RH_RF95::RHModeIdle){
-                while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 10){
-                    // std::cout << "repeat " << repeats << std::endl;
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                    repeats++;
-                    irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-                    
-                }
-
-                if(repeats >= 10){
-                    std::cout << "TIMEOUT Radio TX" << std::endl;
-                    continue;
-                }else{
-                    rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                    // std::cout << "Cleared flags" << std::endl;
-                    //Set the mode to idle
-                    rf95.setModeIdle();
-                    //Wait a brief amount of time for the mode to change
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+            //If the next data is about to go past over the max length, send what we have out
+            if(sentDataLength + nextSize > RH_RF95_MAX_MESSAGE_LEN){
+                std::cout << "Sending data now! Not done this cycle. Size: " << sentDataLength << std::endl;
+                radioTransmit(data, sentDataLength);
+                sentDataLength = 0;
+                dataStartPos = 0;
             }
 
+            //Add ID (1 byte), timestamp (float) and actual data to data to send
+            sentDataLength += nextSize;
 
-            // std::cout << "about to send the data" << std::endl;
-            if(!rf95.send(data, sizeof(sentDataLength))){
-                //Failed to send
-                std::cout << "Failed to send data with id " << nextFrame->id << std::endl;
-            }
-
-            // std::cout << "sent the data (we hope)" << std::endl;
-        
-            
+            //Copy ID, timestamp, data
+            memcpy(data + dataStartPos, &nextFrame->id, 1);
+            dataStartPos += 1;
+            memcpy(data + dataStartPos, &nextFrame->timestamp, sizeof(float));
+            dataStartPos += sizeof(float);
+            memcpy(data + dataStartPos, nextFrame->data.get(), nextFrame->dataLength);
+            dataStartPos += nextFrame->dataLength;
         }
 
+        //Send final packet if there's actually data there
+        if(sentDataLength > 0){
+            std::cout << "Sending data now! Size: " << sentDataLength << std::endl;
+            radioTransmit(data, sentDataLength);
+            sentDataLength = 0;
+        }
+
+    }
+
+    void Coms::radioTransmit(byte data[], int sentDataLength){
+        //If the mode isn't in idle mode (edge case check)
+        if(rf95.mode() != RH_RF95::RHModeIdle){
+
+            //Wait up to 50 ms for it to be done
+            uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+            int repeats = 0;
+            while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 10){
+                // std::cout << "repeat " << repeats << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                repeats++;
+                irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+                
+            }
+
+            //Still not done??? Timeout
+            if(repeats >= 10){
+                std::cout << "TIMEOUT Radio TX" << std::endl;
+                return;
+            }
+            else{
+                //Clear the flags
+                rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
+                // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                // std::cout << "Cleared flags" << std::endl;
+
+                //Set the mode to idle
+                rf95.setModeIdle();
+                //Wait a brief amount of time for the mode to change
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            }
+        }
+
+        //Set flags appropriately 
+        //TODO: actually set them based on recieve flag or switch flag
+        rf95.setHeaderFlags(0x00);
+
+        // std::cout << "about to send the data" << std::endl;
+        if(!rf95.send(data, sizeof(sentDataLength))){
+            //Failed to send
+            std::cout << "Failed to send data frame." << std::endl;
+        }
     }
 
     void Coms::recieveCommand(){
@@ -225,9 +229,9 @@ namespace BajaWildcatRacing {
             return;
         }
 
-        if(dataLength >= 252){
+        if(dataLength >= RH_RF95_MAX_MESSAGE_LEN - 1 - sizeof(float)){
             //Print for debugging, should be resolved before actual use
-            std::cout << "Error: Cannot send data with length >= 252 over radio! (attempted to send data length " << dataLength << ", datatype " << dataType << ")" << std::endl;
+            std::cout << "Error: Cannot send data with length >= 247 over radio! (attempted to send data length " << dataLength << ", datatype " << dataType << ")" << std::endl;
             return;
         }
 
