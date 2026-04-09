@@ -19,7 +19,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
         : testSubsystem(testSubsystem), coms(coms)
         {
-            this->frequency = 15; 
+            this->frequency = 60; 
 
         }
         
@@ -30,7 +30,7 @@ class TestProcedure : public Procedure{
         void execute() override {
 
             
-            // TestDevice::TestStruct st = testSubsystem.getTestStruct();
+            TestDevice::TestStruct st = testSubsystem.getTestStruct();
 
             byte data[2];
             data[0] = 3;
