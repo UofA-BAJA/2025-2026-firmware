@@ -131,36 +131,36 @@ namespace BajaWildcatRacing {
 
     void Coms::radioTransmit(byte data[], int sentDataLength){
         //If the mode isn't in idle mode (edge case check)
-        if(rf95.mode() != RH_RF95::RHModeIdle){
+        // if(rf95.mode() != RH_RF95::RHModeIdle){
 
-            //Wait up to 50 ms for it to be done
-            uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-            int repeats = 0;
-            while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 100){
-                // std::cout << "repeat " << repeats << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                repeats++;
-                irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+        //     //Wait up to 50 ms for it to be done
+        //     uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+        //     int repeats = 0;
+        //     while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 100){
+        //         // std::cout << "repeat " << repeats << std::endl;
+        //         std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        //         repeats++;
+        //         irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
                 
-            }
+        //     }
 
-            //Still not done??? Timeout
-            if(repeats >= 100){
-                std::cout << "TIMEOUT Radio TX" << std::endl;
-                return;
-            }
-            else{
-                //Clear the flags
-                rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
-                // std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                // std::cout << "Cleared flags" << std::endl;
+        //     //Still not done??? Timeout
+        //     if(repeats >= 100){
+        //         std::cout << "TIMEOUT Radio TX" << std::endl; 
+        //         return;
+        //     }
+        //     else{
+        //         //Clear the flags
+        //         rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
+        //         // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        //         // std::cout << "Cleared flags" << std::endl;
 
-                //Set the mode to idle
-                rf95.setModeIdle();
-                //Wait a brief amount of time for the mode to change
-                std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            }
-        }
+        //         //Set the mode to idle
+        //         rf95.setModeIdle();
+        //         //Wait a brief amount of time for the mode to change
+        //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        //     }
+        // }
 
         //Set flags appropriately 
         //TODO: actually set them based on recieve flag or switch flag
