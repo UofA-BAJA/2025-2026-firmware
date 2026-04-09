@@ -38,7 +38,7 @@ class TestProcedure : public Procedure{
 
             coms.sendData(DataTypes::CVT_TEMPERATURE, data, 2);
 
-            // testSubsystem.test(true);
+            testSubsystem.test(true);
             // testSubsystem.test(false);
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);

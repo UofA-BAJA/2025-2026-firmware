@@ -7,7 +7,7 @@ comments
 
 */
 
-#define RADIO_CS_PIN 27
+#define RADIO_CS_PIN 11
 #define RADIO_INT_PIN 21
 
 #include "Coms.h"
