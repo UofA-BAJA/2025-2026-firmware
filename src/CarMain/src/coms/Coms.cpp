@@ -41,13 +41,13 @@ namespace BajaWildcatRacing {
         if (!rf95.init()){
             std::cout << "RF95 is not responding!!!" << std::endl;
             //TODO: log error/panic
-            running = false;
+            running = false; 
             return;
         }
 
         rf95.setFrequency(915.0);
         rf95.setTxPower(23, false); //Selects maximum power for the LoRa module
-        std::cout << "device version: " << rf95.spiRead(0x42) << std::endl;
+        rf95.setModemConfig(RH_RF95::Bw500Cr45Sf128);
 
         //TODO: define what the addresses we are using are
         // rf95.setThisAddress(1);
@@ -90,7 +90,7 @@ namespace BajaWildcatRacing {
 
         //Start building up the array
         byte data[RH_RF95_MAX_MESSAGE_LEN];
-        int sentDataLength = 0;
+        byte sentDataLength = 0;
         int dataStartPos = 0;
 
         while(!localQueue.empty()){
@@ -98,7 +98,7 @@ namespace BajaWildcatRacing {
             localQueue.pop();
             // std::cout << "Sending frame with id " << nextFrame->id << std::endl;
 
-            int nextSize = 1 + sizeof(float) + nextFrame->dataLength;
+            int nextSize = 2 + sizeof(float) + nextFrame->dataLength;
 
             //If the next data is about to go past over the max length, send what we have out
             if(sentDataLength + nextSize > RH_RF95_MAX_MESSAGE_LEN){
@@ -111,11 +111,13 @@ namespace BajaWildcatRacing {
             //Add ID (1 byte), timestamp (float) and actual data to data to send
             sentDataLength += nextSize;
 
-            //Copy ID, timestamp, data
+            //Copy ID, data length, timestamp, data
             memcpy(data + dataStartPos, &nextFrame->id, 1);
             dataStartPos += 1;
             memcpy(data + dataStartPos, &nextFrame->timestamp, sizeof(float));
             dataStartPos += sizeof(float);
+            memcpy(data + dataStartPos, &nextFrame->dataLength, 1);
+            dataStartPos += 1;
             memcpy(data + dataStartPos, nextFrame->data.get(), nextFrame->dataLength);
             dataStartPos += nextFrame->dataLength;
         }
@@ -129,45 +131,46 @@ namespace BajaWildcatRacing {
 
     }
 
-    void Coms::radioTransmit(byte data[], int sentDataLength){
+    void Coms::radioTransmit(byte data[], byte sentDataLength){
         //If the mode isn't in idle mode (edge case check)
-        // if(rf95.mode() != RH_RF95::RHModeIdle){
+        if(rf95.mode() != RH_RF95::RHModeIdle){
 
-        //     //Wait up to 50 ms for it to be done
-        //     uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
-        //     int repeats = 0;
-        //     while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 100){
-        //         // std::cout << "repeat " << repeats << std::endl;
-        //         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        //         repeats++;
-        //         irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+            //Wait up to 500 ms for it to be done
+            // uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+            int repeats = 0;
+            // while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 5){
+            while ((rf95.mode() != RH_RF95::RHModeIdle) && repeats < 50){
+                // std::cout << "repeat " << repeats << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                repeats++;
+                // irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
                 
-        //     }
+            }
 
-        //     //Still not done??? Timeout
-        //     if(repeats >= 100){
-        //         std::cout << "TIMEOUT Radio TX" << std::endl; 
-        //         return;
-        //     }
-        //     else{
-        //         //Clear the flags
-        //         rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
-        //         // std::this_thread::sleep_for(std::chrono::milliseconds(5));
-        //         // std::cout << "Cleared flags" << std::endl;
+            //Still not done??? Timeout
+            if(repeats >= 50){
+                std::cout << "TIMEOUT Radio TX" << std::endl; 
+                return;
+            }
+            // else{
+            //     //Clear the flags
+            //     rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
+            //     // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            //     // std::cout << "Cleared flags" << std::endl;
 
-        //         //Set the mode to idle
-        //         rf95.setModeIdle();
-        //         //Wait a brief amount of time for the mode to change
-        //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        //     }
-        // }
+            //     //Set the mode to idle
+            //     rf95.setModeIdle();
+            //     //Wait a brief amount of time for the mode to change
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            // }
+        }
 
         //Set flags appropriately 
         //TODO: actually set them based on recieve flag or switch flag
         rf95.setHeaderFlags(0x00);
 
         // std::cout << "about to send the data" << std::endl;
-        if(!rf95.send(data, sizeof(sentDataLength))){
+        if(!rf95.send(data, sentDataLength)){
             //Failed to send
             std::cout << "Failed to send data frame." << std::endl;
         }
@@ -221,7 +224,7 @@ namespace BajaWildcatRacing {
         //this is different to setting running = false 
     }
 
-    void Coms::sendData(DataTypes dataType, byte data[], int dataLength){
+    void Coms::sendData(DataTypes dataType, byte data[], byte dataLength){
         //Only send if less than 256
         if(dataType >= 256){
             //Print for debugging, should be resolved before actual use
@@ -229,9 +232,9 @@ namespace BajaWildcatRacing {
             return;
         }
 
-        if(dataLength >= RH_RF95_MAX_MESSAGE_LEN - 1 - sizeof(float)){
+        if(dataLength >= RH_RF95_MAX_MESSAGE_LEN - 2 - sizeof(float)){
             //Print for debugging, should be resolved before actual use
-            std::cout << "Error: Cannot send data with length >= 247 over radio! (attempted to send data length " << dataLength << ", datatype " << dataType << ")" << std::endl;
+            std::cout << "Error: Cannot send data with length >= 246 over radio! (attempted to send data length " << dataLength << ", datatype " << dataType << ")" << std::endl;
             return;
         }
 
