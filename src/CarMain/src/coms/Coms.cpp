@@ -91,9 +91,7 @@ namespace BajaWildcatRacing {
         std::cout << "Coms are stopped." << std::endl;
     }
 
-    void Coms::transmitLiveData(){
-        std::chrono::steady_clock::time_point startTime;
-        std::chrono::steady_clock::time_point endTime;
+    void Coms::transmitLiveData(){ 
         
         //take stuff from queue and transmit as fast as possible
         std::unique_lock<std::mutex> lock(dataQueueMutex);
@@ -146,12 +144,8 @@ namespace BajaWildcatRacing {
         //Send final packet if there's actually data there
         if(sentDataLength > 0){
             // std::cout << "Sending data now! Size: " << sentDataLength << std::endl;
-            startTime = std::chrono::steady_clock::now();
             radioTransmit(data, sentDataLength);
             sentDataLength = 0;
-            endTime = std::chrono::steady_clock::now();
-            int64_t timeTaken = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); 
-            std::cout << "mutex time " << timeTaken << std::endl;
         }
 
     }
