@@ -8,6 +8,7 @@
 // It is also the code that will serve as the "smift amount" for the mask value,
 // as described in the live data packet protocol 
 enum DataTypes{
+    KEEP_ALIVE = 0x00,
     WHEEL_RPM_FRONT_L = 0x01,
     WHEEL_RPM_FRONT_R = 0x02,
     WHEEL_RPM_BACK = 0x03,
@@ -22,7 +23,6 @@ enum DataTypes{
     BRAKE_PRESSURE_REAR = 0x0C,
     BRAKE_PRESSURE_FRONT = 0x0D,
     CVT_TEMPERATURE = 0x0E,
-    // The reserves are here because we can have a total of 32 data types that can be transmitted live
     DISTANCE = 0x0F,
     RESERVE_16,
     RESERVE_17,

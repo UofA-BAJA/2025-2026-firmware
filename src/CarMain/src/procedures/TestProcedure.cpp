@@ -19,7 +19,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
         : testSubsystem(testSubsystem), coms(coms)
         {
-            this->frequency = 30; 
+            this->frequency = 1; 
 
         }
         
@@ -32,12 +32,16 @@ class TestProcedure : public Procedure{
             
             TestDevice::TestStruct st = testSubsystem.getTestStruct();
 
-            byte data[2];
-            data[0] = 3;
+            byte data[100];
+            std::fill(data, data+100, 0x00);
+            data[0] = 6;
+            data[10] = 9;
             // memcpy(data, &st, sizeof(st));
 
-            coms.sendData(DataTypes::CVT_TEMPERATURE, data, 2);
-
+            coms.sendData(DataTypes::CVT_TEMPERATURE, data, (byte)100);
+            coms.sendData(DataTypes::BRAKE_PRESSURE_FRONT, data, 100);
+            coms.sendData(DataTypes::CAR_SPEED, data, 100);
+            
             testSubsystem.test(true);
             // testSubsystem.test(false);
             // std::cout << std::fixed;

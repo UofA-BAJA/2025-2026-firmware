@@ -48,7 +48,7 @@ namespace BajaWildcatRacing
             void execute(float timestamp);
             void end();
 
-            void sendData(DataTypes dataType, byte data[], int dataLength);
+            void sendData(DataTypes dataType, byte data[], byte dataLength);
             void sendData(DataTypes dataType, float data); //Legacy overload
 
         private:
@@ -66,7 +66,7 @@ namespace BajaWildcatRacing
 
             std::atomic<float> currTimestamp = 0;
             void executeRadio(); //Ran in a new thread to run the radio
-            void radioTransmit(byte data[], int sentDataLength); //Helper class for transmitLiveData()
+            void radioTransmit(byte data[], byte sentDataLength); //Helper class for transmitLiveData()
 
             //States------
             void transmitLiveData(); 
@@ -82,7 +82,7 @@ namespace BajaWildcatRacing
                 byte id;
                 float timestamp;
                 std::shared_ptr<byte[]> data;
-                int dataLength;
+                byte dataLength;
             } DataFrame;
 
             //Data Queueing Stuff
