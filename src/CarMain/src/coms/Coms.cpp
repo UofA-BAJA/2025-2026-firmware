@@ -62,6 +62,8 @@ namespace BajaWildcatRacing {
         std::chrono::steady_clock::time_point startTime;
         std::chrono::steady_clock::time_point endTime;
 
+        std::chrono::steady_clock::time_point lastRxTime = std::chrono::steady_clock::now();
+
         while(running){
             startTime = std::chrono::steady_clock::now();
 
@@ -82,9 +84,19 @@ namespace BajaWildcatRacing {
             // std::cout << timeTaken << std::endl;
             if(timeTaken < cycleTimeNs){
                 std::this_thread::sleep_for(std::chrono::nanoseconds(cycleTimeNs - timeTaken));
+                overloaded = false;
                 // std::cout << "ok" << std::endl;
             }else{
                 std::cout << "Radio is overloaded!! Please reduce datatypes or frequency." << std::endl;
+                overloaded = true;
+            }
+            
+            //Determine if it's time to do the RX switch
+            int64_t switchInterval = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - lastRxTime).count(); 
+            if(switchInterval > RX_SWITCH_INTERVAL){
+                std::cout << "switching to RX on next cycle" << std::endl;
+                // switchToRX = true;
+                lastRxTime = endTime;
             }
             
         }
@@ -122,7 +134,7 @@ namespace BajaWildcatRacing {
             //If the next data is about to go past over the max length, send what we have out
             if(sentDataLength + nextSize > RH_RF95_MAX_MESSAGE_LEN){
                 std::cout << "Sending data now! Not done this cycle. Size: " << sentDataLength << std::endl;
-                radioTransmit(data, sentDataLength);
+                radioTransmit(data, sentDataLength, false);
                 sentDataLength = 0;
                 dataStartPos = 0;
             }
@@ -144,13 +156,16 @@ namespace BajaWildcatRacing {
         //Send final packet if there's actually data there
         if(sentDataLength > 0){
             // std::cout << "Sending data now! Size: " << sentDataLength << std::endl;
-            radioTransmit(data, sentDataLength);
-            sentDataLength = 0;
-        }
+            if(switchToRX){
+                currentPitCommandState = PitCommandState::WAIT_COMMAND_RECIEVE;
+                rxSuccessful = false;
+            }
 
+            radioTransmit(data, sentDataLength, switchToRX);
+        }
     }
 
-    void Coms::radioTransmit(byte data[], byte sentDataLength){
+    void Coms::radioTransmit(byte data[], byte sentDataLength, bool rxSwitchFlag){
         //If the mode isn't in idle mode (edge case check)
         if(rf95.mode() != RH_RF95::RHModeIdle){
 
@@ -184,9 +199,12 @@ namespace BajaWildcatRacing {
             // }
         }
 
+
         //Set flags appropriately 
-        //TODO: actually set them based on recieve flag or switch flag
-        rf95.setHeaderFlags(0x00);
+        uint8_t switchFlag = (1 & rxSwitchFlag);
+        uint8_t rxSuccessFlag = (1 & rxSuccessful) << 1;
+        uint8_t overloadFlag = (1 & overloaded) << 2;
+        rf95.setHeaderFlags(rxSwitchFlag | rxSuccessful | overloaded);
 
         // std::cout << "about to send the data" << std::endl;
         if(!rf95.send(data, sentDataLength)){
@@ -197,6 +215,7 @@ namespace BajaWildcatRacing {
 
     void Coms::recieveCommand(){
         //to do: better way to do this so it doesn't mess with the rest of the timing?
+        switchToRX = false;
         if(rf95.waitAvailableTimeout(100)){
             uint8_t rxBuffer[RH_RF95_MAX_MESSAGE_LEN]; 
             uint8_t rxLength = sizeof(rxBuffer);
@@ -231,10 +250,12 @@ namespace BajaWildcatRacing {
                     }
                 }
             }
+        }else{
+            std::cout << "no command recieved" << std::endl;
+            rf95.setModeIdle();
+            currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
         }
-        //check for RX on radio with short timeout
-        //do procedurescheduler command / radio command (or nothing)
-        //switch back to LIVE_DATA_TRANSMIT (or IDLE if command is to go to IDLE)
+
         
     }
 

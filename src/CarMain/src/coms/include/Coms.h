@@ -62,12 +62,13 @@ namespace BajaWildcatRacing
             
             const bool RADIO_ACTIVE = true;
             int currentFrequency = 20;
+            bool overloaded = false;
 
             PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
 
             std::atomic<float> currTimestamp = 0;
             void executeRadio(); //Ran in a new thread to run the radio
-            void radioTransmit(byte data[], byte sentDataLength); //Helper class for transmitLiveData()
+            void radioTransmit(byte data[], byte sentDataLength, bool rxSwitchFlag); //Helper function for transmitLiveData()
 
             //States------
             void transmitLiveData(); 
@@ -101,6 +102,8 @@ namespace BajaWildcatRacing
 
             //RX Command stuff
             bool rxSuccessful = false;
+            bool switchToRX = false;
+            const int64_t RX_SWITCH_INTERVAL = 10 * 1000000000L; //seconds to nanoseconds
 
     };
 
