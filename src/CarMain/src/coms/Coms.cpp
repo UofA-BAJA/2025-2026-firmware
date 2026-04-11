@@ -32,7 +32,8 @@ namespace BajaWildcatRacing {
     }
 
     void Coms::end(){
-
+        running = false;
+        std::cout << "Coms are stopping..." << std::endl;
     }
 
     void Coms::executeRadio(){
@@ -47,7 +48,7 @@ namespace BajaWildcatRacing {
 
         rf95.setFrequency(915.0);
         rf95.setTxPower(23, false); //Selects maximum power for the LoRa module
-        rf95.setModemConfig(RH_RF95::Bw500Cr45Sf128);
+        rf95.setModemConfig(RH_RF95::Bw500Cr45Sf128); //Selects maximum bitrate 
 
         //TODO: define what the addresses we are using are
         // rf95.setThisAddress(1);
@@ -56,26 +57,44 @@ namespace BajaWildcatRacing {
     
         std::cout << "RF95 initialized!!!" << std::endl;
 
-        int waitTimems = (1.0 / RADIO_CLOCK_FREQUENCY) * 1000;
+        int cycleTimeNs = (1.0 / currentFrequency) * 1000000000L;
+        std::cout << cycleTimeNs << std::endl;
+        std::chrono::steady_clock::time_point startTime;
+        std::chrono::steady_clock::time_point endTime;
+
         while(running){
-            if(currentPitCommandState == PitCommandState::IDLE){
+            startTime = std::chrono::steady_clock::now();
+
+            //Run correct function depending on state
+            if(currentPitCommandState == PitCommandState::LIVE_DATA_TRANSMIT){
+                transmitLiveData();
+            }else if(currentPitCommandState == PitCommandState::WAIT_COMMAND_RECIEVE){
+                recieveCommand();
+            }else if(currentPitCommandState == PitCommandState::IDLE){
                 idle();
             }
-            else if(currentPitCommandState == PitCommandState::LIVE_DATA_TRANSMIT){
-                transmitLiveData();
-            }
-            else if(currentPitCommandState == PitCommandState::WAIT_COMMAND_RECIEVE){
-                recieveCommand();
-            }
+            
 
-            //TODO: make this dynamic wait like the main loop
-            std::this_thread::sleep_for(std::chrono::milliseconds(waitTimems));
+
+            //Only wait for the amount of time we have left so we have a somewhat steady frequency
+            endTime = std::chrono::steady_clock::now();
+            int64_t timeTaken = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); 
+            // std::cout << timeTaken << std::endl;
+            if(timeTaken < cycleTimeNs){
+                std::this_thread::sleep_for(std::chrono::nanoseconds(cycleTimeNs - timeTaken));
+                // std::cout << "ok" << std::endl;
+            }else{
+                std::cout << "Radio is overloaded!! Please reduce datatypes or frequency." << std::endl;
+            }
+            
         }
-        //run correct function depending on state
-        //if live_data_transmit, send special packet and switch to recievecommand once every second 
+        std::cout << "Coms are stopped." << std::endl;
     }
 
     void Coms::transmitLiveData(){
+        std::chrono::steady_clock::time_point startTime;
+        std::chrono::steady_clock::time_point endTime;
+        
         //take stuff from queue and transmit as fast as possible
         std::unique_lock<std::mutex> lock(dataQueueMutex);
         //Quickly swap the queues so that stuff can still be queued while sending
@@ -87,6 +106,8 @@ namespace BajaWildcatRacing {
             queuedDataPointers[i] = nullptr;
         }
         lock.unlock();
+
+        
 
         //Start building up the array
         byte data[RH_RF95_MAX_MESSAGE_LEN];
@@ -124,9 +145,13 @@ namespace BajaWildcatRacing {
 
         //Send final packet if there's actually data there
         if(sentDataLength > 0){
-            std::cout << "Sending data now! Size: " << sentDataLength << std::endl;
+            // std::cout << "Sending data now! Size: " << sentDataLength << std::endl;
+            startTime = std::chrono::steady_clock::now();
             radioTransmit(data, sentDataLength);
             sentDataLength = 0;
+            endTime = std::chrono::steady_clock::now();
+            int64_t timeTaken = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); 
+            std::cout << "mutex time " << timeTaken << std::endl;
         }
 
     }
@@ -139,16 +164,16 @@ namespace BajaWildcatRacing {
             // uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
             int repeats = 0;
             // while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 5){
-            while ((rf95.mode() != RH_RF95::RHModeIdle) && repeats < 50){
+            while ((rf95.mode() != RH_RF95::RHModeIdle) && repeats < 500){
                 // std::cout << "repeat " << repeats << std::endl;
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 repeats++;
                 // irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
                 
             }
 
             //Still not done??? Timeout
-            if(repeats >= 50){
+            if(repeats >= 500){
                 std::cout << "TIMEOUT Radio TX" << std::endl; 
                 return;
             }

@@ -170,7 +170,7 @@ namespace BajaWildcatRacing
                 nanosleep(&req, (struct timespec *)NULL);
             }
             else{
-                std::cout << "Please stop you're like genuinely killing the raspberry pi with how much work it's doing" << std::endl;
+                std::cout << "Please stop you're like genuinely killing the raspberry pi (Cycle time > Frequency)" << std::endl;
                 CarLogger::LogError("Car Computer cycle takes longer to compute than frequency");
             }
         }
@@ -213,7 +213,9 @@ namespace BajaWildcatRacing
     *
     */
     void Car::end(){
+        
 	// Ends currently running procedures
+        std::cout << "Ending car..." << std::endl;
         procedureScheduler.end();
 	    dataStorage.endCurrentSession();
         dataStorage.end();

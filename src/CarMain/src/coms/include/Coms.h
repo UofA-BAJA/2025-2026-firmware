@@ -61,6 +61,7 @@ namespace BajaWildcatRacing
             
             
             const bool RADIO_ACTIVE = true;
+            int currentFrequency = 20;
 
             PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
 
