@@ -92,6 +92,17 @@ void loop()
                 ind += dataLength;
                 Serial.println();
             }
+
+            
+            if(rf95.headerFlags() & 1){
+                delay(50);
+                uint8_t returnData[1];
+                returnData[0] = 101;
+                // returnData[1] = 1;
+                rf95.send(returnData, 1);
+                rf95.waitPacketSent();
+                Serial.println("Send command response packet");
+            }
         }
         else
         {
