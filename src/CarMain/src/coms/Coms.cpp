@@ -264,7 +264,7 @@ namespace BajaWildcatRacing {
         //this is different to setting running = false 
     }
 
-    void Coms::sendData(DataTypes dataType, byte data[], byte dataLength){
+    void Coms::sendData(DataType dataType, byte data[], byte dataLength){
         //Only send if less than 256
         if(dataType >= 256){
             //Print for debugging, should be resolved before actual use
@@ -324,7 +324,7 @@ namespace BajaWildcatRacing {
     }
 
     //Legacy support so I don't have to reconfigure a bunch of stuff rn (please don't use this)
-    void Coms::sendData(DataTypes dataType, float data){
+    void Coms::sendData(DataType dataType, float data){
         byte newData[sizeof(float)];
         memcpy(newData, &data, sizeof(float));
         sendData(dataType, newData, sizeof(float));

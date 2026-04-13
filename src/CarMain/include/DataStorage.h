@@ -32,7 +32,7 @@ namespace BajaWildcatRacing
             void execute(float timestamp);
             void end();
             int getData();
-            void storeData(float data, DataTypes dataType);
+            void storeData(float data, DataType dataType);
 
         private:
             struct DataValues{
@@ -43,7 +43,7 @@ namespace BajaWildcatRacing
             };
 
             struct DataTypeTable{
-                DataTypes dataType;
+                DataType dataType;
                 std::string name;
                 std::string unit;
             };
