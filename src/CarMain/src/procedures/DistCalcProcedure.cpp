@@ -62,8 +62,8 @@ class DistCalcProcedure : public Procedure {
 
             // std::cout << "Dist (miles): " << distMiles << " MPH: " << mph << std::endl;
 
-            dataStorage.storeData(distMeters, DataTypes::DISTANCE);
-            coms.sendData(DataTypes::DISTANCE, distMeters);
+            dataStorage.storeData(distMeters, DataType::DISTANCE);
+            coms.sendData(DataType::DISTANCE, distMeters);
 
             prevCarMPS = mps;
 

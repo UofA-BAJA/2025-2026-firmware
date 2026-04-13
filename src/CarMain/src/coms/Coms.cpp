@@ -1,310 +1,332 @@
 /*
- *
- *  Class: Coms
- *
- *         Author:  Matthew Larson
- *
- *        Purpose:  Implement the transfer of data, state handling, and radio interfacing
- *        required for sending data between the pit and the car. Due to the fact that the
- *        radio implementations are unique to each radio, this class is not very well
- *        abstracted. I considered splitting the coms class up into a radio class and a coms
- *        class, but I decided it wasn't worth it. If somebody wants to do that one day, 
- *        feel free to.
- *
- *  Inherits From:  None
- *
- *     Interfaces:  None
- *
- *+-----------------------------------------------------------------------
- *
- *      Constants:
- *          bool RADIO_ACTIVE
- *
- *+-----------------------------------------------------------------------
- *
- *   Constructors:
- *      Coms(ProcedureScheduler* procedureScheduler) -- initializes fields
- *      and begins the thread that runs the radio hardware 
- *
- *  Class Methods:  None
- *
- *  Inst. Methods:  [List the names, arguments, and return types of all
- *                   public instance methods.]
- *
+
+comments
+comments
+comments
+
+
 */
+
+#define RADIO_CS_PIN 11
+#define RADIO_INT_PIN 21
 
 #include "Coms.h"
 
-// To look at the example linux implementation for the nrf24l01, look at the RF24 github:
-// https://github.com/nRF24/RF24/tree/master
-// Specifically, this file:
-// https://github.com/nRF24/RF24/blob/master/examples_linux/gettingstarted.cpp
-
-
-#define CSN_PIN 1
-#define CE_PIN 22
-
-namespace BajaWildcatRacing
-{
+namespace BajaWildcatRacing {
 
     Coms::Coms(ProcedureScheduler& procedureScheduler)
-    : radio(CE_PIN, CSN_PIN)
-    , procedureScheduler(procedureScheduler)
-    {
-        
+    :rf95(RADIO_CS_PIN, RADIO_INT_PIN)
+    ,procedureScheduler(procedureScheduler) {
+
+        std::fill(dataTypeMask, dataTypeMask+32, 0xFF);
         radioThread = std::thread(&Coms::executeRadio, this);
+        
+
     }
 
 
     void Coms::execute(float timestamp){
-        std::lock_guard<std::mutex> lock(timestampMutex);
-        currTimestamp = timestamp;
+        //All this does is updates the timestamp
+        //Actual sending is done in executeRadio() so it's a different thread
+        currTimestamp = timestamp; //Protected by atomic
     }
 
     void Coms::end(){
         running = false;
-
-        if (radioThread.joinable()) {
-            radioThread.join();  // Wait for the thread to finish
-        }
+        std::cout << "Coms are stopping..." << std::endl;
     }
 
     void Coms::executeRadio(){
-
-        // perform hardware check
-        if (!radio.begin()) {
-            std::cout << "radio hardware is not responding!!" << std::endl;
-            return; // quit now
+        //init radio 
+        std::cout << "RF95 init..." << std::endl;
+        if (!rf95.init()){
+            std::cout << "RF95 is not responding!!!" << std::endl;
+            //TODO: log error/panic
+            running = false; 
+            return;
         }
 
-        // to use different addresses on a pair of radios, we need a variable to
-        // uniquely identify which address this radio will use to transmit
-        bool radioNumber = 1; // 0 uses address[0] to transmit, 1 uses address[1] to transmit
-        uint8_t address[2][6] = {"1Node", "2Node"};
-        radio.setPayloadSize(32); // float datatype occupies 4 bytes
-        radio.setPALevel(RF24_PA_HIGH); // RF24_PA_MAX is default.
+        rf95.setFrequency(915.0);
+        rf95.setTxPower(23, false); //Selects maximum power for the LoRa module
+        rf95.setModemConfig(RH_RF95::Bw500Cr45Sf128); //Selects maximum bitrate 
 
-        // radio.setRetries(0, 0);
-        radio.enableDynamicPayloads();
-        radio.enableAckPayload();
+        //TODO: define what the addresses we are using are
+        // rf95.setThisAddress(1);
+        // rf95.setHeaderFrom(1);
+        // rf95.setHeaderTo(2);
+    
+        std::cout << "RF95 initialized!!!" << std::endl;
 
-        radio.openWritingPipe(address[radioNumber]); // always uses pipe 0
-        radio.openReadingPipe(1, address[!radioNumber]); // using pipe 1
+        int cycleTimeNs = (1.0 / currentFrequency) * 1000000000L;
+        std::cout << cycleTimeNs << std::endl;
+        std::chrono::steady_clock::time_point startTime;
+        std::chrono::steady_clock::time_point endTime;
 
-        radio.stopListening();
+        std::chrono::steady_clock::time_point lastRxTime = std::chrono::steady_clock::now();
 
-
-        int waitTimems = (1.0 / RADIO_CLOCK_FREQUENCY) * 1000;
-        // If RADIO_ACTIVE is true, this thread will run the entire time the car is on
         while(running){
+            startTime = std::chrono::steady_clock::now();
 
-            radioTransmit();
-
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(waitTimems));
-        }
-    }
-
-
-    void Coms::radioTransmit(){
-        // if(currentPitCommandState == PitCommandState::IDLE){
-        //     idle();
-        // }
-        // else if(currentPitCommandState == PitCommandState::LIVE_DATA_TRANSMIT){
-        //     transmitLiveData();
-        // }
-        // else if(currentPitCommandState == PitCommandState::DATABASE_TRANSMIT){
-        //     transmitDatabase();
-        // }
-
-        transmitLiveData();
-
-        // Received command from pit!
-        if(radio.isAckPayloadAvailable()){
-
-
-            int ackData = 0;
-
-            radio.read(&ackData, 1);
-
-            // if(ackData == Command::START_LOG){
-            //     // procedureScheduler.receiveComCommand(Command::START_LOG);
-
-            //     currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
-            // }
-            // else if(ackData == Command::END_LOG){
-            //     currentPitCommandState = PitCommandState::IDLE;
-            // }
-
-            std::lock_guard<std::mutex> lock(procedureSchedulerMutex);
-
-            procedureScheduler.receiveComCommand((Command)ackData);
-
-            // std::bitset<32> x(ackData);
-
-            std::cout << ackData << std::endl;
-        }
-
-    }
-
-    int idlePacket[] = {0, 0, 0, 0, 0, 0, 0, 0};
-
-    void Coms::transmitLiveData(){
-            // The car can have 32 streams.
-            // Each packet can store 6 data values (Look at data packet struct in header file)
-            // ceil(32 / 6) = 6, so there are at most 6 structs we can send in one cycle
-            // hence: the array size of 6
-
-            DataPacket packets[maxPackets] = {};
-
-            std::unique_lock<std::mutex> lock(dataStreamMutex);
+            //Run correct function depending on state
+            if(currentPitCommandState == PitCommandState::LIVE_DATA_TRANSMIT){
+                transmitLiveData();
+            }else if(currentPitCommandState == PitCommandState::WAIT_COMMAND_RECIEVE){
+                recieveCommand();
+            }else if(currentPitCommandState == PitCommandState::IDLE){
+                idle();
+            }
             
-            for(int i = 0; i < maxPackets; i++){
-                packets[i].streamMask = 0;
+
+
+            //Only wait for the amount of time we have left so we have a somewhat steady frequency
+            endTime = std::chrono::steady_clock::now();
+            int64_t timeTaken = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); 
+            // std::cout << timeTaken << std::endl;
+            if(timeTaken < cycleTimeNs){
+                std::this_thread::sleep_for(std::chrono::nanoseconds(cycleTimeNs - timeTaken));
+                overloaded = false;
+                // std::cout << "ok" << std::endl;
+            }else{
+                std::cout << "Radio is overloaded!! Please reduce datatypes or frequency." << std::endl;
+                overloaded = true;
             }
-
-            // Procedure to encode a live data packet
-            int currPacket = -1;
-
-
-            // liveDataStream array MUST be sorted using the data types as the key. This sorting logic is handled when
-            // inserting a new stream.
-
-            for(int i = 0; i < liveStreamCount; i++){
-
-                if(i % maxPackets == 0){
-                    currPacket++;
-                }
-                
-
-                if(liveDataStreams[i] == nullptr){
-                    // Something went wrong with assigning the live data stream.
-                    CarLogger::LogError("Live Data Stream set up incorrectly");
-                    continue;
-                }
-
-                if(!liveDataStreams[i]->dataInQueue()){
-                    continue;
-                }
-
-
-                
-                // The range of getDataType() should be from 0 to 31. This is described in the packet
-                // description of the live data stream packets.
-                packets[currPacket].streamMask |= 1 << liveDataStreams[i]->getDataType();
-                packets[currPacket].timestamp = currTimestamp;
-                packets[currPacket].data[i % maxPackets] = liveDataStreams[i]->dequeue();
-
-
-                liveDataStreams[i]->clearAllData();
-                // std::bitset<32> x(packets[currPacket].streamMask);
-
-                // std::cout << x << std::endl;
+            
+            //Determine if it's time to do the RX switch
+            int64_t switchInterval = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - lastRxTime).count(); 
+            if(switchInterval > RX_SWITCH_INTERVAL){
+                std::cout << "switching to RX on next cycle" << std::endl;
+                // switchToRX = true;
+                lastRxTime = endTime;
             }
-
-
-            lock.unlock();
-
-
-            // Now we need to send all of the packets that actually have data.
-            // Easy way to tell if it has data is if the stream mask != 0
-
-            int packetsSent = 0;
-            for(int i = 0; i < maxPackets; i++){
-
-                if(packets[i].streamMask == 0){
-                    continue;
-                }
-
-                bool report = radio.write(&packets[i], sizeof(packets[i]));
-                packetsSent++;
-
-                if(report){
-
-                }
-                else{
-                    // Transmission "failed" (it just means there's no acknowledgement)
-                    // This means that we are out of range for receiving commands from the car,
-                    // But it still might be possible to transmit to the car.
-                    // Hence, in here we should just keep transmitting what we have, hoping that the pit is receiving.
-                }
-            }
-
-            if(packetsSent == 0){
-                bool report = radio.write(idlePacket, sizeof(idlePacket));
-            }
-
+            
+        }
+        std::cout << "Coms are stopped." << std::endl;
     }
 
-    void Coms::transmitDatabase(){
-        // We want to transmit the SQLite database that is stored on the drive of the car
-        // I am currently not sure if I should do this by sending the raw data, or
-        // somehow encoding the entire database and sending it over. Most likely though,
-        // we only want to send one session at a time (probably the current one)
-    }
-
-
-    void Coms::sendData(DataTypes dataType, float data){
-
-        // If the stream of type dataType doesn't exist, create it and add it to the list of streams.
-        if(liveDataStreamMap.find(dataType) == liveDataStreamMap.end()){
-            std::shared_ptr<LiveDataStream> newStream = std::make_shared<LiveDataStream>(dataType);
-            liveDataStreamMap[dataType] = newStream;
-
-            addNewLiveDataStream(newStream);
-
-        }
-
-        liveDataStreamMap[dataType]->enqueue(data);
-
-    }
-
-    /*
-    *  Method: addNewLiveDataStream
-    *
-    *  Purpose:  Adds a new stream to the list of streams that will be sent over the radio
-    *
-    *  Pre-condition: stream is not null
-    *
-    *  Post-condition: stream is added to the list of live streams; The array of streams is sorted 
-    *  using a the stream data type as a key.
-    *
-    *  Parameters:
-    *      LiveDataStream* stream -- a stream to read and send the data over coms 
-    *
-    *  Returns:  None
-    *
-    */
-    void Coms::addNewLiveDataStream(std::shared_ptr<LiveDataStream> stream){
-
-        if(stream == nullptr){
-            return;
-        }
-
-        // Insertion sort using stream.getDataType() as a key
-        DataTypes streamDataType = stream->getDataType();
-
-        if(streamDataType >= MAX_LIVE_DATA_STREAMS){
-
-            std::string errorStr("Not allowed to have more than " + std::to_string(MAX_LIVE_DATA_STREAMS) + " live data streams!");
-
-            CarLogger::LogError(errorStr.c_str());
-            return;
-        }
+    void Coms::transmitLiveData(){ 
         
-        int i = liveStreamCount;
+        //take stuff from queue and transmit as fast as possible
+        std::unique_lock<std::mutex> lock(dataQueueMutex);
+        //Quickly swap the queues so that stuff can still be queued while sending
+        std::queue<std::shared_ptr<DataFrame>> localQueue;
+        std::swap(localQueue, queuedData);
 
-        while(i > 0 && liveDataStreams[i - 1]->getDataType() > streamDataType){
+        //Clear the queued data pointers
+        for(int i = 0; i < 256; i++){
+            queuedDataPointers[i] = nullptr;
+        }
+        lock.unlock();
 
-            // Shift the pointer
-            liveDataStreams[i] = std::move(liveDataStreams[i - 1]);
-            i--;
+        
+
+        //Start building up the array
+        byte data[RH_RF95_MAX_MESSAGE_LEN];
+        byte sentDataLength = 0;
+        int dataStartPos = 0;
+
+        while(!localQueue.empty()){
+            std::shared_ptr<DataFrame> nextFrame = localQueue.front();
+            localQueue.pop();
+            // std::cout << "Sending frame with id " << nextFrame->id << std::endl;
+
+            int nextSize = 2 + sizeof(float) + nextFrame->dataLength;
+
+            //If the next data is about to go past over the max length, send what we have out
+            if(sentDataLength + nextSize > RH_RF95_MAX_MESSAGE_LEN){
+                std::cout << "Sending data now! Not done this cycle. Size: " << sentDataLength << std::endl;
+                radioTransmit(data, sentDataLength, false);
+                sentDataLength = 0;
+                dataStartPos = 0;
+            }
+
+            //Add ID (1 byte), timestamp (float) and actual data to data to send
+            sentDataLength += nextSize;
+
+            //Copy ID, data length, timestamp, data
+            memcpy(data + dataStartPos, &nextFrame->id, 1);
+            dataStartPos += 1;
+            memcpy(data + dataStartPos, &nextFrame->timestamp, sizeof(float));
+            dataStartPos += sizeof(float);
+            memcpy(data + dataStartPos, &nextFrame->dataLength, 1);
+            dataStartPos += 1;
+            memcpy(data + dataStartPos, nextFrame->data.get(), nextFrame->dataLength);
+            dataStartPos += nextFrame->dataLength;
         }
 
-        liveDataStreams[i] = std::move(stream);
-        liveStreamCount++;
+        //Send final packet if there's actually data there
+        if(sentDataLength > 0){
+            // std::cout << "Sending data now! Size: " << sentDataLength << std::endl;
+            if(switchToRX){
+                currentPitCommandState = PitCommandState::WAIT_COMMAND_RECIEVE;
+                rxSuccessful = false;
+            }
 
+            radioTransmit(data, sentDataLength, switchToRX);
+        }
     }
 
+    void Coms::radioTransmit(byte data[], byte sentDataLength, bool rxSwitchFlag){
+        //If the mode isn't in idle mode (edge case check)
+        if(rf95.mode() != RH_RF95::RHModeIdle){
 
+            //Wait up to 500 ms for it to be done
+            // uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+            int repeats = 0;
+            // while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 5){
+            while ((rf95.mode() != RH_RF95::RHModeIdle) && repeats < 500){
+                // std::cout << "repeat " << repeats << std::endl;
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                repeats++;
+                // irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
+                
+            }
+
+            //Still not done??? Timeout
+            if(repeats >= 500){
+                std::cout << "TIMEOUT Radio TX" << std::endl; 
+                return;
+            }
+            // else{
+            //     //Clear the flags
+            //     rf95.spiWrite(RH_RF95_REG_12_IRQ_FLAGS, RH_RF95_TX_DONE);
+            //     // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+            //     // std::cout << "Cleared flags" << std::endl;
+
+            //     //Set the mode to idle
+            //     rf95.setModeIdle();
+            //     //Wait a brief amount of time for the mode to change
+            //     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            // }
+        }
+
+
+        //Set flags appropriately 
+        uint8_t switchFlag = (1 & rxSwitchFlag);
+        uint8_t rxSuccessFlag = (1 & rxSuccessful) << 1;
+        uint8_t overloadFlag = (1 & overloaded) << 2;
+        rf95.setHeaderFlags(rxSwitchFlag | rxSuccessful | overloaded);
+
+        // std::cout << "about to send the data" << std::endl;
+        if(!rf95.send(data, sentDataLength)){
+            //Failed to send
+            std::cout << "Failed to send data frame." << std::endl;
+        }
+    }
+
+    void Coms::recieveCommand(){
+        //to do: better way to do this so it doesn't mess with the rest of the timing?
+        switchToRX = false;
+        if(rf95.waitAvailableTimeout(100)){
+            uint8_t rxBuffer[RH_RF95_MAX_MESSAGE_LEN]; 
+            uint8_t rxLength = sizeof(rxBuffer);
+            if(rf95.recv(rxBuffer, &rxLength)){
+                rxSuccessful = true;
+                currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
+                
+                if(rxLength = 0){
+                    //Zero length: no commands, go back to live data transmit, set flag
+                    return;
+                }else{
+                    //Actual command recieved
+                    for(int i = 0; i < rxLength; i++){
+                        if(rxBuffer[i] == 0){
+                            //Change frequency 
+                            //TODO: how are we encoding this lmao
+                        }else if(rxBuffer[i] == 1){
+                            //Change commands
+                            i++;
+                            if(rxLength - i < 32){
+                                //Not enough i's left 
+                                std::cerr << "Error: recieved too short of a frame for the data change command" << std::endl;
+                                return;
+                            }
+                        
+                            memcpy(dataTypeMask, rxBuffer, 32);
+                            i += 31; //don't want to skip over the end, only skip 31 places
+                        }else{
+                            //Non-special command
+                            procedureScheduler.receiveComCommand((Command)rxBuffer[i]);
+                        }
+                    }
+                }
+            }
+        }else{
+            std::cout << "no command recieved" << std::endl;
+            rf95.setModeIdle();
+            currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
+        }
+
+        
+    }
+
+    void Coms::idle(){
+        //listen for commands
+        //this is different to setting running = false 
+    }
+
+    void Coms::sendData(DataType dataType, byte data[], byte dataLength){
+        //Only send if less than 256
+        if(dataType >= 256){
+            //Print for debugging, should be resolved before actual use
+            std::cout << "Error: Cannot send datatype >= 256 over radio! (attempted to send " << dataType << ")" << std::endl;
+            return;
+        }
+
+        if(dataLength >= RH_RF95_MAX_MESSAGE_LEN - 2 - sizeof(float)){
+            //Print for debugging, should be resolved before actual use
+            std::cout << "Error: Cannot send data with length >= 246 over radio! (attempted to send data length " << dataLength << ", datatype " << dataType << ")" << std::endl;
+            return;
+        }
+
+        if(data == nullptr){
+            std::cout << "Error: data cannot be null when sending to radio (datatype " << dataType << ")" << std::endl;
+            return;
+        }
+
+        //Do we want to send this data?
+        //The LSB is the lower number (even though it's to the "right" when we write it down)
+        //This complicated mess basically finds the right spot
+        if(!(dataTypeMask[dataType % 8] & (1 << dataType % 8))){
+            //Don't print anything as this will frequently happen in live events
+            //Temporary do print something until the radio is working
+            std::cout << "Not sending this data of datatype " << dataType << std::endl;
+            return;
+        }
+
+        std::unique_lock<std::mutex> lock(dataQueueMutex);
+        if(queuedDataPointers[dataType] == nullptr){
+            //Build up the new frame
+            auto newFrame = std::make_shared<DataFrame>();
+            newFrame->id = dataType;
+            newFrame->timestamp = currTimestamp;
+            std::shared_ptr<byte[]> sp(new byte[dataLength]);
+            newFrame->data = sp;
+            memcpy(newFrame->data.get(), data, dataLength);
+            newFrame->dataLength = dataLength;
+
+            //Push onto queue
+            queuedData.push(newFrame);
+
+            //Add to pointers list
+            queuedDataPointers[dataType] = newFrame;
+            // std::cout << "successfully queued " << dataType << std::endl;
+        }else{
+            //Overwrite the current thing in the queue, rather than adding a new thing
+            queuedDataPointers[dataType]->id = dataType;
+            queuedDataPointers[dataType]->timestamp = currTimestamp;
+            std::shared_ptr<byte[]> sp(new byte[dataLength]);
+            queuedDataPointers[dataType]->data = sp;
+            memcpy(queuedDataPointers[dataType]->data.get(), data, dataLength);
+            queuedDataPointers[dataType]->dataLength = dataLength;
+            // std::cout << "successfully override queued " << dataType << std::endl;
+        }
+        lock.unlock();
+    }
+
+    template<typename T>
+    void Coms::sendData(DataType dataType, T data){
+        byte newData[sizeof(T)];
+        memcpy(newData, &data, sizeof(T));
+        sendData(dataType, newData, sizeof(T));
+    }
 }

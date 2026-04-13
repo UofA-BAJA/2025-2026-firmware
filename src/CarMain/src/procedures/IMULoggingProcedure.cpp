@@ -41,20 +41,20 @@ class IMULoggingProcedure : public Procedure{
             float zAccel = imuSubsystem.getAccelerationZ();
 
 
-            dataStorage.storeData(xRot, DataTypes::IMU_ROTATION_X);
-            dataStorage.storeData(yRot, DataTypes::IMU_ROTATION_Y);
-            dataStorage.storeData(zRot, DataTypes::IMU_ROTATION_Z);
+            dataStorage.storeData(xRot, DataType::IMU_ROTATION_X);
+            dataStorage.storeData(yRot, DataType::IMU_ROTATION_Y);
+            dataStorage.storeData(zRot, DataType::IMU_ROTATION_Z);
 
-            dataStorage.storeData(xAccel, DataTypes::IMU_ACCELERATION_X);
-            dataStorage.storeData(yAccel, DataTypes::IMU_ACCELERATION_Y);
-            dataStorage.storeData(zAccel, DataTypes::IMU_ACCELERATION_Z);
+            dataStorage.storeData(xAccel, DataType::IMU_ACCELERATION_X);
+            dataStorage.storeData(yAccel, DataType::IMU_ACCELERATION_Y);
+            dataStorage.storeData(zAccel, DataType::IMU_ACCELERATION_Z);
 
-            coms.sendData(DataTypes::IMU_ROTATION_X, xRot);
-            coms.sendData(DataTypes::IMU_ROTATION_Y, yRot);
-            coms.sendData(DataTypes::IMU_ROTATION_Z, zRot);
-            coms.sendData(DataTypes::IMU_ACCELERATION_X, xAccel);
-            coms.sendData(DataTypes::IMU_ACCELERATION_Y, yAccel);
-            coms.sendData(DataTypes::IMU_ACCELERATION_Z, zAccel);
+            coms.sendData(DataType::IMU_ROTATION_X, xRot);
+            coms.sendData(DataType::IMU_ROTATION_Y, yRot);
+            coms.sendData(DataType::IMU_ROTATION_Z, zRot);
+            coms.sendData(DataType::IMU_ACCELERATION_X, xAccel);
+            coms.sendData(DataType::IMU_ACCELERATION_Y, yAccel);
+            coms.sendData(DataType::IMU_ACCELERATION_Z, zAccel);
 
 
             // std::cout << std::fixed;

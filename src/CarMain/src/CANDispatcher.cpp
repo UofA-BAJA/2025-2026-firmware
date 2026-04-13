@@ -30,7 +30,7 @@ namespace BajaWildcatRacing
         //Iterate over all pending responses and drop ones over 100 cycles
         //Have to handle the edge case of the active range being split across the end and start of the array
         int i = activeArrayLowerBound;
-        std::cout << "search range " << activeArrayLowerBound << " to " << activeArrayUpperBound << std::endl;
+        // std::cout << "search range " << activeArrayLowerBound << " to " << activeArrayUpperBound << std::endl;
         while(i != activeArrayUpperBound){
             //Only increment the cycles if it's the first UID 
             if(responses[i] != nullptr && ((responses[i]->firstUID) % MAX_RESPONSE_ARRAY_BOUND == i)){
