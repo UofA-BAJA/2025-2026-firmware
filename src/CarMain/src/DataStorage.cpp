@@ -184,7 +184,7 @@ namespace BajaWildcatRacing
     *
     */
 
-    void DataStorage::storeData(float data, DataTypes dataType){
+    void DataStorage::storeData(float data, DataType dataType){
 
         DataValues dataToStore = {};
         dataToStore.currentSessionID = currentSessionID;
@@ -318,79 +318,79 @@ namespace BajaWildcatRacing
         // There's definitely a better way to do this (if somebody wants to fix pls do!)
 
         dataTypesInDB.push_back({
-            DataTypes::IMU_ROTATION_X,
+            DataType::IMU_ROTATION_X,
             "IMU Rotation X",
             "deg"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::IMU_ROTATION_Y,
+            DataType::IMU_ROTATION_Y,
             "IMU Rotation Y",
             "deg"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::IMU_ROTATION_Z,
+            DataType::IMU_ROTATION_Z,
             "IMU Rotation Z",
             "deg"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::IMU_ACCELERATION_X,
+            DataType::IMU_ACCELERATION_X,
             "IMU Acceleration X",
             "m/s^2"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::IMU_ACCELERATION_Y,
+            DataType::IMU_ACCELERATION_Y,
             "IMU Acceleration Y",
             "m/s^2"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::IMU_ACCELERATION_Z,
+            DataType::IMU_ACCELERATION_Z,
             "IMU Acceleration Z",
             "m/s^2"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::CAR_SPEED,
+            DataType::CAR_SPEED,
             "Car Speed",
             "m/s"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::CVT_TEMPERATURE,
+            DataType::CVT_TEMPERATURE,
             "CVT Temperature",
             "deg C"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::DISTANCE,
+            DataType::DISTANCE,
             "Distance",
             "m"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::RPM_FRONT_L,
-            "RPM Front Left",
+            DataType::WHEEL_RPM_FRONT_L,
+            "Wheel RPM Front Left",
             "rev/s"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::RPM_FRONT_R,
-            "RPM Front Right",
+            DataType::WHEEL_RPM_FRONT_R,
+            "Wheel RPM Front Right",
             "rev/s"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::RPM_BACK,
-            "RPM Back",
+            DataType::WHEEL_RPM_BACK,
+            "Wheel RPM Back",
             "rev/s"
         });
 
         dataTypesInDB.push_back({
-            DataTypes::MOTOR_RPM,
+            DataType::MOTOR_RPM,
             "RPM Motor",
             "rev/s"
         });
