@@ -49,7 +49,9 @@ namespace BajaWildcatRacing
             void end();
 
             void sendData(DataType dataType, byte data[], byte dataLength);
-            void sendData(DataType dataType, float data); //Legacy overload
+
+            template<typename T>
+            void sendData(DataType dataType, T data);
 
         private:
 

@@ -323,10 +323,10 @@ namespace BajaWildcatRacing {
         lock.unlock();
     }
 
-    //Legacy support so I don't have to reconfigure a bunch of stuff rn (please don't use this)
-    void Coms::sendData(DataType dataType, float data){
-        byte newData[sizeof(float)];
-        memcpy(newData, &data, sizeof(float));
-        sendData(dataType, newData, sizeof(float));
+    template<typename T>
+    void Coms::sendData(DataType dataType, T data){
+        byte newData[sizeof(T)];
+        memcpy(newData, &data, sizeof(T));
+        sendData(dataType, newData, sizeof(T));
     }
 }
