@@ -72,6 +72,8 @@ namespace BajaWildcatRacing {
                 transmitLiveData();
             }else if(currentPitCommandState == PitCommandState::WAIT_COMMAND_RECIEVE){
                 recieveCommand();
+                switchToRX = false;
+                currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
             }else if(currentPitCommandState == PitCommandState::IDLE){
                 idle();
             }
@@ -95,7 +97,7 @@ namespace BajaWildcatRacing {
             int64_t switchInterval = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - lastRxTime).count(); 
             if(switchInterval > RX_SWITCH_INTERVAL){
                 std::cout << "switching to RX on next cycle" << std::endl;
-                // switchToRX = true;
+                switchToRX = true;
                 lastRxTime = endTime;
             }
             
@@ -214,30 +216,42 @@ namespace BajaWildcatRacing {
     }
 
     void Coms::recieveCommand(){
-        //to do: better way to do this so it doesn't mess with the rest of the timing?
-        switchToRX = false;
-        if(rf95.waitAvailableTimeout(100)){
+        //TODO: need to make it so it doesn't throw an overload error when doing this
+        
+        
+        int repeats = 0;
+        while(!rf95.available() && repeats < 500){
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            repeats++;
+        }
+
+        if(repeats < 500){
             uint8_t rxBuffer[RH_RF95_MAX_MESSAGE_LEN]; 
             uint8_t rxLength = sizeof(rxBuffer);
             if(rf95.recv(rxBuffer, &rxLength)){
-                rxSuccessful = true;
-                currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
-                
-                if(rxLength = 0){
-                    //Zero length: no commands, go back to live data transmit, set flag
+                std::bitset<8> x(rxLength);
+                std::cout << "rx length: " << x << std::endl;
+                if(rxLength == 0){
+                    //Zero length: no commands, go back to live data transmit
+                    std::cout << "zero commands recieved" << std::endl;
+                    rxSuccessful = true;
                     return;
                 }else{
                     //Actual command recieved
+                    std::cout << "else" << std::endl;
                     for(int i = 0; i < rxLength; i++){
+                        std::cout << "reading rx byte: " << i << std::endl;
                         if(rxBuffer[i] == 0){
                             //Change frequency 
                             //TODO: how are we encoding this lmao
+                            std::cout << "recieved frequency command: " << std::endl;
                         }else if(rxBuffer[i] == 1){
                             //Change commands
                             i++;
                             if(rxLength - i < 32){
                                 //Not enough i's left 
                                 std::cerr << "Error: recieved too short of a frame for the data change command" << std::endl;
+                                rf95.setModeIdle();
                                 return;
                             }
                         
@@ -245,10 +259,16 @@ namespace BajaWildcatRacing {
                             i += 31; //don't want to skip over the end, only skip 31 places
                         }else{
                             //Non-special command
+                            // i++;
+                            std::cout << "proc scheduler command recieved" << std::endl;
                             procedureScheduler.receiveComCommand((Command)rxBuffer[i]);
                         }
                     }
+                    rf95.setModeIdle();
+                    rxSuccessful = true;
                 }
+            }else{
+                std::cout << "ERROR: Radio Recieve failure" << std::endl;
             }
         }else{
             std::cout << "no command recieved" << std::endl;

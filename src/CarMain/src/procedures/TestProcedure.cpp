@@ -19,7 +19,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
         : testSubsystem(testSubsystem), coms(coms)
         {
-            this->frequency = 24; 
+            this->frequency = 20; 
 
         }
         
@@ -40,14 +40,14 @@ class TestProcedure : public Procedure{
             
             // memcpy(data, &st, sizeof(st));
 
-            coms.sendData(DataTypes::WHEEL_RPM_FRONT_L, data, 12);
-            coms.sendData(DataTypes::CAR_SPEED, data, 4);
-            coms.sendData(DataTypes::MOTOR_RPM, data, 4);
-            coms.sendData(DataTypes::IMU_ROTATION_X, data, 12);
-            coms.sendData(DataTypes::IMU_ACCELERATION_X, data, 12);
-            coms.sendData(DataTypes::BRAKE_PRESSURE_REAR, data, 8);
-            coms.sendData(DataTypes::CVT_TEMPERATURE, data, 4);
-            coms.sendData(DataTypes::DISTANCE, data, 4);
+            // coms.sendData(DataType::WHEEL_RPM_FRONT_L, data, 12);
+            coms.sendData(DataType::CAR_SPEED, data, 4);
+            // coms.sendData(DataType::MOTOR_RPM, data, 4);
+            // coms.sendData(DataType::IMU_ROTATION_X, data, 12);
+            // coms.sendData(DataType::IMU_ACCELERATION_X, data, 12);
+            // coms.sendData(DataType::BRAKE_PRESSURE_REAR, data, 8);
+            // coms.sendData(DataType::CVT_TEMPERATURE, data, 4);
+            // coms.sendData(DataType::DISTANCE, data, 4);
             // coms.sendData(DataTypes::IMU_ACCELERATION_Z, data, 4);
             // coms.sendData(DataTypes::CAR_SPEED, data, 100);
             
