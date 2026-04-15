@@ -317,41 +317,41 @@ namespace BajaWildcatRacing
         // corresponds to the same data type! If it doesn't things will break.
         // There's definitely a better way to do this (if somebody wants to fix pls do!)
 
-        dataTypesInDB.push_back({
-            DataType::IMU_ROTATION_X,
-            "IMU Rotation X",
-            "deg"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::IMU_ROTATION_X,
+        //     "IMU Rotation X",
+        //     "deg"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::IMU_ROTATION_Y,
-            "IMU Rotation Y",
-            "deg"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::IMU_ROTATION_Y,
+        //     "IMU Rotation Y",
+        //     "deg"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::IMU_ROTATION_Z,
-            "IMU Rotation Z",
-            "deg"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::IMU_ROTATION_Z,
+        //     "IMU Rotation Z",
+        //     "deg"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::IMU_ACCELERATION_X,
-            "IMU Acceleration X",
-            "m/s^2"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::IMU_ACCELERATION_X,
+        //     "IMU Acceleration X",
+        //     "m/s^2"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::IMU_ACCELERATION_Y,
-            "IMU Acceleration Y",
-            "m/s^2"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::IMU_ACCELERATION_Y,
+        //     "IMU Acceleration Y",
+        //     "m/s^2"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::IMU_ACCELERATION_Z,
-            "IMU Acceleration Z",
-            "m/s^2"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::IMU_ACCELERATION_Z,
+        //     "IMU Acceleration Z",
+        //     "m/s^2"
+        // });
 
         dataTypesInDB.push_back({
             DataType::CAR_SPEED,
@@ -371,23 +371,23 @@ namespace BajaWildcatRacing
             "m"
         });
 
-        dataTypesInDB.push_back({
-            DataType::WHEEL_RPM_FRONT_L,
-            "Wheel RPM Front Left",
-            "rev/s"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::WHEEL_RPM_FRONT_L,
+        //     "Wheel RPM Front Left",
+        //     "rev/s"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::WHEEL_RPM_FRONT_R,
-            "Wheel RPM Front Right",
-            "rev/s"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::WHEEL_RPM_FRONT_R,
+        //     "Wheel RPM Front Right",
+        //     "rev/s"
+        // });
 
-        dataTypesInDB.push_back({
-            DataType::WHEEL_RPM_BACK,
-            "Wheel RPM Back",
-            "rev/s"
-        });
+        // dataTypesInDB.push_back({
+        //     DataType::WHEEL_RPM_BACK,
+        //     "Wheel RPM Back",
+        //     "rev/s"
+        // });
 
         dataTypesInDB.push_back({
             DataType::MOTOR_RPM,

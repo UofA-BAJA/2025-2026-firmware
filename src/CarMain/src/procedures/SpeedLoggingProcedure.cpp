@@ -30,15 +30,15 @@ namespace BajaWildcatRacing{
 
                 float mps = drivetrainSubsystem.getCarSpeedMetersSec();
 
-                dataStorage.storeData(mps, DataType::CAR_SPEED);
-                dataStorage.storeData(fr, DataType::WHEEL_RPM_FRONT_R);
-                dataStorage.storeData(fl, DataType::WHEEL_RPM_FRONT_L);
-                dataStorage.storeData(rear, DataType::WHEEL_RPM_BACK);
+                // dataStorage.storeData(mps, DataType::CAR_SPEED);
+                // dataStorage.storeData(fr, DataType::WHEEL_RPM_FRONT_R);
+                // dataStorage.storeData(fl, DataType::WHEEL_RPM_FRONT_L);
+                // dataStorage.storeData(rear, DataType::WHEEL_RPM_BACK);
 
-                coms.sendData(DataType::CAR_SPEED, mps);
-                coms.sendData(DataType::WHEEL_RPM_FRONT_R, fr);
-                coms.sendData(DataType::WHEEL_RPM_FRONT_L, fl);
-                coms.sendData(DataType::WHEEL_RPM_BACK, rear);
+                // coms.sendData(DataType::CAR_SPEED, mps);
+                // coms.sendData(DataType::WHEEL_RPM_FRONT_R, fr);
+                // coms.sendData(DataType::WHEEL_RPM_FRONT_L, fl);
+                // coms.sendData(DataType::WHEEL_RPM_BACK, rear);
  
             }
 
