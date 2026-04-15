@@ -1,15 +1,18 @@
 #ifndef COMS_H
 #define COMS_H
 
+//Baja Includes
 #include "Commands.h"
 #include "ProcedureScheduler.h"
-#include "LiveDataStream.h"
 #include "CarLogger.h"
 
 #include "Commands.h"
 #include "Constants.h"
+#include "DataTypes.h"
 
+//Standard Includes
 #include <iostream>
+#include <queue>
 
 // For multithreading
 #include <mutex>
@@ -17,29 +20,24 @@
 #include <atomic>
 
 #include <chrono> // I believe this is used for the sleep function in the executeRadio loop
-#include <bitset> // No idea what this is for, but I think it's important for something
-#include <unordered_set>
-#include <memory>
+#include <bitset> // No idea what this is for, but I think it's important for something (editor's note: this was probably to print stuff in binary for debugging)
+#include <memory> // unique_ptr, etc
+
 
 // Radio library
-#include <RF24/RF24.h>
+#include <RH_RF95.h>
+
 
 namespace BajaWildcatRacing
 {
+    using byte = unsigned char;
 
     class Coms{
-
-        struct DataPacket{
-            int streamMask = 0;
-            float timestamp;
-            float data[6];
-        };
-
 
         enum PitCommandState{
             IDLE,
             LIVE_DATA_TRANSMIT,
-            DATABASE_TRANSMIT
+            WAIT_COMMAND_RECIEVE
         };
 
 
@@ -50,49 +48,64 @@ namespace BajaWildcatRacing
             void execute(float timestamp);
             void end();
 
-            void sendData(DataTypes dataType, float data);
+            void sendData(DataType dataType, byte data[], byte dataLength);
 
+            template<typename T>
+            void sendData(DataType dataType, T data);
 
         private:
 
             // This radio should only be accessed from the radioThread
             // We do not want a mutex to protect it, as it would bee very slow
             // and defeat the purpose of multithreading
-            RF24 radio;
+            RH_RF95 rf95;
 
-            void addNewLiveDataStream(std::shared_ptr<LiveDataStream> stream);
+            
             
             const bool RADIO_ACTIVE = true;
+            int currentFrequency = 20;
+            bool overloaded = false;
 
-            PitCommandState currentPitCommandState = PitCommandState::IDLE;
+            PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
 
-            float currTimestamp = 0;
-            void executeRadio();
-            void radioTransmit();
+            std::atomic<float> currTimestamp = 0;
+            void executeRadio(); //Ran in a new thread to run the radio
+            void radioTransmit(byte data[], byte sentDataLength, bool rxSwitchFlag); //Helper function for transmitLiveData()
 
-            void transmitLiveData();
-            void transmitDatabase();
+            //States------
+            void transmitLiveData(); 
+            void recieveCommand();
             void idle();
+            //------------
+        
 
-            void tryUpdateState();
-
-            const int maxPackets = 6;
-            void sortPackets(DataPacket packets[]);
 
             ProcedureScheduler& procedureScheduler;
-            std::shared_ptr<LiveDataStream> liveDataStreams[32];
-            std::unordered_map<DataTypes, std::shared_ptr<LiveDataStream>> liveDataStreamMap;
 
-            int liveStreamCount = 0;
+            typedef struct DataFrame_s{
+                byte id;
+                float timestamp;
+                std::shared_ptr<byte[]> data;
+                byte dataLength;
+            } DataFrame;
 
-            std::mutex timestampMutex;
-            std::mutex procedureSchedulerMutex;
+            //Data Queueing Stuff
+            byte dataTypeMask[32]; //"Should we send this datatype??""
+            std::shared_ptr<DataFrame> queuedDataPointers[256]; //A way to make sure we have the latest data in the queue (and a pointer to update it)
+            std::queue<std::shared_ptr<DataFrame>> queuedData; //The queue
+            
 
+            //Mutex for multithreaded safety
+            std::mutex dataQueueMutex;
 
-
-            std::mutex dataStreamMutex;
+            //Actual 2nd thread
             std::thread radioThread;
-            std::atomic<bool> running = RADIO_ACTIVE;
+            bool running = RADIO_ACTIVE;
+
+            //RX Command stuff
+            bool rxSuccessful = false;
+            bool switchToRX = false;
+            const int64_t RX_SWITCH_INTERVAL = 5 * 1000000000L; //seconds to nanoseconds
 
     };
 
