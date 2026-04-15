@@ -70,14 +70,10 @@ namespace BajaWildcatRacing
         std::signal(SIGINT, signal_handler);
         std::signal(SIGTERM, signal_handler);
 
-    
-
         // Init behavior that needs to be called before the subsystems start running.
         init();
 
         CarLogger::Initialize(logPath);
-
-        dataStorage.startNewSession("Test session name O.o");
 
         procedureScheduler.receiveComCommand(Command::DEFAULT_CAR_START);
 
@@ -217,7 +213,6 @@ namespace BajaWildcatRacing
 	// Ends currently running procedures
         std::cout << "Ending car..." << std::endl;
         procedureScheduler.end();
-	    dataStorage.endCurrentSession();
         dataStorage.end();
 	    canDispatcher.end();
         coms.end();

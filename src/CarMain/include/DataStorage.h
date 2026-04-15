@@ -15,12 +15,12 @@
 #include <mutex>
 #include <thread>
 #include <atomic>
-#include <format>
 #include <fstream>
 #include <sstream>
 #include <chrono>
+#include <iomanip>
 
-
+#include "SqlCommands.h"
 #include "DataTypes.h"
 
 namespace BajaWildcatRacing
@@ -29,8 +29,6 @@ namespace BajaWildcatRacing
     class DataStorage {
         public:
             DataStorage(const char* path);
-            void startNewSession(const char* sessionName);
-            void endCurrentSession();
             void execute(float timestamp);
             void end();
             int getData();
@@ -71,8 +69,6 @@ namespace BajaWildcatRacing
             std::atomic<bool> running = true;
 
             void setupDatabase(const char* path);
-            void setupDataTypes();
-            void executeSqlFile(sqlite3* db, const std::string& filename) 
             void updateDatabase();
     };
 
