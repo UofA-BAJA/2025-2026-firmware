@@ -51,6 +51,7 @@ namespace BajaWildcatRacing
                     return;
                 }
 
+
                 // Bind values to parameters
                 sqlite3_bind_int(statement, 1, data.currentSessionID);
                 sqlite3_bind_double(statement, 2, data.currentTimestamp);

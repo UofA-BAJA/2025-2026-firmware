@@ -22,34 +22,34 @@ enum DataType{
     // Datatypes at or below 255 (0xFF) are the only ones that can be sent via radio, others will be ignored
 };
 
-typedef struct LatestRotationXYZ{
+typedef struct RotationXYZ{
     float rotationx;
     float rotationy;
     float rotationz;
-}LatestRotationXYZ;
+}RotationXYZ;
 
-typedef struct LatestAccelerationXYZ{
+typedef struct AccelerationXYZ{
     float accelerationx;
     float accelerationy;
     float accelerationz;
-}LatestAccelerationXYZ;
+}AccelerationXYZ;
 
-typedef struct LatestWheelSpeed{
+typedef struct WheelSpeed{
     float frontLeft;
     float frontRight;
     float rear;
-}LatestWheelSpeed;
+}WheelSpeed;
 
-typedef struct LatestShockDisplacement{
+typedef struct ShockDisplacement{
     float frontLeft;
     float frontRight;
     float rearLeft;
     float rearRight;
-}LatestShockDisplacement;
+}ShockDisplacement;
 
-typedef struct LatestBrakePressure{
+typedef struct BrakePressure{
     float front;
     float rear;
-}LatestBrakePressure;
+}BrakePressure;
 
 #endif

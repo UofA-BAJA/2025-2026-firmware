@@ -9,7 +9,7 @@ namespace BajaWildcatRacing
     const int MAX_LIVE_DATA_STREAMS = 32;
 
     const int WHEEL_RADIUS_METERS = 0.276225;
-
+    const int COMPETITION_YEAR = 2026;
 }
 
 #endif

@@ -31,8 +31,17 @@ namespace BajaWildcatRacing
             DataStorage(const char* path);
             void execute(float timestamp);
             void end();
+
+            // lol idk why this function even exists
             int getData();
-            void storeData(float data, DataType dataType);
+
+            void insertCar(std::string name, int competitionYear);
+            void insertSensor(std::string name, std::string manufacturer, std::string model, std::string sensor_type, std::string description);
+
+            template<typename T>
+            void storeData(T data, std::string sensor_name);
+
+            extern template<>
 
         private:
             struct DataValues{
@@ -62,8 +71,6 @@ namespace BajaWildcatRacing
 
             // std::condition_variable insertCondition;
             // std::mutex cvMutex;
-
-            std::vector<DataTypeTable> dataTypesInDB;
 
             std::thread updateDBThread;
             std::atomic<bool> running = true;
