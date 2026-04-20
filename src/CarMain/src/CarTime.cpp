@@ -5,12 +5,17 @@ namespace BajaWildcatRacing
 
     float CarTime::currTimeSeconds = 0.0f;
 
-    float CarTime::getCurrentTimeSeconds(){
+    float CarTime::getElapsedTimeSeconds(){
         return CarTime::currTimeSeconds;
     }
 
-    void CarTime::setCurrentTimeSeconds(float time){
-        CarTime::currTimeSeconds = time;
+    int CarTime::getUnixEpoch(){
+
+        return 0;
+    }
+
+    void CarTime::setElapsedTimeSeconds(float time){
+        CarTime::elapsedTimeSeconds = time;
     }
 
 }

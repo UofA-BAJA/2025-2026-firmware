@@ -148,8 +148,7 @@ namespace BajaWildcatRacing
 
             procedureScheduler.execute();
             canDispatcher.execute();
-            CarTime::setCurrentTimeSeconds(time / 1000000000L);
-            dataStorage.execute(CarTime::getCurrentTimeSeconds());
+            CarTime::setElapsedTimeSeconds(time / 1000000000L);
             coms.execute(CarTime::getCurrentTimeSeconds());
 
             endTime = steady_clock::now();

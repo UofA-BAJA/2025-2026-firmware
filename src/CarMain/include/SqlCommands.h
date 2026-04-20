@@ -47,6 +47,9 @@ namespace BajaWildcatRacing
         ax REAL,
         ay REAL,
         az REAL,
+        rx REAL,
+        ry REAL,
+        rz REAL,
         a_unit TEXT GENERATED ALWAYS AS ('m/s^2') VIRTUAL,
         PRIMARY KEY (epoch_ms, vehicle, sensor),
         FOREIGN KEY(vehicle) REFERENCES vehicle(name) ON DELETE CASCADE,
@@ -121,8 +124,55 @@ namespace BajaWildcatRacing
     
     )SQL";
 
+    inline const char* insert_vehicle = R"SQL(
+    INSERT INTO vehicle (name, competition_year)
+    VALUES (?, ?);
+    )SQL";
 
+    inline const char* insert_sensor = R"SQL(
+        INSERT INTO sensor (name, manufacturer, model, sensor_type, description)
+        VALUES (?, ?, ?, ?, ?);
+    )SQL";
 
+    inline const char* insert_log = R"SQL(
+        INSERT INTO log (epoch_ms, vehicle, type, message)
+        VALUES (?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_imu = R"SQL(
+        INSERT INTO imu (epoch_ms, vehicle, sensor, ax, ay, az, rz, ry, rz)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_gps = R"SQL(
+        INSERT INTO gps (epoch_ms, vehicle, sensor, lat, lon, alt)
+        VALUES (?, ?, ?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_pressure = R"SQL(
+        INSERT INTO pressure (epoch_ms, vehicle, sensor, psi)
+        VALUES (?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_linear_actuator = R"SQL(
+        INSERT INTO linear_actuator (epoch_ms, vehicle, sensor, displacement)
+        VALUES (?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_temperature = R"SQL(
+        INSERT INTO temperature (epoch_ms, vehicle, sensor, temp)
+        VALUES (?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_tachometer = R"SQL(
+        INSERT INTO tachometer (epoch_ms, vehicle, sensor, rpm)
+        VALUES (?, ?, ?, ?);
+    )SQL";
+
+    inline const char* insert_vehicle_state = R"SQL(
+        INSERT INTO vehicle_state (epoch_ms, vehicle, speed, dist)
+        VALUES (?, ?, ?, ?);
+    )SQL";
 
 }
 

@@ -3,7 +3,6 @@
 namespace BajaWildcatRacing
 {
 
-
     DataStorage::DataStorage(const char* path)
     {
         setupDatabase(path);
@@ -15,18 +14,15 @@ namespace BajaWildcatRacing
 
 
     void DataStorage::updateDatabase(){
-        const char* insertData = "INSERT OR IGNORE INTO Data (SessionID, Timestamp, DataTypeID, Value) "
-                                "VALUES (?, ?, ?, ?)";
 
         char* messageError;
         int exit;
 
         while(running.load()){
-            // insertCondition.wait(conditionalLock, [this] { return insertBuffer.size() > 20; });
 
             std::unique_lock<std::mutex> lock(insertBufferMutex);
 
-            std::queue<DataValues> localInsertBuffer;
+            std::queue<sqlite3_stmt *> localInsertBuffer;
             std::swap(localInsertBuffer, insertBuffer);
             lock.unlock();
 
@@ -36,29 +32,10 @@ namespace BajaWildcatRacing
 
             while(!localInsertBuffer.empty()){
 
-                DataValues data = localInsertBuffer.front();
+                sqlite3_stmt *statement = localInsertBuffer.front();
                 localInsertBuffer.pop();
 
-
                 int exit = 0;
-
-                sqlite3_stmt *statement;
-
-                exit = sqlite3_prepare_v2(db, insertData, -1, &statement, nullptr);
-
-                if(exit){
-                    std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-                    return;
-                }
-
-
-                // Bind values to parameters
-                sqlite3_bind_int(statement, 1, data.currentSessionID);
-                sqlite3_bind_double(statement, 2, data.currentTimestamp);
-                sqlite3_bind_int(statement, 3, data.dataType);
-                sqlite3_bind_double(statement, 4, data.data);
-
-                // std::cout << "SessionID: " << data.currentSessionID << " DataType: " << data.dataType << " Timestamp: " << data.currentTimestamp << std::endl;
 
                 exit = sqlite3_step(statement);
 
@@ -87,58 +64,33 @@ namespace BajaWildcatRacing
 
     }
 
-    void DataStorage::execute(float timestamp){
-
-        currentTimestamp = timestamp;
-    }
-
-
-    int i = 0;
 
     int DataStorage::getData(){
-        std::cout << "Get Data Called, i: " << i << std::endl;
-        return i;
+        std::cout << "Shame on you for calling getData()" << std::endl;
+        return 1;       // Always error
     }
 
 
-    /*
-    *  Method:  storeData
-    *
-    *  Purpose: Inserts a given floating point value to store in association with a data
-    *           type and timestamp. 
-    *
-    *  Pre-Condition:  [Any non-obvious conditions that must exist
-    *              or be true before we can expect this method to
-    *              function correctly.]
-    *
-    *  Post-Condition: The data given will be stored in the database in the data table;
-    *                  The data is stored in association with the given data type and the
-    *                  current car timestamp (time since car program started);
-    *
-    *  Parameters:
-    *          data -- the floating point data value to enter into the database
-    *          dataType -- the type of data to enter. ie. IMU X Rotation
-    *
-    *  Returns: None
-    *
-    */
+    // statement must be a prepared statement!!!!
+    // It can not be null!
+    void queueSqlStatement(sqlite3_stmt *statement){
 
-    void DataStorage::storeData(float data, DataType dataType){
-
-        DataValues dataToStore = {};
-        dataToStore.currentSessionID = currentSessionID;
-        dataToStore.currentTimestamp = currentTimestamp;
-        dataToStore.dataType = dataType;
-        dataToStore.data = data;
-
+        if(statement == nullptr){
+            // literally the end of the world
+            return;
+        }
 
         numDataInserts++;
+
         std::lock_guard<std::mutex> lock (insertBufferMutex);
         insertBuffer.push(dataToStore);
     }
 
-
+    
     void DataStorage::setupDatabase(const char* path){
+
+
+        // Create new .db file with the current time in the name
 
         auto now = std::chrono::system_clock::now();
         // Format: Year-Month-Day_Hour-Minute-Second
@@ -163,13 +115,73 @@ namespace BajaWildcatRacing
             // std::cout << "Opened Database Successfully!" << std::endl; 
         }
         
+
+        // Execute database schema
         char* errMsg = nullptr;
         int rc = sqlite3_exec(db, database_schema, nullptr, nullptr, &errMsg);
         if(rc != SQLITE_OK){
             std::cerr << "SQL error: " << errMsg << std::endl;
             sqlite3_free(errMsg);
         }
+    }
+
+    
+    void storeData(ShockDisplacement data){
+
+        // sqlite3_stmt *statement;
+
+        // exit = sqlite3_prepare_v2(db, insertData, -1, &statement, nullptr);
+
+        // if(exit){
+        //     std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+        //     return;
+        // }
+
+        // // Bind values to parameters
+        // sqlite3_bind_int(statement, 1, data.currentSessionID);
+        // sqlite3_bind_double(statement, 2, data.currentTimestamp);
+        // sqlite3_bind_int(statement, 3, data.dataType);
+        // sqlite3_bind_double(statement, 4, data.data);
+
+
+        // queueSqlStatement(statement);
+    }
+    
+    void storeData(RotationXYZ rotData, AccelerationXYZ accData){
+        
+        sqlite3_stmt *statement;
+        
+        exit = sqlite3_prepare_v2(db, insert_imu, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+        
+        // Bind values to parameters
+        sqlite3_bind_int(statement, 1, Car_Time::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_string(statement, 2, vehicle_name);
+        sqlite3_bind_double(statement, 3, "imu sensor lol idk man");
+        sqlite3_bind_double(statement, 4, accData.accelerationx);
+        sqlite3_bind_double(statement, 5, accData.accelerationy);
+        sqlite3_bind_double(statement, 6, accData.accelerationz);
+        sqlite3_bind_double(statement, 7, rotData.rotationx);
+        sqlite3_bind_double(statement, 8, rotData.rotationy);
+        sqlite3_bind_double(statement, 9, rotData.rotationz);
+
+
+        queueSqlStatement(statement);
+    }
+
+    void storeData(BrakePressure data){
 
     }
 
+    void storeData(WheelSpeed data){
+
+    }
+
+    void storeData(BrakePressure data){
+
+    }
 }

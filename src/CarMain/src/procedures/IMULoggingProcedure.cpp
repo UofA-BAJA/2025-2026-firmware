@@ -55,8 +55,7 @@ class IMULoggingProcedure : public Procedure{
             // coms.sendData(DataType::IMU_ACCELERATION_X, xAccel);
             // coms.sendData(DataType::IMU_ACCELERATION_Y, yAccel);
             // coms.sendData(DataType::IMU_ACCELERATION_Z, zAccel);
-
-
+            
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);
 

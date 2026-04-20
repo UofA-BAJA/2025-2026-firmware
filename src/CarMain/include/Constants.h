@@ -10,6 +10,7 @@ namespace BajaWildcatRacing
 
     const int WHEEL_RADIUS_METERS = 0.276225;
     const int COMPETITION_YEAR = 2026;
+    const char* VEHICLE_NAME = "Graffiti";
 }
 
 #endif
