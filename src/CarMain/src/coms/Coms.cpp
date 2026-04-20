@@ -81,16 +81,19 @@ namespace BajaWildcatRacing {
 
 
             //Only wait for the amount of time we have left so we have a somewhat steady frequency
-            endTime = std::chrono::steady_clock::now();
-            int64_t timeTaken = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); 
-            // std::cout << timeTaken << std::endl;
-            if(timeTaken < cycleTimeNs){
-                std::this_thread::sleep_for(std::chrono::nanoseconds(cycleTimeNs - timeTaken));
-                overloaded = false;
-                // std::cout << "ok" << std::endl;
-            }else{
-                std::cout << "Radio is overloaded!! Please reduce datatypes or frequency." << std::endl;
-                overloaded = true;
+            //Don't wait if we're in WAIT_COMMAND_RECIEVE
+            if(currentPitCommandState != PitCommandState::WAIT_COMMAND_RECIEVE){
+                endTime = std::chrono::steady_clock::now();
+                int64_t timeTaken = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count(); 
+                // std::cout << timeTaken << std::endl;
+                if(timeTaken < cycleTimeNs){
+                    std::this_thread::sleep_for(std::chrono::nanoseconds(cycleTimeNs - timeTaken));
+                    overloaded = false;
+                    // std::cout << "ok" << std::endl;
+                }else{
+                    std::cout << "Radio is overloaded!! Please reduce datatypes or frequency." << std::endl;
+                    overloaded = true;
+                }
             }
             
             //Determine if it's time to do the RX switch
@@ -164,6 +167,20 @@ namespace BajaWildcatRacing {
             }
 
             radioTransmit(data, sentDataLength, switchToRX);
+        }else{
+            //Create and send a "keep alive" packet
+            byte data[1+sizeof(float)+1];
+            std::fill(data, data+1+sizeof(float)+1, 0);
+
+            byte id = DataType::KEEP_ALIVE;
+            memcpy(data + dataStartPos, &id, 1);
+            dataStartPos += 1;
+            memcpy(data + dataStartPos, &nextFrame->timestamp, sizeof(float));
+            dataStartPos += sizeof(float);
+            memcpy(data + dataStartPos, &nextFrame->dataLength, 1);
+            dataStartPos += 1;
+            memcpy(data + dataStartPos, nextFrame->data.get(), nextFrame->dataLength);
+            dataStartPos += nextFrame->dataLength;
         }
     }
 
@@ -175,7 +192,7 @@ namespace BajaWildcatRacing {
             // uint8_t irqFlags = rf95.spiRead(RH_RF95_REG_12_IRQ_FLAGS);
             int repeats = 0;
             // while (!(irqFlags & RH_RF95_TX_DONE) && repeats < 5){
-            while ((rf95.mode() != RH_RF95::RHModeIdle) && repeats < 500){
+            while ((rf95.mode() != RH_RF95::RHModeIdle) && repeats < 50){
                 // std::cout << "repeat " << repeats << std::endl;
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 repeats++;
@@ -184,7 +201,7 @@ namespace BajaWildcatRacing {
             }
 
             //Still not done??? Timeout
-            if(repeats >= 500){
+            if(repeats >= 50){
                 std::cout << "TIMEOUT Radio TX" << std::endl; 
                 return;
             }
@@ -229,11 +246,8 @@ namespace BajaWildcatRacing {
             uint8_t rxBuffer[RH_RF95_MAX_MESSAGE_LEN]; 
             uint8_t rxLength = sizeof(rxBuffer);
             if(rf95.recv(rxBuffer, &rxLength)){
-                std::bitset<8> x(rxLength);
-                std::cout << "rx length: " << x << std::endl;
                 if(rxLength == 0){
                     //Zero length: no commands, go back to live data transmit
-                    std::cout << "zero commands recieved" << std::endl;
                     rxSuccessful = true;
                     return;
                 }else{
