@@ -73,7 +73,7 @@ namespace BajaWildcatRacing
 
     // statement must be a prepared statement!!!!
     // It can not be null!
-    void queueSqlStatement(sqlite3_stmt *statement){
+    void DataStorage::queueSqlStatement(sqlite3_stmt *statement){
 
         if(statement == nullptr){
             // literally the end of the world
@@ -83,7 +83,7 @@ namespace BajaWildcatRacing
         numDataInserts++;
 
         std::lock_guard<std::mutex> lock (insertBufferMutex);
-        insertBuffer.push(dataToStore);
+        insertBuffer.push(statement);
     }
 
     
@@ -118,7 +118,7 @@ namespace BajaWildcatRacing
 
         // Execute database schema
         char* errMsg = nullptr;
-        int rc = sqlite3_exec(db, database_schema, nullptr, nullptr, &errMsg);
+        int rc = sqlite3_exec(db, DATABASE_SCHEMA, nullptr, nullptr, &errMsg);
         if(rc != SQLITE_OK){
             std::cerr << "SQL error: " << errMsg << std::endl;
             sqlite3_free(errMsg);
@@ -126,42 +126,24 @@ namespace BajaWildcatRacing
     }
 
     
-    void storeData(ShockDisplacement data){
+    void DataStorage::storeData(ShockDisplacement data){
 
-        // sqlite3_stmt *statement;
-
-        // exit = sqlite3_prepare_v2(db, insertData, -1, &statement, nullptr);
-
-        // if(exit){
-        //     std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-        //     return;
-        // }
-
-        // // Bind values to parameters
-        // sqlite3_bind_int(statement, 1, data.currentSessionID);
-        // sqlite3_bind_double(statement, 2, data.currentTimestamp);
-        // sqlite3_bind_int(statement, 3, data.dataType);
-        // sqlite3_bind_double(statement, 4, data.data);
-
-
-        // queueSqlStatement(statement);
     }
     
-    void storeData(RotationXYZ rotData, AccelerationXYZ accData){
+    void DataStorage::storeData(RotationXYZ rotData, AccelerationXYZ accData){
         
         sqlite3_stmt *statement;
         
-        exit = sqlite3_prepare_v2(db, insert_imu, -1, &statement, nullptr);
+        int exit = sqlite3_prepare_v2(db, INSERT_IMU, -1, &statement, nullptr);
         
         if(exit){
             std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
             return;
         }
-        
         // Bind values to parameters
-        sqlite3_bind_int(statement, 1, Car_Time::getUnixEpoch());      // TODO: Need unix epoch somehow
-        sqlite3_bind_string(statement, 2, vehicle_name);
-        sqlite3_bind_double(statement, 3, "imu sensor lol idk man");
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, "IMU", 3, NULL);
         sqlite3_bind_double(statement, 4, accData.accelerationx);
         sqlite3_bind_double(statement, 5, accData.accelerationy);
         sqlite3_bind_double(statement, 6, accData.accelerationz);
@@ -181,7 +163,4 @@ namespace BajaWildcatRacing
 
     }
 
-    void storeData(BrakePressure data){
-
-    }
 }

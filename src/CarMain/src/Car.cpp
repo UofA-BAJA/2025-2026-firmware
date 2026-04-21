@@ -136,12 +136,14 @@ namespace BajaWildcatRacing
         steady_clock::time_point absoluteStart;
         absoluteStart = steady_clock::now();
 
+        auto system_time = system_clock::now();
 
         steady_clock::time_point startTime;
         steady_clock::time_point endTime;
 
         while(g_running){
             startTime = steady_clock::now();
+            system_time = system_clock::now();
             double time = duration_cast<nanoseconds>(startTime - absoluteStart).count();
 
             // std::cout << time / 1000000000L << std::setprecision(9) << std::endl;
@@ -149,7 +151,8 @@ namespace BajaWildcatRacing
             procedureScheduler.execute();
             canDispatcher.execute();
             CarTime::setElapsedTimeSeconds(time / 1000000000L);
-            coms.execute(CarTime::getCurrentTimeSeconds());
+            CarTime::setUnixEpoch(duration_cast<milliseconds>(system_time.time_since_epoch()).count());
+            coms.execute(CarTime::getElapsedTimeSeconds());
 
             endTime = steady_clock::now();
 

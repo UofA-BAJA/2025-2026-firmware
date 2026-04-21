@@ -1,7 +1,7 @@
 #include "Procedure.h"
 #include "TestSubsystem.h"
 #include "Coms.h"
-
+#include "DataStorage.h"
 
 #include <iomanip>
 
@@ -12,12 +12,13 @@ class TestProcedure : public Procedure{
     public:
         TestSubsystem& testSubsystem;
         Coms& coms;
+        DataStorage& dataStorage;
 
         byte data[16];
 
 
-        TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
-        : testSubsystem(testSubsystem), coms(coms)
+        TestProcedure(TestSubsystem& testSubsystem, Coms& coms, DataStorage& dataStorage)
+        : testSubsystem(testSubsystem), coms(coms), dataStorage(dataStorage)
         {
             this->frequency = 20; 
 
@@ -50,6 +51,18 @@ class TestProcedure : public Procedure{
             // coms.sendData(DataType::DISTANCE, data, 4);
             // coms.sendData(DataTypes::IMU_ACCELERATION_Z, data, 4);
             // coms.sendData(DataTypes::CAR_SPEED, data, 100);
+
+            AccelerationXYZ acc;
+            acc.accelerationx = 1.2;
+            acc.accelerationy = 2.3;
+            acc.accelerationz = 4.5;
+
+            RotationXYZ rot;
+            rot.rotationx = 0.1;
+            rot.rotationy = 0.2;
+            rot.rotationz = 0.3;
+
+            dataStorage.storeData(rot, acc);
             
             testSubsystem.test(true);
             // testSubsystem.test(false);

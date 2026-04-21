@@ -37,7 +37,7 @@ PRAGMA synchronous = NORMAL;
 
 PRAGMA compile_options;
 
-PRAGMA foreign_keys = ON;
+PRAGMA foreign_keys = OFF;
 PRAGMA journal_mode = WAL;
 PRAGMA synchronous = NORMAL;
 

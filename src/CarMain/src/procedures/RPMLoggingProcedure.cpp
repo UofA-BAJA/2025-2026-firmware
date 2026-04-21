@@ -26,7 +26,7 @@ namespace BajaWildcatRacing{
             void execute() override {
                 float engineRPM = drivetrainSubsystem.getEngineRPM();
 
-                dataStorage.storeData(engineRPM, DataType::MOTOR_RPM);
+                // dataStorage.storeData(engineRPM, DataType::MOTOR_RPM);
                 coms.sendData(DataType::MOTOR_RPM, engineRPM);
             }
 

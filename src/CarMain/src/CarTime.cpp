@@ -3,19 +3,24 @@
 namespace BajaWildcatRacing
 {
 
-    float CarTime::currTimeSeconds = 0.0f;
+    float CarTime::elapsedTimeSeconds = 0.0f;
+    std::int64_t CarTime::currUnixEpoch = 0;
 
     float CarTime::getElapsedTimeSeconds(){
-        return CarTime::currTimeSeconds;
+        return CarTime::elapsedTimeSeconds;
     }
 
-    int CarTime::getUnixEpoch(){
+    int64_t CarTime::getUnixEpoch(){
 
-        return 0;
+        return currUnixEpoch;
     }
 
     void CarTime::setElapsedTimeSeconds(float time){
         CarTime::elapsedTimeSeconds = time;
+    }
+
+    void CarTime::setUnixEpoch(std::int64_t epoch){
+        CarTime::currUnixEpoch = epoch;
     }
 
 }

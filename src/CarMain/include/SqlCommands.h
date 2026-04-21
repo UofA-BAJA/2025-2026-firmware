@@ -8,13 +8,13 @@ namespace BajaWildcatRacing
 {
 
     // inline allows for multiple declarations
-    inline const char* database_schema = R"SQL(
+    inline const char* DATABASE_SCHEMA = R"SQL(
     PRAGMA journal_mode = WAL;
     PRAGMA synchronous = NORMAL;
 
     PRAGMA compile_options;
 
-    PRAGMA foreign_keys = ON;
+    PRAGMA foreign_keys = OFF;
     PRAGMA journal_mode = WAL;
     PRAGMA synchronous = NORMAL;
 
@@ -124,52 +124,52 @@ namespace BajaWildcatRacing
     
     )SQL";
 
-    inline const char* insert_vehicle = R"SQL(
+    inline const char* INSERT_VEHICLE = R"SQL(
     INSERT INTO vehicle (name, competition_year)
     VALUES (?, ?);
     )SQL";
 
-    inline const char* insert_sensor = R"SQL(
+    inline const char* INSERT_SENSOR = R"SQL(
         INSERT INTO sensor (name, manufacturer, model, sensor_type, description)
         VALUES (?, ?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_log = R"SQL(
+    inline const char* INSERT_LOG = R"SQL(
         INSERT INTO log (epoch_ms, vehicle, type, message)
         VALUES (?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_imu = R"SQL(
-        INSERT INTO imu (epoch_ms, vehicle, sensor, ax, ay, az, rz, ry, rz)
+    inline const char* INSERT_IMU = R"SQL(
+        INSERT INTO imu (epoch_ms, vehicle, sensor, ax, ay, az, rx, ry, rz)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_gps = R"SQL(
+    inline const char* ISNERT_GPS = R"SQL(
         INSERT INTO gps (epoch_ms, vehicle, sensor, lat, lon, alt)
         VALUES (?, ?, ?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_pressure = R"SQL(
+    inline const char* INSERT_PRESSURE = R"SQL(
         INSERT INTO pressure (epoch_ms, vehicle, sensor, psi)
         VALUES (?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_linear_actuator = R"SQL(
+    inline const char* INSERT_LINEAR_ACTUATOR = R"SQL(
         INSERT INTO linear_actuator (epoch_ms, vehicle, sensor, displacement)
         VALUES (?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_temperature = R"SQL(
+    inline const char* INSERT_TEMPERATURE = R"SQL(
         INSERT INTO temperature (epoch_ms, vehicle, sensor, temp)
         VALUES (?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_tachometer = R"SQL(
+    inline const char* INSERT_TACHOMETER = R"SQL(
         INSERT INTO tachometer (epoch_ms, vehicle, sensor, rpm)
         VALUES (?, ?, ?, ?);
     )SQL";
 
-    inline const char* insert_vehicle_state = R"SQL(
+    inline const char* INSERT_VEHICLE_STATE = R"SQL(
         INSERT INTO vehicle_state (epoch_ms, vehicle, speed, dist)
         VALUES (?, ?, ?, ?);
     )SQL";

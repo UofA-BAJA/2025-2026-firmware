@@ -22,6 +22,8 @@
 
 #include "SqlCommands.h"
 #include "DataTypes.h"
+#include "Constants.h"
+#include "CarTime.h"
 
 namespace BajaWildcatRacing
 {
@@ -41,7 +43,6 @@ namespace BajaWildcatRacing
             void storeData(RotationXYZ rotData, AccelerationXYZ accData);
             void storeData(BrakePressure data);
             void storeData(WheelSpeed data);
-            void storeData(BrakePressure data);
 
 
         private:

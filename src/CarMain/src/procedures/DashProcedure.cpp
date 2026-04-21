@@ -39,7 +39,7 @@ namespace BajaWildcatRacing
                     dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CVT_HOT, false);
                 }
 
-                dashSubsystem.sendTimeSeconds(CarTime::getCurrentTimeSeconds());
+                dashSubsystem.sendTimeSeconds(CarTime::getElapsedTimeSeconds());
                 dashSubsystem.sendIndicatorLightState();
 
                 dashSubsystem.sendRPM(drivetrainSubsystem.getEngineRPM());
