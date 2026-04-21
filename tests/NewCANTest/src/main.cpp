@@ -11,8 +11,8 @@
 
 
 
-const int SPI_CS_PIN = 17; // CS pin
-const int SPI_INT_PIN = 16;
+const int SPI_CS_PIN = 10; // CS pin
+const int SPI_INT_PIN = 2;
 // MCP_CAN CAN(SPI_CS_PIN);  // Create CAN object on CS pin
 
 CANTProtocol CAN(SPI_CS_PIN, SPI_INT_PIN, 0x1Fl);
