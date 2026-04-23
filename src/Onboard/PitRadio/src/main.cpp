@@ -43,23 +43,29 @@ void setup()
     // rf95.setHeaderFrom(1);
     rf95.setHeaderFlags(0x00); // clear flags
 
-    // Serial.println("Init OK");
+    Serial.println("Init OK");
 }
 
 //put these not on the stack
 uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-uint8_t len = 0;
+uint8_t len = sizeof(buf);
 
 void loop()
 {
     if (rf95.waitAvailableTimeout(2000))
     {
         // Should be a message for us now
-        
+        len = sizeof(buf);
         if (rf95.recv(buf, &len))
         {
-            // int ind = 0;
-
+            int ind = 0;
+            
+            // Serial.println((int)len, BIN);
+            if(len > 0){
+                Serial.println("real data recieved!!!!");
+            }else{
+                Serial.println("keep alive");
+            }
             //Temporary parsing, eventually we're sending this raw via serial
             // while(ind < len){
 
@@ -101,8 +107,16 @@ void loop()
             // }
 
             
+          
             uint8_t headerFlags = rf95.headerFlags();
             int16_t lastRSSI = rf95.lastRssi();
+
+            if(headerFlags & (1 << 2)){
+                Serial.println("Overload detected!");
+            }
+
+            Serial.print("rssi: ");
+            Serial.println(lastRSSI);
 
             outputBufLength = len + 1 + sizeof(int16_t);
 
@@ -111,12 +125,15 @@ void loop()
             memcpy(outputBuf + 3, buf, len);
             memcpy(outputBuf + 3 + len, &USB_DELIMITER, 4);
             
-            if(rf95.headerFlags() & 1){
-                delay(50);
-                uint8_t returnData[1];
+            //TODO: print it lol
+
+            if(headerFlags & 1){
+                // delay(10);
+                uint8_t returnData[2];
                 returnData[0] = 101;
+                returnData[1] = 100;
                 // returnData[1] = 1;
-                rf95.send(returnData, 1);
+                rf95.send(returnData, 0);
                 rf95.waitPacketSent();
                 // Serial.println("Send command response packet");
             }
