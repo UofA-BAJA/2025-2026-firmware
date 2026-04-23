@@ -105,7 +105,7 @@ namespace BajaWildcatRacing
             //RX Command stuff
             bool rxSuccessful = false;
             bool switchToRX = false;
-            const int64_t RX_SWITCH_INTERVAL = 5 * 1000000000L; //seconds to nanoseconds
+            const int64_t RX_SWITCH_INTERVAL = 2 * 1000000000L; //seconds to nanoseconds
 
     };
 

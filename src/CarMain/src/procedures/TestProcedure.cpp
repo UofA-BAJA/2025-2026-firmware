@@ -19,7 +19,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
         : testSubsystem(testSubsystem), coms(coms)
         {
-            this->frequency = 20; 
+            this->frequency = 2; 
 
         }
         
@@ -36,7 +36,7 @@ class TestProcedure : public Procedure{
         void execute() override {
 
             
-            TestDevice::TestStruct st = testSubsystem.getTestStruct();
+            // TestDevice::TestStruct st = testSubsystem.getTestStruct();
             
             // memcpy(data, &st, sizeof(st));
 
@@ -51,7 +51,7 @@ class TestProcedure : public Procedure{
             // coms.sendData(DataTypes::IMU_ACCELERATION_Z, data, 4);
             // coms.sendData(DataTypes::CAR_SPEED, data, 100);
             
-            testSubsystem.test(true);
+            // testSubsystem.test(true);
             // testSubsystem.test(false);
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);
