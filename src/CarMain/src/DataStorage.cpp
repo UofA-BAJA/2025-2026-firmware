@@ -128,6 +128,30 @@ namespace BajaWildcatRacing
     
     void DataStorage::storeData(ShockDisplacement data){
 
+        storeLinearActuator("LA_FR", 5, data.frontRight);
+        storeLinearActuator("LA_FL", 5, data.frontLeft);
+        storeLinearActuator("LA_RR", 5, data.rearRight);
+        storeLinearActuator("LA_RL", 5, data.rearLeft);
+    }
+
+    static void storeLinearActuator(const char* sensor, int sensor_len, float displacement){
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_LINEAR_ACTUATOR, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, sensor, sensor_len, NULL);
+        sqlite3_bind_double(statement, 4, displacement);
+
+
+        queueSqlStatement(statement);
+
     }
     
     void DataStorage::storeData(RotationXYZ rotData, AccelerationXYZ accData){
@@ -157,6 +181,27 @@ namespace BajaWildcatRacing
 
     void storeData(BrakePressure data){
 
+        storeBrakePressure("BP_F", 4, data.front);
+        storeBrakePressure("BP_R", 4, data.rear);
+    }
+
+    static void storeBrakePressure(const char* sensor, int sensor_len, float psi){
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_PRESSURE, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, sensor, sensor_len, NULL);
+        sqlite3_bind_double(statement, 4, psi);
+
+        queueSqlStatement(statement);
     }
 
     void storeData(WheelSpeed data){

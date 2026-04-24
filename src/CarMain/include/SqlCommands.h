@@ -144,7 +144,7 @@ namespace BajaWildcatRacing
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
     )SQL";
 
-    inline const char* ISNERT_GPS = R"SQL(
+    inline const char* INSERT_GPS = R"SQL(
         INSERT INTO gps (epoch_ms, vehicle, sensor, lat, lon, alt)
         VALUES (?, ?, ?, ?, ?, ?);
     )SQL";
