@@ -9,7 +9,7 @@ const int RADIO_INT_PIN = 16;
 
 const uint32_t USB_DELIMITER = 0xAAAAAAAA;
 
-uint8_t outputBuf[RH_RF95_MAX_MESSAGE_LEN + 1 + sizeof(int)];
+uint8_t outputBuf[RH_RF95_MAX_MESSAGE_LEN + 10];
 uint16_t outputBufLength = 0;
 
 // Singleton instance of the radio driver
@@ -48,18 +48,24 @@ void setup()
 
 //put these not on the stack
 uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-uint8_t len = 0;
+uint8_t len = sizeof(buf);
 
 void loop()
 {
     if (rf95.waitAvailableTimeout(2000))
     {
         // Should be a message for us now
-        
+        len = sizeof(buf);
         if (rf95.recv(buf, &len))
         {
-            // int ind = 0;
-
+            int ind = 0;
+            
+            // Serial.println((int)len, BIN);
+            // if(len > 0){
+            //     Serial.println("real data recieved!!!!");
+            // }else{
+            //     Serial.println("keep alive");
+            // }
             //Temporary parsing, eventually we're sending this raw via serial
             // while(ind < len){
 
@@ -101,22 +107,35 @@ void loop()
             // }
 
             
+          
             uint8_t headerFlags = rf95.headerFlags();
             int16_t lastRSSI = rf95.lastRssi();
 
-            outputBufLength = len + 1 + sizeof(int16_t);
+            // if(headerFlags & (1 << 2)){
+            //     Serial.println("Overload detected!");
+            // }
 
-            memcpy(outputBuf, &headerFlags, 1);
-            memcpy(outputBuf + 1, &lastRSSI, 2);
-            memcpy(outputBuf + 3, buf, len);
-            memcpy(outputBuf + 3 + len, &USB_DELIMITER, 4);
+            // Serial.print("rssi: ");
+            // Serial.println(lastRSSI);
+
+            //flags (1 byte) + rssi (2 bytes) + message (n bytes) + delimiters (4 bytes)
+            outputBufLength = len + 7;
+
+            memcpy(outputBuf, &USB_DELIMITER, 4);
+            memcpy(outputBuf + 4, &headerFlags, 1);
+            memcpy(outputBuf + 5, &lastRSSI, 2);
+            memcpy(outputBuf + 7, buf, len);
             
-            if(rf95.headerFlags() & 1){
-                delay(50);
-                uint8_t returnData[1];
-                returnData[0] = 101;
-                // returnData[1] = 1;
-                rf95.send(returnData, 1);
+            Serial.write(outputBuf, outputBufLength);
+            
+            //TODO: print it lol
+
+            if(headerFlags & 1){
+                // delay(10);
+                uint8_t returnData[2];
+                // returnData[0] = 101;
+                // returnData[1] = 100;
+                rf95.send(returnData, 0);
                 rf95.waitPacketSent();
                 // Serial.println("Send command response packet");
             }
