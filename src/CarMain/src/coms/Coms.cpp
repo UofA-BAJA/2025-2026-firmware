@@ -164,12 +164,12 @@ namespace BajaWildcatRacing {
         }
         //Send final packet if there's actually data there
         if(sentDataLength > 0){
-            std::cout << "Sending data now!" << std::endl;
+            // std::cout << "Sending data now!" << std::endl;
             radioTransmit(data, sentDataLength, switchToRX);
         }
         else{
             //Create and send an empty "keep alive" packet
-            std::cout << "Sending keep alive" << std::endl;
+            // std::cout << "Sending keep alive" << std::endl;
             radioTransmit(data, 0, switchToRX);
         }
     }
@@ -346,12 +346,5 @@ namespace BajaWildcatRacing {
             // std::cout << "successfully override queued " << dataType << std::endl;
         }
         lock.unlock();
-    }
-
-    template<typename T>
-    void Coms::sendData(DataType dataType, T data){
-        byte newData[sizeof(T)];
-        memcpy(newData, &data, sizeof(T));
-        sendData(dataType, newData, sizeof(T));
     }
 }
