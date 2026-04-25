@@ -43,6 +43,7 @@ namespace BajaWildcatRacing
             void storeData(RotationXYZ rotData, AccelerationXYZ accData);
             void storeData(BrakePressure data);
             void storeData(WheelSpeed data);
+            void storeData(EngineRPM data);
 
 
         private:

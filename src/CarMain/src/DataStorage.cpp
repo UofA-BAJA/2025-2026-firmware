@@ -205,7 +205,33 @@ namespace BajaWildcatRacing
     }
 
     void storeData(WheelSpeed data){
+        storeTachometer("Sped_FR", 7, data.frontRight);
+        storeTachometer("Sped_FL", 7, data.frontLeft);
+        storeTachometer("Sped_R", 6, data.rear);
+    }
 
+    void storeData(EngineRPM data){
+        storeTachometer("Engine_Tach", 11, data.rpm);
+    }
+
+    static void storeTachometer(const char* sensor, int sensor_len, float rpm){
+        
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_TACHOMETER, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, sensor, sensor_len, NULL);
+        sqlite3_bind_double(statement, 4, rpm);
+
+        queueSqlStatement(statement);
     }
 
 }

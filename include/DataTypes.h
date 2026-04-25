@@ -37,7 +37,7 @@ typedef struct AccelerationXYZ{
     float accelerationz;
 }AccelerationXYZ;
 
-typedef struct WheelSpeed{
+typedef struct WheelRPM{
     float frontLeft;
     float frontRight;
     float rear;
@@ -60,5 +60,13 @@ typedef struct GPSPosition{
     float latitude;
     float atltitude;
 }GPSPosition;
+
+typedef struct EngineRPM{
+    float rpm;
+} EngineRPM;
+
+typedef struct CVTTemp{
+    float temp;
+}
 
 #endif
