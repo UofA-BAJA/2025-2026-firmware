@@ -4,6 +4,7 @@
 #include "DataStorage.h"
 
 #include <iomanip>
+#include <cstdlib> //random
 
 namespace BajaWildcatRacing
 {
@@ -20,7 +21,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms, DataStorage& dataStorage)
         : testSubsystem(testSubsystem), coms(coms), dataStorage(dataStorage)
         {
-            this->frequency = 20; 
+            this->frequency = 10; 
 
         }
         
@@ -37,12 +38,14 @@ class TestProcedure : public Procedure{
         void execute() override {
 
             
-            TestDevice::TestStruct st = testSubsystem.getTestStruct();
-            
-            // memcpy(data, &st, sizeof(st));
+            // TestDevice::TestStruct st = testSubsystem.getTestStruct();
+            // byte d[sizeof(float)];
+            // float num = 6.9f;
+
+            // memcpy(d, &num, sizeof(float));
 
             // coms.sendData(DataType::WHEEL_RPM_FRONT_L, data, 12);
-            coms.sendData(DataType::CAR_SPEED, data, 4);
+            // coms.sendData(DataType::CAR_SPEED, data, 4);
             // coms.sendData(DataType::MOTOR_RPM, data, 4);
             // coms.sendData(DataType::IMU_ROTATION_X, data, 12);
             // coms.sendData(DataType::IMU_ACCELERATION_X, data, 12);
@@ -52,19 +55,17 @@ class TestProcedure : public Procedure{
             // coms.sendData(DataTypes::IMU_ACCELERATION_Z, data, 4);
             // coms.sendData(DataTypes::CAR_SPEED, data, 100);
 
-            AccelerationXYZ acc;
-            acc.accelerationx = 1.2;
-            acc.accelerationy = 2.3;
-            acc.accelerationz = 4.5;
 
-            RotationXYZ rot;
-            rot.rotationx = 0.1;
-            rot.rotationy = 0.2;
-            rot.rotationz = 0.3;
-
-            dataStorage.storeData(rot, acc);
+            // coms.sendData(DataType::CVT_TEMPERATURE, d, sizeof(float));
+            float randomNum = rand() % 50;
+            coms.sendData(DataType::CVT_TEMPERATURE, randomNum);
+            std::cout << "id 8: " << randomNum << std::endl;
+            randomNum = rand() % 50;
+            coms.sendData(DataType::CAR_SPEED, randomNum);
+            std::cout << "id 2: " << randomNum << std::endl;
+            // coms.sendData(DataType::CAR_SPEED, 2026.0f);
             
-            testSubsystem.test(true);
+            // testSubsystem.test(true);
             // testSubsystem.test(false);
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);

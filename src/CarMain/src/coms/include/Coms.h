@@ -50,8 +50,13 @@ namespace BajaWildcatRacing
 
             void sendData(DataType dataType, byte data[], byte dataLength);
 
+            //goofy C++ requires this to be in the header
             template<typename T>
-            void sendData(DataType dataType, T data);
+            void sendData(DataType dataType, T data){
+                byte newData[sizeof(T)];
+                memcpy(newData, &data, sizeof(T));
+                sendData(dataType, newData, sizeof(T));
+            }
 
         private:
 
@@ -63,7 +68,7 @@ namespace BajaWildcatRacing
             
             
             const bool RADIO_ACTIVE = true;
-            int currentFrequency = 20;
+            int currentFrequency = 10;
             bool overloaded = false;
 
             PitCommandState currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
@@ -105,7 +110,7 @@ namespace BajaWildcatRacing
             //RX Command stuff
             bool rxSuccessful = false;
             bool switchToRX = false;
-            const int64_t RX_SWITCH_INTERVAL = 5 * 1000000000L; //seconds to nanoseconds
+            const int64_t RX_SWITCH_INTERVAL = 2 * 1000000000L; //seconds to nanoseconds
 
     };
 
