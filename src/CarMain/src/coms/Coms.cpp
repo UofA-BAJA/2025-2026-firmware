@@ -99,7 +99,7 @@ namespace BajaWildcatRacing {
             //Determine if it's time to do the RX switch
             int64_t switchInterval = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - lastRxTime).count(); 
             if(switchInterval > RX_SWITCH_INTERVAL){
-                std::cout << "switching to RX on next cycle" << std::endl;
+                // std::cout << "switching to RX on next cycle" << std::endl;
                 switchToRX = true;
                 lastRxTime = endTime;
             }
@@ -138,7 +138,7 @@ namespace BajaWildcatRacing {
 
             //If the next data is about to go past over the max length, send what we have out
             if(sentDataLength + nextSize > RH_RF95_MAX_MESSAGE_LEN){
-                std::cout << "Sending data now! Not done this cycle. Size: " << sentDataLength << std::endl;
+                // std::cout << "Sending data now! Not done this cycle. Size: " << sentDataLength << std::endl;
                 radioTransmit(data, sentDataLength, false);
                 sentDataLength = 0;
                 dataStartPos = 0;
@@ -249,7 +249,7 @@ namespace BajaWildcatRacing {
                         if(rxBuffer[i] == 0){
                             //Change frequency 
                             //TODO: how are we encoding this lmao
-                            std::cout << "recieved frequency command: " << std::endl;
+                            // std::cout << "recieved frequency command: " << std::endl;
                         }else if(rxBuffer[i] == 1){
                             //Change commands
                             i++;
@@ -276,7 +276,7 @@ namespace BajaWildcatRacing {
                 std::cout << "ERROR: Radio Recieve failure" << std::endl;
             }
         }else{
-            std::cout << "no command recieved" << std::endl;
+            // std::cout << "no command recieved" << std::endl;
             rf95.setModeIdle();
             currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
         }
@@ -314,7 +314,7 @@ namespace BajaWildcatRacing {
         if(!(dataTypeMask[dataType % 8] & (1 << dataType % 8))){
             //Don't print anything as this will frequently happen in live events
             //Temporary do print something until the radio is working
-            std::cout << "Not sending this data of datatype " << dataType << std::endl;
+            // std::cout << "Not sending this data of datatype " << dataType << std::endl;
             return;
         }
 
