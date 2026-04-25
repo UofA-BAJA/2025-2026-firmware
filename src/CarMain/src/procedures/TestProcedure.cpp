@@ -4,6 +4,7 @@
 
 
 #include <iomanip>
+#include <cstdlib> //random
 
 namespace BajaWildcatRacing
 {
@@ -19,7 +20,7 @@ class TestProcedure : public Procedure{
         TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
         : testSubsystem(testSubsystem), coms(coms)
         {
-            this->frequency = 24; 
+            this->frequency = 10; 
 
         }
         
@@ -36,22 +37,34 @@ class TestProcedure : public Procedure{
         void execute() override {
 
             
-            TestDevice::TestStruct st = testSubsystem.getTestStruct();
-            
-            // memcpy(data, &st, sizeof(st));
+            // TestDevice::TestStruct st = testSubsystem.getTestStruct();
+            // byte d[sizeof(float)];
+            // float num = 6.9f;
 
-            coms.sendData(DataTypes::WHEEL_RPM_FRONT_L, data, 12);
-            coms.sendData(DataTypes::CAR_SPEED, data, 4);
-            coms.sendData(DataTypes::MOTOR_RPM, data, 4);
-            coms.sendData(DataTypes::IMU_ROTATION_X, data, 12);
-            coms.sendData(DataTypes::IMU_ACCELERATION_X, data, 12);
-            coms.sendData(DataTypes::BRAKE_PRESSURE_REAR, data, 8);
-            coms.sendData(DataTypes::CVT_TEMPERATURE, data, 4);
-            coms.sendData(DataTypes::DISTANCE, data, 4);
+            // memcpy(d, &num, sizeof(float));
+
+            // coms.sendData(DataType::WHEEL_RPM_FRONT_L, data, 12);
+            // coms.sendData(DataType::CAR_SPEED, data, 4);
+            // coms.sendData(DataType::MOTOR_RPM, data, 4);
+            // coms.sendData(DataType::IMU_ROTATION_X, data, 12);
+            // coms.sendData(DataType::IMU_ACCELERATION_X, data, 12);
+            // coms.sendData(DataType::BRAKE_PRESSURE_REAR, data, 8);
+            // coms.sendData(DataType::CVT_TEMPERATURE, data, 4);
+            // coms.sendData(DataType::DISTANCE, data, 4);
             // coms.sendData(DataTypes::IMU_ACCELERATION_Z, data, 4);
             // coms.sendData(DataTypes::CAR_SPEED, data, 100);
+
+
+            // coms.sendData(DataType::CVT_TEMPERATURE, d, sizeof(float));
+            float randomNum = rand() % 50;
+            coms.sendData(DataType::CVT_TEMPERATURE, randomNum);
+            std::cout << "id 8: " << randomNum << std::endl;
+            randomNum = rand() % 50;
+            coms.sendData(DataType::CAR_SPEED, randomNum);
+            std::cout << "id 2: " << randomNum << std::endl;
+            // coms.sendData(DataType::CAR_SPEED, 2026.0f);
             
-            testSubsystem.test(true);
+            // testSubsystem.test(true);
             // testSubsystem.test(false);
             // std::cout << std::fixed;
             // std::cout << std::setprecision(2);
