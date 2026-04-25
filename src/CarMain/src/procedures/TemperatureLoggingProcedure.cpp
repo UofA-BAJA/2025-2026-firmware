@@ -36,7 +36,7 @@ class TemperatureLoggingProcedure : public Procedure{
             float cvt_temperature = drivetrainSubsystem.getCVTTemperature();
 
 
-            dataStorage.storeData(cvt_temperature, DataType::CVT_TEMPERATURE);
+            // dataStorage.storeData(cvt_temperature, DataType::CVT_TEMPERATURE);
             coms.sendData(DataType::CVT_TEMPERATURE, cvt_temperature);
 
             // std::cout << std::fixed;

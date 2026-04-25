@@ -1,7 +1,7 @@
 #include "Procedure.h"
 #include "TestSubsystem.h"
 #include "Coms.h"
-
+#include "DataStorage.h"
 
 #include <iomanip>
 #include <cstdlib> //random
@@ -13,12 +13,13 @@ class TestProcedure : public Procedure{
     public:
         TestSubsystem& testSubsystem;
         Coms& coms;
+        DataStorage& dataStorage;
 
         byte data[16];
 
 
-        TestProcedure(TestSubsystem& testSubsystem, Coms& coms)
-        : testSubsystem(testSubsystem), coms(coms)
+        TestProcedure(TestSubsystem& testSubsystem, Coms& coms, DataStorage& dataStorage)
+        : testSubsystem(testSubsystem), coms(coms), dataStorage(dataStorage)
         {
             this->frequency = 10; 
 
