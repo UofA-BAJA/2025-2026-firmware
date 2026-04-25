@@ -9,6 +9,7 @@ comments
 
 #define RADIO_CS_PIN 11
 #define RADIO_INT_PIN 21
+#define COMS_RX_DISABLED
 
 #include "Coms.h"
 
@@ -95,14 +96,17 @@ namespace BajaWildcatRacing {
                     overloaded = true;
                 }
             }
-            
+
+            #ifndef COMS_RX_DISABLED
             //Determine if it's time to do the RX switch
             int64_t switchInterval = std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - lastRxTime).count(); 
+
             if(switchInterval > RX_SWITCH_INTERVAL){
                 std::cout << "switching to RX on next cycle" << std::endl;
                 switchToRX = true;
                 lastRxTime = endTime;
             }
+            #endif
             
         }
         std::cout << "Coms are stopped." << std::endl;
