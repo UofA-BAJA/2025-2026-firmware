@@ -3,12 +3,9 @@
 namespace BajaWildcatRacing
 {
 
-
     DataStorage::DataStorage(const char* path)
     {
         setupDatabase(path);
-
-        setupDataTypes();
 
         updateDBThread = std::thread(&DataStorage::updateDatabase, this);
 
@@ -17,18 +14,15 @@ namespace BajaWildcatRacing
 
 
     void DataStorage::updateDatabase(){
-        const char* insertData = "INSERT OR IGNORE INTO Data (SessionID, Timestamp, DataTypeID, Value) "
-                                "VALUES (?, ?, ?, ?)";
 
         char* messageError;
         int exit;
 
         while(running.load()){
-            // insertCondition.wait(conditionalLock, [this] { return insertBuffer.size() > 20; });
 
             std::unique_lock<std::mutex> lock(insertBufferMutex);
 
-            std::queue<DataValues> localInsertBuffer;
+            std::queue<sqlite3_stmt *> localInsertBuffer;
             std::swap(localInsertBuffer, insertBuffer);
             lock.unlock();
 
@@ -38,28 +32,10 @@ namespace BajaWildcatRacing
 
             while(!localInsertBuffer.empty()){
 
-                DataValues data = localInsertBuffer.front();
+                sqlite3_stmt *statement = localInsertBuffer.front();
                 localInsertBuffer.pop();
 
-
                 int exit = 0;
-
-                sqlite3_stmt *statement;
-
-                exit = sqlite3_prepare_v2(db, insertData, -1, &statement, nullptr);
-
-                if(exit){
-                    std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-                    return;
-                }
-
-                // Bind values to parameters
-                sqlite3_bind_int(statement, 1, data.currentSessionID);
-                sqlite3_bind_double(statement, 2, data.currentTimestamp);
-                sqlite3_bind_int(statement, 3, data.dataType);
-                sqlite3_bind_double(statement, 4, data.data);
-
-                // std::cout << "SessionID: " << data.currentSessionID << " DataType: " << data.dataType << " Timestamp: " << data.currentTimestamp << std::endl;
 
                 exit = sqlite3_step(statement);
 
@@ -77,66 +53,6 @@ namespace BajaWildcatRacing
 
 
 
-
-    const char* insertSession = "INSERT INTO Session (Name) VALUES (?)";
-
-    void DataStorage::startNewSession(const char* sessionName){
-
-        int exit = 0;
-
-        sqlite3_stmt *statement;
-
-        exit = sqlite3_prepare_v2(db, insertSession, -1, &statement, nullptr);
-
-        if(exit){
-            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-            return;
-        }
-
-        // Bind values to parameters
-        sqlite3_bind_text(statement, 1, sessionName, -1, SQLITE_STATIC);
-
-        exit = sqlite3_step(statement);
-
-        if(exit != SQLITE_DONE){
-            std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
-        }
-
-        currentSessionID = sqlite3_last_insert_rowid(db);
-
-        sqlite3_finalize(statement);
-    }
-
-
-
-
-    const char* updateEndTime = "UPDATE Session SET EndTime = CURRENT_TIMESTAMP WHERE SessionID = ?;";
-
-    void DataStorage::endCurrentSession(){
-        
-        int exit = 0;
-
-        sqlite3_stmt *statement;
-
-        exit = sqlite3_prepare_v2(db, updateEndTime, -1, &statement, nullptr);
-
-            if(exit){
-            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-            return;
-        }
-
-        // Bind values to parameters
-        sqlite3_bind_int(statement, 1, currentSessionID);
-
-        exit = sqlite3_step(statement);
-
-        if(exit != SQLITE_DONE){
-            std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
-        }
-        sqlite3_finalize(statement);
-    }
-
-
     void DataStorage::end(){
         running = false;
 
@@ -148,63 +64,43 @@ namespace BajaWildcatRacing
 
     }
 
-    void DataStorage::execute(float timestamp){
-
-        currentTimestamp = timestamp;
-    }
-
-
-    int i = 0;
 
     int DataStorage::getData(){
-        std::cout << "Get Data Called, i: " << i << std::endl;
-        return i;
+        std::cout << "Shame on you for calling getData()" << std::endl;
+        return 1;       // Always error
     }
 
 
-    /*
-    *  Method:  storeData
-    *
-    *  Purpose: Inserts a given floating point value to store in association with a data
-    *           type and timestamp. 
-    *
-    *  Pre-Condition:  [Any non-obvious conditions that must exist
-    *              or be true before we can expect this method to
-    *              function correctly.]
-    *
-    *  Post-Condition: The data given will be stored in the database in the data table;
-    *                  The data is stored in association with the given data type and the
-    *                  current car timestamp (time since car program started);
-    *
-    *  Parameters:
-    *          data -- the floating point data value to enter into the database
-    *          dataType -- the type of data to enter. ie. IMU X Rotation
-    *
-    *  Returns: None
-    *
-    */
+    // statement must be a prepared statement!!!!
+    // It can not be null!
+    void DataStorage::queueSqlStatement(sqlite3_stmt *statement){
 
-    void DataStorage::storeData(float data, DataType dataType){
-
-        DataValues dataToStore = {};
-        dataToStore.currentSessionID = currentSessionID;
-        dataToStore.currentTimestamp = currentTimestamp;
-        dataToStore.dataType = dataType;
-        dataToStore.data = data;
-
+        if(statement == nullptr){
+            // literally the end of the world
+            return;
+        }
 
         numDataInserts++;
+
         std::lock_guard<std::mutex> lock (insertBufferMutex);
-        insertBuffer.push(dataToStore);
+        insertBuffer.push(statement);
     }
 
-
-
-
-
+    
     void DataStorage::setupDatabase(const char* path){
 
-        std::string fullPath = std::string(path) + "/testdb.db";
+
+        // Create new .db file with the current time in the name
+
+        auto now = std::chrono::system_clock::now();
+        // Format: Year-Month-Day_Hour-Minute-Second
+        std::time_t t = std::chrono::system_clock::to_time_t(now);
+
+        std::stringstream ss;
+        ss << std::put_time(std::localtime(&t), "%Y-%m-%d_%H-%M-%S");
+        std::string timestamp = ss.str();
+        
+        std::string fullPath = std::string(path) + "/baja_data_" + timestamp +".db";
 
         int exit = 0;
         // If database does not already exist, it will be created.
@@ -219,220 +115,123 @@ namespace BajaWildcatRacing
             // std::cout << "Opened Database Successfully!" << std::endl; 
         }
         
-        char* messageError;
 
-        const char* threadingMode = "PRAGMA compile_options;";
-        sqlite3_exec(db, threadingMode, NULL, 0, &messageError);
-
-        // We have to enable the foreign key constraint. This ensures we are setting 
-        // all of the tables up correctly and will have the appropriate data.
-        const char* enableForeignKeys = "PRAGMA foreign_keys = ON;";
-
-        exit = sqlite3_exec(db, enableForeignKeys, NULL, 0, &messageError);
-
-        if(exit != SQLITE_OK){
-            std::cerr << "Error Enabling Foreign Keys: " << messageError << std::endl;
-            sqlite3_free(messageError);
-        }
-
-        const char* setJournalMode = "PRAGMA journal_mode = WAL;";
-
-        exit = sqlite3_exec(db, setJournalMode, NULL, 0, &messageError);
-
-        if(exit != SQLITE_OK){
-            std::cerr << "Error setting journal_mode: " << messageError << std::endl;
-            sqlite3_free(messageError);
-        }
-
-        const char* setSynchronous = "PRAGMA synchronous = NORMAL;";
-
-        exit = sqlite3_exec(db, setSynchronous, NULL, 0, &messageError);
-
-        if(exit != SQLITE_OK){
-            std::cerr << "Error setting synchronous: " << messageError << std::endl;
-            sqlite3_free(messageError);
-        }
-
-
-        const char* createSessionTable = "CREATE TABLE IF NOT EXISTS Session("
-                        "SessionID INTEGER PRIMARY KEY AUTOINCREMENT, "
-                        "StartTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,"
-                        "EndTime TIMESTAMP,"
-                        "Name TEXT        NOT NULL)";
-
-        exit = sqlite3_exec(db, createSessionTable, NULL, 0, &messageError);
-
-        if(exit != SQLITE_OK){
-            std::cerr << "Error Create Table: " << messageError << std::endl;
-            sqlite3_free(messageError);
-        }
-        else{
-            // std::cout << "Session table created successfully" << std::endl;
-        }
-
-        // Create DataTypes Table
-        // The DataTypeID is the same as the DataTypes enum value.
-        const char* createDataTypeTable = "CREATE TABLE IF NOT EXISTS DataType("
-                        "DataTypeID INTEGER PRIMARY KEY, "
-                        "DataTypeName TEXT,"
-                        "DataUnit TEXT)";
-
-        exit = sqlite3_exec(db, createDataTypeTable, NULL, 0, &messageError);
-
-        if(exit != SQLITE_OK){
-            std::cerr << "Error Create Table: " << messageError << std::endl;
-            sqlite3_free(messageError);
-        }
-        else{
-            // std::cout << "DataType table created successfully" << std::endl;
-        }
-
-        // Create Data Table
-        const char* dataCreateTable = "CREATE TABLE IF NOT EXISTS Data("
-                                    "SessionID INTEGER,"
-                                    "Timestamp REAL,"
-                                    "DataTypeID INTEGER,"
-                                    "Value REAL,"
-                                    "PRIMARY KEY (SessionID, Timestamp, DataTypeID),"
-                                    "FOREIGN KEY (SessionID) REFERENCES Session(SessionID) ON DELETE CASCADE,"
-                                    "FOREIGN KEY (DataTypeID) REFERENCES DataType(DataTypeID) ON DELETE NO ACTION"
-                                    ");";
-
-
-        exit = sqlite3_exec(db, dataCreateTable, NULL, 0, &messageError);
-
-        if(exit != SQLITE_OK){
-            std::cerr << "Error Create Table: " << messageError << std::endl;
-            sqlite3_free(messageError);
-        }
-        else{
-            // std::cout << "Data table created successfully" << std::endl;
+        // Execute database schema
+        char* errMsg = nullptr;
+        int rc = sqlite3_exec(db, DATABASE_SCHEMA, nullptr, nullptr, &errMsg);
+        if(rc != SQLITE_OK){
+            std::cerr << "SQL error: " << errMsg << std::endl;
+            sqlite3_free(errMsg);
         }
     }
 
+    
+    void DataStorage::storeData(ShockDisplacement data){
 
-    void DataStorage::setupDataTypes(){
-
-        // Extremely important that all 3 lists have the same size and that each index of each list
-        // corresponds to the same data type! If it doesn't things will break.
-        // There's definitely a better way to do this (if somebody wants to fix pls do!)
-
-        // dataTypesInDB.push_back({
-        //     DataType::IMU_ROTATION_X,
-        //     "IMU Rotation X",
-        //     "deg"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::IMU_ROTATION_Y,
-        //     "IMU Rotation Y",
-        //     "deg"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::IMU_ROTATION_Z,
-        //     "IMU Rotation Z",
-        //     "deg"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::IMU_ACCELERATION_X,
-        //     "IMU Acceleration X",
-        //     "m/s^2"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::IMU_ACCELERATION_Y,
-        //     "IMU Acceleration Y",
-        //     "m/s^2"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::IMU_ACCELERATION_Z,
-        //     "IMU Acceleration Z",
-        //     "m/s^2"
-        // });
-
-        dataTypesInDB.push_back({
-            DataType::CAR_SPEED,
-            "Car Speed",
-            "m/s"
-        });
-
-        dataTypesInDB.push_back({
-            DataType::CVT_TEMPERATURE,
-            "CVT Temperature",
-            "deg C"
-        });
-
-        dataTypesInDB.push_back({
-            DataType::DISTANCE,
-            "Distance",
-            "m"
-        });
-
-        // dataTypesInDB.push_back({
-        //     DataType::WHEEL_RPM_FRONT_L,
-        //     "Wheel RPM Front Left",
-        //     "rev/s"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::WHEEL_RPM_FRONT_R,
-        //     "Wheel RPM Front Right",
-        //     "rev/s"
-        // });
-
-        // dataTypesInDB.push_back({
-        //     DataType::WHEEL_RPM_BACK,
-        //     "Wheel RPM Back",
-        //     "rev/s"
-        // });
-
-        dataTypesInDB.push_back({
-            DataType::MOTOR_RPM,
-            "RPM Motor",
-            "rev/s"
-        });
-
-        // dataTypesInDB.push_back(DataTypes::CAR_SPEED);
-        // dataTypeName.push_back("CAR SPEED");
-        // dataTypeUnit.push_back("m/s");
-
-        /* I'm not entirely sure how the ON CONFLICT works, but we need to do this if we want to update the data types table. 
-        * The reason why is that all of the data in the data table has a foreign key that references this table, so if it's
-        * inserted or replaced every time it takes a ton of time to fix if the database is large (which it will be)
-        *
-        */ 
-
-        const char* insertDataType = "INSERT INTO DataType (DataTypeID, DataTypeName, DataUnit) VALUES (?, ?, ?) "
-                                    "ON CONFLICT(DataTypeID) DO UPDATE SET DataTypeName=excluded.DataTypeName, DataUnit=excluded.DataUnit";
-
-        for(int i = 0; i < dataTypesInDB.size(); i++){
-            int exit = 0;
-
-            sqlite3_stmt *statement;
-
-            exit = sqlite3_prepare_v2(db, insertDataType, -1, &statement, nullptr);
-
-
-            if(exit){
-                std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
-                return;
-            }
-
-            // Bind values to parameters
-            sqlite3_bind_double(statement, 1, dataTypesInDB[i].dataType);
-            sqlite3_bind_text(statement, 2, dataTypesInDB[i].name.c_str(), -1, SQLITE_STATIC);
-            sqlite3_bind_text(statement, 3, dataTypesInDB[i].unit.c_str(), -1, SQLITE_STATIC);
-
-
-            exit = sqlite3_step(statement);
-
-            if(exit != SQLITE_DONE){
-                std::cerr << "Execution failed: " << sqlite3_errmsg(db) << std::endl;
-            }
-            sqlite3_finalize(statement);
-        }
+        storeLinearActuator("LA_FR", 5, data.frontRight);
+        storeLinearActuator("LA_FL", 5, data.frontLeft);
+        storeLinearActuator("LA_RR", 5, data.rearRight);
+        storeLinearActuator("LA_RL", 5, data.rearLeft);
     }
+
+    static void storeLinearActuator(const char* sensor, int sensor_len, float displacement){
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_LINEAR_ACTUATOR, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, sensor, sensor_len, NULL);
+        sqlite3_bind_double(statement, 4, displacement);
+
+
+        queueSqlStatement(statement);
+
+    }
+    
+    void DataStorage::storeData(RotationXYZ rotData, AccelerationXYZ accData){
+        
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_IMU, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, "IMU", 3, NULL);
+        sqlite3_bind_double(statement, 4, accData.accelerationx);
+        sqlite3_bind_double(statement, 5, accData.accelerationy);
+        sqlite3_bind_double(statement, 6, accData.accelerationz);
+        sqlite3_bind_double(statement, 7, rotData.rotationx);
+        sqlite3_bind_double(statement, 8, rotData.rotationy);
+        sqlite3_bind_double(statement, 9, rotData.rotationz);
+
+
+        queueSqlStatement(statement);
+    }
+
+    void storeData(BrakePressure data){
+
+        storeBrakePressure("BP_F", 4, data.front);
+        storeBrakePressure("BP_R", 4, data.rear);
+    }
+
+    static void storeBrakePressure(const char* sensor, int sensor_len, float psi){
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_PRESSURE, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, sensor, sensor_len, NULL);
+        sqlite3_bind_double(statement, 4, psi);
+
+        queueSqlStatement(statement);
+    }
+
+    void storeData(WheelSpeed data){
+        storeTachometer("Sped_FR", 7, data.frontRight);
+        storeTachometer("Sped_FL", 7, data.frontLeft);
+        storeTachometer("Sped_R", 6, data.rear);
+    }
+
+    void storeData(EngineRPM data){
+        storeTachometer("Engine_Tach", 11, data.rpm);
+    }
+
+    static void storeTachometer(const char* sensor, int sensor_len, float rpm){
+        
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_TACHOMETER, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, sensor, sensor_len, NULL);
+        sqlite3_bind_double(statement, 4, rpm);
+
+        queueSqlStatement(statement);
+    }
+
 }

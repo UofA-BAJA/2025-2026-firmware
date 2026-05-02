@@ -40,7 +40,7 @@ class DistCalcProcedure : public Procedure {
         
         void init() override {
 
-            prevCarTime = CarTime::getCurrentTimeSeconds();
+            prevCarTime = CarTime::getElapsedTimeSeconds();
             std::cout << "Spedometer procedure initialized!" << std::endl;
         }
 
@@ -51,7 +51,7 @@ class DistCalcProcedure : public Procedure {
             // float mps = rpm * 0.0289f; // Magic number 
             float mps = drivetrainSubsystem.getCarSpeedMetersSec();
 
-            float currTime = CarTime::getCurrentTimeSeconds();
+            float currTime = CarTime::getElapsedTimeSeconds();
             deltaTime = currTime - prevCarTime;
             prevCarTime = currTime;
 
@@ -62,7 +62,7 @@ class DistCalcProcedure : public Procedure {
 
             // std::cout << "Dist (miles): " << distMiles << " MPH: " << mph << std::endl;
 
-            dataStorage.storeData(distMeters, DataType::DISTANCE);
+            // dataStorage.storeData(distMeters, DataType::DISTANCE);
             coms.sendData(DataType::DISTANCE, distMeters);
 
             prevCarMPS = mps;
