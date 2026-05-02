@@ -24,7 +24,7 @@ void setup() {
 
     CAN.registerRequest(0x00, builder);
     while(!CAN.begin()){
-        CAN.end();
+        // CAN.end();
         delay(100);
     }
 
