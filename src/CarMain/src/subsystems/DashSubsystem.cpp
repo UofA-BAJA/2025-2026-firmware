@@ -24,18 +24,6 @@ namespace BajaWildcatRacing
         dash.sendTimeSeconds(seconds);
     }
 
-    void DashSubsystem::setIndicatorLights(uint16_t lightState){
-        dash.setIndicatorLights(lightState);
-    }
-
-    void DashSubsystem::setSpecificIndicatorLight(Dash::IndicatorLights light, bool state){
-        dash.setSpecificIndicatorLight(light, state);
-    }
-
-    void DashSubsystem::sendIndicatorLightState(){
-        dash.sendIndicatorLightState();
-    }
-
     void DashSubsystem::sendDistance(float distance){
         dash.sendDistance(distance);
     }

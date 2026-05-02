@@ -1,6 +1,6 @@
 /*
 * DASH 2025-2026 Firmware
-* Version: 2.0.0
+* Version: 1.0.0
 * 
 */
 
@@ -27,16 +27,12 @@
 
 // Variables ----------------
 
-// CAR DATA
-
 float rpm = 0;      // Engine RPM      (data ID 0)
 float speed = 0;     // Car speed        (data ID 1)
 float cvtTemp = 0;   // CVT temperature  (data ID 2)
 float carTime = 0;   // Car time         (data ID 3)
 float distance = 0;  // Distance travelled (data ID 4)
 
-
-// Other helpers
 int displayIndex = 0;
 int counter = 0;
 
@@ -56,8 +52,6 @@ Bounce button = Bounce();
 
 // Functions ----------------
 
-// Alpha Display Helpers
-
 void writeText(Adafruit_AlphaNum4 &display, String text){
 
     display.clear();
@@ -68,45 +62,6 @@ void writeText(Adafruit_AlphaNum4 &display, String text){
 
 }
 
-void updateDisplay(int index){
-    switch(index){
-
-        // RPM
-        case 0:
-            writeText(upper," RPM");
-            writeText(lower, String(round(rpm)));
-            break;
-
-        // Speed
-        case 1:
-            writeText(upper,"SPEED");
-            writeText(lower, String(round(speed)));
-            break;
-
-        // CVT Temp
-        case 2:
-            writeText(upper,"TEMP");
-            writeText(lower, String(round(cvtTemp)));
-            break;
-
-        // Car Time
-        case 3:
-            writeText(upper,"TIME");
-            writeText(lower, String(round(carTime)));
-            break;
-
-        // Distance
-        case 4:
-            writeText(upper, "DIST");
-            writeText(lower, String(round(distance)));
-            break;
-
-        // We don't talk about it
-        default:
-            break;
-    }
-}
-
 // CAN Command Handlers -----
 
 void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
@@ -114,7 +69,9 @@ void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long cal
 
     tachometer.write(int(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX)));
     
-    if(displayIndex == 0) updateDisplay(0);
+    if(displayIndex == 0){
+
+    }
 }
 
 void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
@@ -122,22 +79,21 @@ void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long call
 
     speedometer.write(int(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX)));
     
-    if(displayIndex == 1) updateDisplay(1);
+    if(displayIndex == 0){
+
+    }
 }
 
 void onCVTTemp(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&cvtTemp, incomingData, sizeof(float));
-    if(displayIndex == 2) updateDisplay(2);
 }
 
 void onCarTime(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&carTime, incomingData, sizeof(float));
-    if(displayIndex == 3) updateDisplay(3);
 }
 
 void onDistance(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&distance, incomingData, sizeof(float));
-    if(displayIndex == 4) updateDisplay(4);
 }
 
 // SETUP --------------------
@@ -160,10 +116,10 @@ void setup(){
 
     // Servo Setup
     tachometer.setPeriodHertz(50);
-    tachometer.attach(SERVO_TACH, 600, 2400);
-
+    tachometer.attach(SERVO_TACH, 1000, 2000);
+    
     speedometer.setPeriodHertz(50);
-    speedometer.attach(SERVO_SPEED, 600, 2400);
+    speedometer.attach(SERVO_SPEED, 1000,2000);
 
     tachometer.write(0);
     speedometer.write(0);
@@ -179,38 +135,33 @@ void setup(){
     button.attach(BUTTON_LOWER);
     button.interval(5);
 
-    // CAN Setup
-	pinMode(SPI_CS_CAN,OUTPUT);
-	pinMode(SPI_INT_CAN,OUTPUT);
+    // LCD Setup (not enough pins)
+    //lcd.initialize(, 35, 36, A0_PIN, RESET_PIN, DOGM128);
+    //lcd.contrast(20);
 
+    // CAN Setup
     CAN.registerCommand(0, onEngineRPM);
     CAN.registerCommand(1, onCarSpeed);
     CAN.registerCommand(2, onCVTTemp);
     CAN.registerCommand(3, onCarTime);
     CAN.registerCommand(4, onDistance);
 
-    writeText(upper, "CAN ");
-    writeText(lower, "INIT");
+    //writeText(upper, "CAN");
+    //writeText(lower, "INIT");
 
     while (!CAN.begin()) {
+        CAN.end();
         delay(2000);
     }
     delay(1000);
-
-    writeText(lower, "READY");
-
-    lower.clear();
-    upper.clear();
 }
 
 // MAIN ---------------------
 
 void loop(){
     CAN.execute();
-    button.update();
 
-    if(!button.fell()){
+    if(button.update() && button.read() == HIGH){
         displayIndex = (displayIndex + 1) % 5;
-        updateDisplay(displayIndex);
     }
 }

@@ -1,6 +1,6 @@
 /*
-* DASH 2025-2026 Firmware
-* Version: 2.0.0
+* DASH REV2 2025-2026 Firmware
+* Version: 1.0.0
 * 
 */
 
@@ -32,7 +32,7 @@
 float rpm = 0;      // Engine RPM      (data ID 0)
 float speed = 0;     // Car speed        (data ID 1)
 float cvtTemp = 0;   // CVT temperature  (data ID 2)
-float carTime = 0;   // Car time         (data ID 3)
+int carTime = 0;   // Car time         (data ID 3)
 float distance = 0;  // Distance travelled (data ID 4)
 
 
@@ -42,7 +42,7 @@ int counter = 0;
 
 // Instantiations -----------
 
-CANTProtocol CAN(SPI_CS_CAN, SPI_INT_CAN, 9);
+CANTProtocol CAN(SPI_CS_CAN, SPI_INT_CAN, CAN_ADDR);
 
 Adafruit_AlphaNum4 upper = Adafruit_AlphaNum4();
 Adafruit_AlphaNum4 lower = Adafruit_AlphaNum4();
@@ -56,8 +56,6 @@ Bounce button = Bounce();
 
 // Functions ----------------
 
-// Alpha Display Helpers
-
 void writeText(Adafruit_AlphaNum4 &display, String text){
 
     display.clear();
@@ -66,6 +64,39 @@ void writeText(Adafruit_AlphaNum4 &display, String text){
     }
     display.writeDisplay();
 
+}
+
+// CAN Command Handlers -----
+
+void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&rpm, incomingData, sizeof(float));
+
+    tachometer.write(int(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX)));
+    
+    if(displayIndex == 0) updateDisplay(0);
+}
+
+void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&speed, incomingData, sizeof(float));
+
+    speedometer.write(int(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX)));
+    
+    if(displayIndex == 1) updateDisplay(1);
+}
+
+void onCVTTemp(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&cvtTemp, incomingData, sizeof(float));
+    if(displayIndex == 2) updateDisplay(2);
+}
+
+void onCarTime(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&carTime, incomingData, sizeof(float));
+    if(displayIndex == 3) updateDisplay(3);
+}
+
+void onDistance(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&distance, incomingData, sizeof(float));
+    if(displayIndex == 4) updateDisplay(4);
 }
 
 void updateDisplay(int index){
@@ -106,45 +137,12 @@ void updateDisplay(int index){
             break;
     }
 }
-
-// CAN Command Handlers -----
-
-void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&rpm, incomingData, sizeof(float));
-
-    tachometer.write(int(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX)));
-    
-    if(displayIndex == 0) updateDisplay(0);
-}
-
-void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&speed, incomingData, sizeof(float));
-
-    speedometer.write(int(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX)));
-    
-    if(displayIndex == 1) updateDisplay(1);
-}
-
-void onCVTTemp(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&cvtTemp, incomingData, sizeof(float));
-    if(displayIndex == 2) updateDisplay(2);
-}
-
-void onCarTime(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&carTime, incomingData, sizeof(float));
-    if(displayIndex == 3) updateDisplay(3);
-}
-
-void onDistance(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&distance, incomingData, sizeof(float));
-    if(displayIndex == 4) updateDisplay(4);
-}
-
 // SETUP --------------------
 
 void setup(){
 
-    // Alpha Setup
+    // ALPHANUMERIC SETUP ===
+
     upper.begin(I2C_ADDR_UPPER);
     lower.begin(I2C_ADDR_LOWER);
 
@@ -152,11 +150,7 @@ void setup(){
     writeText(lower, "Baja");
     delay(2000);
 
-    // Allow allocation of all timers
-	ESP32PWM::allocateTimer(0);
-	ESP32PWM::allocateTimer(1);
-	ESP32PWM::allocateTimer(2);
-	ESP32PWM::allocateTimer(3);
+    // SERVO SETUP ===
 
     // Servo Setup
     tachometer.setPeriodHertz(50);
@@ -175,11 +169,14 @@ void setup(){
     speedometer.write(0);
     delay(500);
 
-    pinMode(BUTTON_LOWER, INPUT_PULLUP);
-    button.attach(BUTTON_LOWER);
-    button.interval(5);
+    // LCD SETUP ===
 
-    // CAN Setup
+    // LCD Setup (not enough pins)
+    //lcd.initialize(, 35, 36, A0_PIN, RESET_PIN, DOGM128);
+    //lcd.contrast(20);
+
+    // CAN SETUP ===
+
 	pinMode(SPI_CS_CAN,OUTPUT);
 	pinMode(SPI_INT_CAN,OUTPUT);
 
@@ -203,9 +200,11 @@ void setup(){
     upper.clear();
 }
 
+
 // MAIN ---------------------
 
 void loop(){
+    
     CAN.execute();
     button.update();
 
