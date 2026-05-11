@@ -22,6 +22,10 @@
 #define DOGL128 2
 #define DOGM132 3
 
+#define ALIGN_LEFT   0
+#define ALIGN_CENTER 1
+#define ALIGN_RIGHT  2
+
 #define VIEW_BOTTOM 0xC0
 #define VIEW_TOP 	0xC8
 
@@ -34,6 +38,7 @@ class dog_7565R
     void contrast       (byte contr);
 	void view			(byte direction);
 	void string         (byte column, byte page, const byte *font_adress, const char *str);
+  void print(byte page, const byte *font_address, const char *str, byte alignment = ALIGN_LEFT);
 	void rectangle		(byte start_column, byte start_page, byte end_column, byte end_page, byte pattern);
 	void picture		(byte column, byte page, const byte *pic_adress);
 
@@ -49,11 +54,9 @@ class dog_7565R
 	void position   (byte column, byte page);
     void command	(byte dat);
     void data		(byte dat);
-    
-    void spi_initialize	(byte cs, byte si, byte clk);
+  
     void spi_put_byte	(byte dat);
     void spi_put		(byte *dat, int len);
-	void spi_out		(byte dat);
 };
 
 #endif

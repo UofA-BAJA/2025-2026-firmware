@@ -43,33 +43,57 @@ Func: DOG-INIT
 Desc: Initializes SPI Hardware/Software and DOG Displays
 Vars: CS-Pin, MOSI-Pin, SCK-Pin (MOSI=SCK Hardware else Software), A0-Pin (high=data, low=command), p_res = Reset-Pin, type (1=EA DOGM128-6, 2=EA DOGL128-6)
 ------------------------------*/
-void dog_7565R::initialize(byte p_cs, byte p_si, byte p_clk, byte p_a0, byte p_res, byte type)
-{
+void dog_7565R::initialize(byte p_cs, byte p_si, byte p_clk, byte p_a0, byte p_res, byte type){
+	Serial.println("1");
 	byte *ptr_init; //pointer to the correct init values
 	top_view = false; //default = bottom view
 
+	Serial.println("2");
 	dog_7565R::p_a0 = p_a0;
 	pinMode(p_a0, OUTPUT);
-	spi_initialize(p_cs, p_si, p_clk); //init SPI to Mode 3
+	
 
+	Serial.println("3");
+	// Set CS to deselct slaves
+	pinMode(p_cs, OUTPUT);
+	digitalWrite(p_cs, HIGH);
+
+	Serial.println("6");
+	//Set pin Configuration
+	this->p_cs = p_cs;
+	this->p_si = p_si;
+	this->p_clk = p_clk;
+
+	Serial.println("7");
 	//perform a Reset
-	digitalWrite(p_res, LOW);
 	pinMode(p_res, OUTPUT);
+
+	Serial.println("8");
+	digitalWrite(p_res, LOW);
 	delayMicroseconds(10);
 	digitalWrite(p_res, HIGH);
 	delay(1);
 
+	Serial.println("9");
 	//Init DOGM displays, depending on users choice
 	ptr_init = init_DOGM128; //default pointer for wrong parameters
 	if(type == DOGM128) 		ptr_init = init_DOGM128;
 	else if(type == DOGL128) 	ptr_init = init_DOGL128;
 	else if(type == DOGM132) 	ptr_init = init_DOGM132;
 
+	Serial.println("10");
 	dog_7565R::type = type;
 
+	Serial.println("11");
+	SPI.begin();
+
+	Serial.println("11.5");
 	digitalWrite(p_a0, LOW); //init display
+
+	Serial.println("12");
 	spi_put(ptr_init, INITLEN);
 
+	Serial.println("13");
 	clear();
 }
 
@@ -94,11 +118,13 @@ void dog_7565R::clear(void)
 		position(0,page);
 		digitalWrite(p_cs, LOW);
 		digitalWrite(p_a0, HIGH);
+		SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
 
 		for(column = 0; column < column_cnt; column++) //clear the whole page line
-			spi_out(0x00);
+			SPI.transfer(0x00);
 
 		digitalWrite(p_cs, HIGH);
+		SPI.endTransaction();
 	}
 }
 
@@ -169,6 +195,7 @@ void dog_7565R::string(byte column, byte page, const byte *font_adress, const ch
 		position(column, page+y); //set startpositon and page
 		column_cnt = column; //store column for display last column check
 		string = str;             //temporary pointer to the beginning of the string to print
+		SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
 		digitalWrite(p_a0, HIGH);
 		digitalWrite(p_cs, LOW);
 		while(*string != 0)
@@ -189,14 +216,97 @@ void dog_7565R::string(byte column, byte page, const byte *font_adress, const ch
 				else
 					width_max = width;
 
-				for(x=0; x < width_max; x++) //print the whole string
-				{
-					spi_out(pgm_read_byte(&font_adress[pos_array+x]));
-					//spi_out(pgm_read_byte(&font_adress[pos_array+x])); //double width font (bold)
-				}
+					for(x=0; x < width_max; x++) //print the whole string
+					{
+						SPI.transfer(pgm_read_byte(&font_adress[pos_array+x]));
+						//SPI.transfer(pgm_read_byte(&font_adress[pos_array+x])); //double width font (bold)
+					}
 			}
 		}
 		digitalWrite(p_cs, HIGH);
+		SPI.endTransaction();
+	}
+}
+
+// Prints text to display (lightly modified from original library)
+void dog_7565R::print(byte page, const byte *font_address, const char *str, byte alignment){
+
+    unsigned int pos_array; 										//Postion of character data in memory array
+	byte x, y, column, column_cnt, width_max;								//temporary column and page adress, couloumn_cnt tand width_max are used to stay inside display area
+	byte start_code, last_code, width, page_height, bytes_p_char;	//font information, needed for calculation
+	const char *string;
+
+    start_code 	 = pgm_read_byte(&font_address[2]);  //get first defined character
+	last_code	 = pgm_read_byte(&font_address[3]);  //get last defined character
+    width		 = pgm_read_byte(&font_address[4]);  //width in pixel of one char
+
+    // Determine if calculations are needed for alignment
+    if(alignment != ALIGN_LEFT){
+
+        // Create copy of input string to modify
+        byte textWidth;
+        const char *temp = str;
+
+        // Find number of chars in string to determine width of string
+        while(*temp != 0){
+            if((byte)*temp >= start_code && (byte)*temp <= last_code) {
+                textWidth += width;
+            }
+            temp++;
+        }
+
+        // Determine start column based on parameter
+        if(alignment == ALIGN_CENTER){
+            column = (128 - textWidth) / 2;
+        }
+        else if(alignment == ALIGN_RIGHT){
+            column = 128 - textWidth;
+        }
+
+    }
+    else{
+        column = 0;
+    }
+
+	page_height  = pgm_read_byte(&font_address[6]);  //page count per char
+	bytes_p_char = pgm_read_byte(&font_address[7]);  //bytes per char
+
+    if(page_height + page > 8) page_height = 8 - page; //stay inside display area
+		
+	//The string is displayed character after character. If the font has more then one page,
+	//the top page is printed first, then the next page and so on
+	for(y = 0; y < page_height; y++){
+
+		position(column, page+y); //set startpositon and page
+		column_cnt = column; //store column for display last column check
+		string = str;             //temporary pointer to the beginning of the string to print
+		
+		SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+        digitalWrite(p_a0, HIGH);
+		digitalWrite(p_cs, LOW);
+		
+        while(*string != 0){
+
+			if((byte)*string < start_code || (byte)*string > last_code) string++;//make sure data is valid
+			else{
+
+				//calculate positon of ascii character in font array
+				//bytes for header + (ascii - startcode) * bytes per char)
+				pos_array = 8 + (unsigned int)(*string++ - start_code) * bytes_p_char;
+				pos_array += y*width; //get the dot pattern for the part of the char to print
+
+                if(column_cnt + width > 128) width_max = 128-column_cnt; //stay inside display area
+                else width_max = width;
+
+                for(x=0; x < width_max; x++){ //print the whole string
+                    SPI.transfer(pgm_read_byte(&font_address[pos_array+x]));
+                    
+
+                }
+			}
+		}
+		digitalWrite(p_cs, HIGH);
+		SPI.endTransaction();
 	}
 }
 
@@ -223,11 +333,13 @@ void dog_7565R::rectangle(byte start_column, byte start_page, byte end_column, b
 		position(start_column, y);
 		digitalWrite(p_a0, HIGH);
 		digitalWrite(p_cs, LOW);
+		SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
 
 		for(x=start_column; x<=end_column; x++)
-			spi_out(pattern);
+			SPI.transfer(pattern);
 
 		digitalWrite(p_cs, HIGH);
+		SPI.endTransaction();
 	}
 }
 
@@ -260,11 +372,13 @@ void dog_7565R::picture(byte column, byte page, const byte *pic_adress)
 		position(column, page + p);
 		digitalWrite(p_a0, HIGH);
 		digitalWrite(p_cs, LOW);
+		SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
 
 		for(c=0; c<width; c++)
-			spi_out(pgm_read_byte(&pic_adress[byte_cnt++]));
+			SPI.transfer(pgm_read_byte(&pic_adress[byte_cnt++]));
 
 		digitalWrite(p_cs, HIGH);
+		SPI.endTransaction();
 	}
 }
 
@@ -309,49 +423,6 @@ void dog_7565R::data(byte dat)
 }
 
 /*----------------------------
-Func: spi_initialize
-Desc: Initializes SPI Hardware/Software
-Vars: CS-Pin, MOSI-Pin, SCK-Pin (MOSI=SCK Hardware else Software)
-------------------------------*/
-void dog_7565R::spi_initialize(byte cs, byte si, byte clk)
-{
-	//Set pin Configuration
-	p_cs = cs;
-
-	if(si == clk)
-	{
-		hardware = true;
-		p_si = MOSI;
-		p_clk = SCK;
-	}
-	else
-	{
-		hardware = false;
-		p_si = si;
-		p_clk = clk;
-	}
-
-	// Set CS to deselct slaves
-	pinMode(p_cs, OUTPUT);
-	digitalWrite(p_cs, HIGH);
-	
-
-	// Set Data pin as output
-	pinMode(p_si, OUTPUT);
-
-	// Set SPI-Mode 3: CLK idle high, rising edge, MSB first
-	pinMode(p_clk, OUTPUT);
-	digitalWrite(p_clk, HIGH);
-	
-	
-	if(hardware)
-	{
-		SPI.begin();
-		SPI.beginTransaction(SPISettings(20000000, MSBFIRST, SPI_MODE0));
-	}
-}
-
-/*----------------------------
 Func: spi_put_byte
 Desc: Sends one Byte using CS
 Vars: data
@@ -359,7 +430,9 @@ Vars: data
 void dog_7565R::spi_put_byte(byte dat)
 {
 	digitalWrite(p_cs, LOW);
-	spi_out(dat);
+	SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+	SPI.transfer(dat);
+	SPI.endTransaction();
 	digitalWrite(p_cs, HIGH);
 }
 
@@ -371,38 +444,13 @@ Vars: ptr to data and len
 void dog_7565R::spi_put(byte *dat, int len)
 {
 	digitalWrite(p_cs, LOW);
-	
+	SPI.beginTransaction(SPISettings(10000000, MSBFIRST, SPI_MODE0));
+
 	do
-	{	
-		spi_out(*dat++);
+	{
+		SPI.transfer(*dat++);
 	}while(--len);
 
 	digitalWrite(p_cs, HIGH);
-}
-
-/*----------------------------
-Func: spi_out
-Desc: Sends one Byte, no CS
-Vars: data
-------------------------------*/
-void dog_7565R::spi_out(byte dat)
-{
-	byte i = 8;
-	if(hardware)
-	{
-		SPI.transfer(dat);
-	}
-	else
-	{
-		do
-		{
-			if(dat & 0x80)
-				digitalWrite(p_si, HIGH);
-			else
-				digitalWrite(p_si, LOW);
-			digitalWrite(p_clk, LOW);
-			dat <<= 1;
-			digitalWrite(p_clk, HIGH);
-	  }while(--i);
-	}
+	SPI.endTransaction();
 }

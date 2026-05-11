@@ -11,6 +11,7 @@
 #include "CANTProtocol.h"
 #include <string.h>
 
+//#include <SPI.h>
 #include <Wire.h>
 
 #include "config.h"
@@ -22,6 +23,8 @@
 #include <Adafruit_GFX.h>
 
 #include "dog_7565R.h"
+#include "fonts.h"
+#include "images.h"
 
 #include <Bounce2.h>
 
@@ -56,6 +59,8 @@ Bounce button = Bounce();
 
 // Functions ----------------
 
+// Alpha Display Helpers
+
 void writeText(Adafruit_AlphaNum4 &display, String text){
 
     display.clear();
@@ -66,70 +71,37 @@ void writeText(Adafruit_AlphaNum4 &display, String text){
 
 }
 
-// CAN Command Handlers -----
-
-void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&rpm, incomingData, sizeof(float));
-
-    tachometer.write(int(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX)));
-    
-    if(displayIndex == 0) updateDisplay(0);
-}
-
-void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&speed, incomingData, sizeof(float));
-
-    speedometer.write(int(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX)));
-    
-    if(displayIndex == 1) updateDisplay(1);
-}
-
-void onCVTTemp(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&cvtTemp, incomingData, sizeof(float));
-    if(displayIndex == 2) updateDisplay(2);
-}
-
-void onCarTime(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&carTime, incomingData, sizeof(float));
-    if(displayIndex == 3) updateDisplay(3);
-}
-
-void onDistance(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-    memcpy(&distance, incomingData, sizeof(float));
-    if(displayIndex == 4) updateDisplay(4);
-}
-
-void updateDisplay(int index){
+void updateAlphas(int index){
     switch(index){
 
         // RPM
         case 0:
             writeText(upper," RPM");
-            writeText(lower, String(round(rpm)));
+            writeText(lower, String(int(rpm)));
             break;
 
         // Speed
         case 1:
-            writeText(upper,"SPEED");
-            writeText(lower, String(round(speed)));
+            writeText(upper,"VELO");
+            writeText(lower, String(int(speed)));
             break;
 
         // CVT Temp
         case 2:
             writeText(upper,"TEMP");
-            writeText(lower, String(round(cvtTemp)));
+            writeText(lower, String(int(cvtTemp)));
             break;
 
         // Car Time
         case 3:
             writeText(upper,"TIME");
-            writeText(lower, String(round(carTime)));
+            writeText(lower, String(int(carTime)));
             break;
 
         // Distance
         case 4:
             writeText(upper, "DIST");
-            writeText(lower, String(round(distance)));
+            writeText(lower, String(int(distance)));
             break;
 
         // We don't talk about it
@@ -137,20 +109,103 @@ void updateDisplay(int index){
             break;
     }
 }
+
+void displayMenu(String items[], int count, int selected) {
+    lcd.clear();
+    lcd.string(20, 0, font_8x8, "== MENU ==");
+    
+    for (int i = 0; i < count && i < 5; i++) {
+      if (i == selected) {
+        lcd.string(0, i + 2, font_6x8, ">");
+        lcd.string(10, i + 2, font_6x8, items[i].c_str());
+      } else {
+        lcd.string(10, i + 2, font_6x8, items[i].c_str());
+      }
+    }
+}
+
+
+
+// CAN Command Handlers -----
+
+void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&rpm, incomingData, sizeof(float));
+
+    tachometer.write(int(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX)));
+    
+    if(displayIndex == 0) updateAlphas(0);
+}
+
+void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&speed, incomingData, sizeof(float));
+
+    speedometer.write(int(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX)));
+    
+    if(displayIndex == 1) updateAlphas(1);
+}
+
+void onCVTTemp(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&cvtTemp, incomingData, sizeof(float));
+    if(displayIndex == 2) updateAlphas(2);
+}
+
+void onCarTime(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&carTime, incomingData, sizeof(float));
+    if(displayIndex == 3) updateAlphas(3);
+}
+
+void onDistance(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
+    memcpy(&distance, incomingData, sizeof(float));
+    if(displayIndex == 4) updateAlphas(4);
+}
+
 // SETUP --------------------
 
 void setup(){
 
-    // ALPHANUMERIC SETUP ===
+    // Debug
+    Serial.begin(9600); 
+    Serial.println("Entering setup...");
 
+    // Alpha Setup
+    Wire.begin(I2C_SCL,I2C_SDA);
     upper.begin(I2C_ADDR_UPPER);
     lower.begin(I2C_ADDR_LOWER);
 
+    lower.clear();
+    upper.clear();
+
+    //SPI.begin();
+
+    Serial.println("I2C init done...");
+
+    Serial.println("Entering CAN init loop");
+    while (!CAN.begin()) {
+        delay(2000);
+        Serial.println("CAN init failed, retrying...");
+    }
+
     writeText(upper, "UofA");
-    writeText(lower, "Baja");
+    writeText(lower, "SAE.");
     delay(2000);
 
-    // SERVO SETUP ===
+    // LCD Setup
+    // Initialize display with hardware SPI
+    // For hardware SPI, use MOSI for both parameters
+    /*Serial.println("entering LCD Setup...");
+    lcd.initialize(SPI_CS_LCD, SPI_MOSI, SPI_SCK, LCD_A0, LCD_RST, DOGM128);
+    lcd.contrast(27);
+    lcd.view(0xC8);
+    lcd.clear();
+
+    lcd.picture(0,0,baja_logo_dark);
+    Serial.println("LCD set up...");*/
+
+    // Allow allocation of all timers
+    ESP32PWM::allocateTimer(0);
+	ESP32PWM::allocateTimer(1);
+	ESP32PWM::allocateTimer(2);
+	ESP32PWM::allocateTimer(3);
 
     // Servo Setup
     tachometer.setPeriodHertz(50);
@@ -169,16 +224,23 @@ void setup(){
     speedometer.write(0);
     delay(500);
 
-    // LCD SETUP ===
+    Serial.println("servoes set up...");
 
-    // LCD Setup (not enough pins)
-    //lcd.initialize(, 35, 36, A0_PIN, RESET_PIN, DOGM128);
-    //lcd.contrast(20);
+    pinMode(BUTTON_LOWER, INPUT_PULLUP);
+    button.attach(BUTTON_LOWER);
+    button.interval(5);
 
-    // CAN SETUP ===
+    Serial.println("button set up...");
 
-	pinMode(SPI_CS_CAN,OUTPUT);
-	pinMode(SPI_INT_CAN,OUTPUT);
+    // CAN Setup
+	pinMode(SPI_CS_CAN,OUTPUT); pinMode(SPI_INT_CAN,INPUT);
+    //pinMode(SPI_MOSI,OUTPUT);   pinMode(SPI_SCK,OUTPUT);
+
+    Serial.println("CAN commands registered...");
+
+    writeText(upper, "CAN ");
+    writeText(lower, "INIT");
+    
 
     CAN.registerCommand(0, onEngineRPM);
     CAN.registerCommand(1, onCarSpeed);
@@ -186,21 +248,14 @@ void setup(){
     CAN.registerCommand(3, onCarTime);
     CAN.registerCommand(4, onDistance);
 
-    writeText(upper, "CAN ");
-    writeText(lower, "INIT");
-
-    while (!CAN.begin()) {
-        delay(2000);
-    }
+    writeText(lower, "DONE");
     delay(1000);
-
-    writeText(lower, "READY");
 
     lower.clear();
     upper.clear();
+
+    updateAlphas(displayIndex);
 }
-
-
 // MAIN ---------------------
 
 void loop(){
@@ -208,8 +263,10 @@ void loop(){
     CAN.execute();
     button.update();
 
-    if(!button.fell()){
+    if(button.fell()){
+        Serial.println("Updating stuff.");
         displayIndex = (displayIndex + 1) % 5;
-        updateDisplay(displayIndex);
+        updateAlphas(displayIndex);
+        Serial.println("Done.");
     }
 }

@@ -8,9 +8,9 @@
 #define I2C_ADDR_LOWER 0x71
 
 // SPI (LCD & CAN)
-#define SPI_SCK 8
-#define SPI_MISO 9
-#define SPI_MOSI 10
+#define SPI_SCK 7
+#define SPI_MISO 8
+#define SPI_MOSI 9
 
 #define SPI_INT_CAN 1
 #define SPI_CS_CAN 43

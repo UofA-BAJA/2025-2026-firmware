@@ -5,7 +5,7 @@
 #define I2C_SCL 8
 
 #define I2C_ADDR_UPPER 0x70
-#define I2C_ADDR_LOWER 0x72
+#define I2C_ADDR_LOWER 0x71
 
 // SPI (LCD & CAN)
 #define SPI_SCK 36
@@ -24,13 +24,13 @@
 #define SPI_INT_CAN 34
 
 // Button
-#define BUTTON_LOWER 44
+#define BUTTON_LOWER 3
 
 // Servos
-#define SERVO_TACH 2
-#define SERVO_SPEED 3
+#define SERVO_TACH 1
+#define SERVO_SPEED 2
 
 #define SERVO_TACH_MIN 0
-#define SERVO_TACH_MAX 180
-#define SERVO_SPEED_MIN 0
-#define SERVO_SPEED_MAX 180
+#define SERVO_TACH_MAX 160
+#define SERVO_SPEED_MIN 160
+#define SERVO_SPEED_MAX 0

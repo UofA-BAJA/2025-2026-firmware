@@ -74,31 +74,31 @@ void updateDisplay(int index){
         // RPM
         case 0:
             writeText(upper," RPM");
-            writeText(lower, String(round(rpm)));
+            writeText(lower, String(int(rpm)));
             break;
 
         // Speed
         case 1:
-            writeText(upper,"SPEED");
-            writeText(lower, String(round(speed)));
+            writeText(upper,"VELO");
+            writeText(lower, String(int(speed)));
             break;
 
         // CVT Temp
         case 2:
             writeText(upper,"TEMP");
-            writeText(lower, String(round(cvtTemp)));
+            writeText(lower, String(int(cvtTemp)));
             break;
 
         // Car Time
         case 3:
             writeText(upper,"TIME");
-            writeText(lower, String(round(carTime)));
+            writeText(lower, String(int(carTime)));
             break;
 
         // Distance
         case 4:
             writeText(upper, "DIST");
-            writeText(lower, String(round(distance)));
+            writeText(lower, String(int(distance)));
             break;
 
         // We don't talk about it
@@ -144,6 +144,9 @@ void onDistance(unsigned char dataLength, byte* incomingData, unsigned long call
 
 void setup(){
 
+    // Debug
+    //Serial.begin(9600);
+
     // Alpha Setup
     upper.begin(I2C_ADDR_UPPER);
     lower.begin(I2C_ADDR_LOWER);
@@ -181,7 +184,8 @@ void setup(){
 
     // CAN Setup
 	pinMode(SPI_CS_CAN,OUTPUT);
-	pinMode(SPI_INT_CAN,OUTPUT);
+	pinMode(SPI_INT_CAN,INPUT);
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
     CAN.registerCommand(0, onEngineRPM);
     CAN.registerCommand(1, onCarSpeed);
@@ -192,15 +196,31 @@ void setup(){
     writeText(upper, "CAN ");
     writeText(lower, "INIT");
 
-    while (!CAN.begin()) {
+    while (!CAN.CAN.begin(MCP_STDEXT, CAN_500KBPS, MCP_16MHZ)) {
         delay(2000);
+        //Serial.println("trying to connect...");
     }
-    delay(1000);
 
-    writeText(lower, "READY");
+    // CANTProtocol hardcodes MCP_8MHZ but the Adafruit CAN BFF has a 16 MHz crystal.
+    // Re-init the MCP2515 with the correct clock; init_Mask/Filt handle config mode internally.
+    CAN.CAN.init_Mask(0, 1, 0x1F000000);
+    CAN.CAN.init_Filt(0, 1, 9UL << 24);
+    CAN.CAN.init_Filt(1, 1, 9UL << 24);
+    CAN.CAN.init_Mask(1, 1, 0x1F000000);
+    CAN.CAN.init_Filt(2, 1, 9UL << 24);
+    CAN.CAN.init_Filt(3, 1, 9UL << 24);
+    CAN.CAN.init_Filt(4, 1, 9UL << 24);
+    CAN.CAN.init_Filt(5, 1, 9UL << 24);
+
+    
+
+    writeText(lower, "DONE");
+    delay(1000);
 
     lower.clear();
     upper.clear();
+
+    updateDisplay(displayIndex);
 }
 
 // MAIN ---------------------
@@ -209,8 +229,9 @@ void loop(){
     CAN.execute();
     button.update();
 
-    if(!button.fell()){
+    if(button.fell()){
         displayIndex = (displayIndex + 1) % 5;
         updateDisplay(displayIndex);
     }
+
 }
