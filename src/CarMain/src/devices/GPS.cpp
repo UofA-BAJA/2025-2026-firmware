@@ -15,12 +15,12 @@ namespace BajaWildcatRacing
     }
 
     uint32_t GPS::getUnixEpoch(){
-        sendCanRequest(0x01, &unixEpoch, sizeof(GPSPosition));
+        sendCanRequest(0x01, &unixEpoch, sizeof(uint32_t));
         return unixEpoch;
     }
 
     bool GPS::isReady(){
-        sendCanRequest(0x02, &isGPSReady, sizeof(GPSPosition));
+        sendCanRequest(0x02, &isGPSReady, sizeof(bool));
         return isGPSReady;
     }
 

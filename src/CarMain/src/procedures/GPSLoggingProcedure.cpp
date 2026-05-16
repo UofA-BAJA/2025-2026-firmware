@@ -48,7 +48,7 @@ namespace BajaWildcatRacing{
                 else{
                     //Set the car time
                     if(!carTimeSet){
-                        uint32_t epoch = gpsSubsystem.getUnixEpoch();
+                        uint64_t epoch = (uint64_t)gpsSubsystem.getUnixEpoch();
                         if(epoch > 0){
                             carTime.setUnixEpoch(epoch);
                             carTimeSet = true;
