@@ -10,15 +10,14 @@
 enum DataType{
     //oops what happened to zero???
     WHEEL_RPM = 0x01,
-    CAR_SPEED = 0x02,
+    CAR_STATE = 0x02,
     MOTOR_RPM = 0x03,
     IMU_ROTATION = 0x04, 
     IMU_ACCELERATION = 0x05,
     BRAKE_PRESSURE = 0x06,
     SHOCK_DISPLACEMENT = 0x07,
     CVT_TEMPERATURE = 0x08,
-    DISTANCE = 0x09,
-    GPS_POSITION = 0x10,
+    GPS_POSITION = 0x9,
 
     //...
     ERRORS = 0xAA,
@@ -59,7 +58,7 @@ typedef struct GPSPosition{
     float longitude;
     float latitude;
     float atltitude;
-}GPSPosition;
+}GPSPosition;  
 
 typedef struct EngineRPM{
     float rpm;
@@ -67,6 +66,11 @@ typedef struct EngineRPM{
 
 typedef struct CVTTemp{
     float temp;
-}
+}CVTTemp;
+
+typedef struct CarState{
+    float distance;
+    float speed;
+}CarState;
 
 #endif
