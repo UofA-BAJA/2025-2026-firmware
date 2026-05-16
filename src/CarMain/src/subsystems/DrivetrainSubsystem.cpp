@@ -11,10 +11,11 @@ namespace BajaWildcatRacing
 
     }
 
-    float DrivetrainSubsystem::getCVTTemperature(){
+    CVTTemp DrivetrainSubsystem::getCVTTemperature(){
         float temperature = cvtTemperature.getLatestTemperature();
-        float tempFarenheit = (temperature * (9.0f / 5.0f)) + 32.0f;
-        if(tempFarenheit > 200.0f) cvtIsHot = true;
+        CVTTemp tempFarenheit;
+        tempFarenheit.temp = (temperature * (9.0f / 5.0f)) + 32.0f;
+        if(tempFarenheit.temp > 200.0f) cvtIsHot = true;
         else cvtIsHot = false;
         return tempFarenheit;
     }

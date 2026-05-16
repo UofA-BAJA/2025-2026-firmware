@@ -17,7 +17,7 @@ namespace BajaWildcatRacing
 
             DrivetrainSubsystem(CANDispatcher& canDispatcher);
 
-            float getCVTTemperature();
+            CVTTemp getCVTTemperature();
             bool isCVTHot();
 
             float getEngineRPM();
