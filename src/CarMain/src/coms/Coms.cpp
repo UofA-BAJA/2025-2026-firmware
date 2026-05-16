@@ -9,7 +9,7 @@ comments
 
 #define RADIO_CS_PIN 11
 #define RADIO_INT_PIN 21
-#define COMS_RX_DISABLED
+// #define COMS_RX_DISABLED
 
 #include "Coms.h"
 
@@ -74,6 +74,7 @@ namespace BajaWildcatRacing {
             }else if(currentPitCommandState == PitCommandState::WAIT_COMMAND_RECIEVE){
                 recieveCommand();
                 switchToRX = false;
+                cycleTimeNs = (1.0 / currentFrequency) * 1000000000L; //update in case we got a new frequency
                 currentPitCommandState = PitCommandState::LIVE_DATA_TRANSMIT;
             }else if(currentPitCommandState == PitCommandState::IDLE){
                 idle();
@@ -168,12 +169,12 @@ namespace BajaWildcatRacing {
         }
         //Send final packet if there's actually data there
         if(sentDataLength > 0){
-            // std::cout << "Sending data now!" << std::endl;
+            // std::cout << "Sending data now! Switch to RX: " << switchToRX << std::endl;
             radioTransmit(data, sentDataLength, switchToRX);
         }
         else{
             //Create and send an empty "keep alive" packet
-            // std::cout << "Sending keep alive" << std::endl;
+            // std::cout << "Sending keep alive! Switch to RX: " << switchToRX << std::endl;
             radioTransmit(data, 0, switchToRX);
         }
     }
@@ -219,7 +220,8 @@ namespace BajaWildcatRacing {
         uint8_t switchFlag = (1 & rxSwitchFlag);
         uint8_t rxSuccessFlag = (1 & rxSuccessful) << 1;
         uint8_t overloadFlag = (1 & overloaded) << 2;
-        rf95.setHeaderFlags(rxSwitchFlag | rxSuccessful | overloaded);
+        rf95.setHeaderFlags(switchFlag | rxSuccessFlag | overloadFlag);
+
 
         // std::cout << "about to send the data" << std::endl;
         if(!rf95.send(data, sentDataLength)){
@@ -252,7 +254,16 @@ namespace BajaWildcatRacing {
                     for(int i = 0; i < rxLength; i++){
                         if(rxBuffer[i] == 0){
                             //Change frequency 
-                            //TODO: how are we encoding this lmao
+                            i++;
+                            if(rxLength - i < 4){
+                                //Not enough i's left 
+                                std::cerr << "Error: recieved too short of a frame for the frequency change command" << std::endl;
+                                rf95.setModeIdle();
+                                return;
+                            }
+                        
+                            memcpy(&currentFrequency, rxBuffer, 4);
+                            i += 3; //don't want to skip over the end, only skip 3 places
                             // std::cout << "recieved frequency command: " << std::endl;
                         }else if(rxBuffer[i] == 1){
                             //Change commands
