@@ -16,7 +16,7 @@ namespace BajaWildcatRacing{
             : drivetrainSubsystem(drivetrainSubsystem)
             , dataStorage(dataStorage)
             , coms(coms){
-                this->frequency = 360; //30
+                this->frequency = 30; 
             }
 
             void init() override {
@@ -24,9 +24,9 @@ namespace BajaWildcatRacing{
             }
 
             void execute() override {
-                float engineRPM = drivetrainSubsystem.getEngineRPM();
+                EngineRPM engineRPM = drivetrainSubsystem.getEngineRPM();
 
-                // dataStorage.storeData(engineRPM, DataType::MOTOR_RPM);
+                dataStorage.storeData(engineRPM);
                 coms.sendData(DataType::MOTOR_RPM, engineRPM);
             }
 

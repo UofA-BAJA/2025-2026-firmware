@@ -68,6 +68,7 @@ namespace BajaWildcatRacing
             
             
             const bool RADIO_ACTIVE = true;
+
             int currentFrequency = 10;
             bool overloaded = false;
 

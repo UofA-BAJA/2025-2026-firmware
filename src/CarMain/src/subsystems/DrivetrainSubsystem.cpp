@@ -23,34 +23,31 @@ namespace BajaWildcatRacing
         return cvtIsHot;
     }
 
-    float DrivetrainSubsystem::getEngineRPM(){
-        return tachometer.getEngineRPM();
+    EngineRPM DrivetrainSubsystem::getEngineRPM(){
+        EngineRPM r;
+        r.rpm = tachometer.getEngineRPM();
+        return r;
     }
 
-    float DrivetrainSubsystem::getFrontRightRPM(){
-        float rpm = spedometer.getFrontRightRPM();
-        return (rpm < 0.0) ? 0.0f : rpm;
-    }
-
-    float DrivetrainSubsystem::getFrontLeftRPM(){
-        float rpm = spedometer.getFrontLeftRPM();
-        return (rpm < 0.0) ? 0.0f : rpm;
-    }
-
-    float DrivetrainSubsystem::getRearRPM(){
-        float rpm = spedometer.getRearRPM();
-        return (rpm < 0.0) ? 0.0f : rpm;
+    WheelRPM DrivetrainSubsystem::getWheelRPM(){
+        WheelRPM rpm = spedometer.getWheelRPM();
+        rpm.frontLeft = (rpm.frontLeft < 0.0) ? 0.0f : rpm.frontLeft;
+        rpm.frontRight = (rpm.frontRight < 0.0) ? 0.0f : rpm.frontRight;
+        rpm.rear = (rpm.rear < 0.0) ? 0.0f : rpm.rear;
+        return rpm;
     }
 
     float DrivetrainSubsystem::getCarSpeedMetersSec(){
-        // return ((spedometer.getFrontRightRPM() + spedometer.getFrontLeftRPM()) / 2.0) * 0.0289f; //Magical number
-        return spedometer.getFrontRightRPM() * 0.0289f;
+        WheelRPM rpm = spedometer.getWheelRPM();
+        return ((rpm.frontLeft + rpm.frontRight + rpm.rear) / 3.0) * 0.0289f; //Magical number
+        // return spedometer.getFrontRightRPM() * 0.0289f;
 
     }
 
     float DrivetrainSubsystem::getCarSpeedMPH(){
-        return ((spedometer.getFrontRightRPM() + spedometer.getFrontLeftRPM()) / 2.0) * 0.0647f; //Slightly different magic number
-        return spedometer.getFrontRightRPM() * 0.0647f;
+        WheelRPM rpm = spedometer.getWheelRPM();
+        return ((rpm.frontLeft + rpm.frontRight + rpm.rear) / 3.0) * 0.0647f; //Slightly different magic number
+        // return spedometer.getFrontRightRPM() * 0.0647f;
 
     }
 
