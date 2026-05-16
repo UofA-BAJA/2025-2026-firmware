@@ -63,6 +63,13 @@ namespace BajaWildcatRacing
 
             void setupDatabase(const char* path);
             void updateDatabase();
+
+            void storeLinearActuator(const char* sensor, int sensor_len, float displacement);
+            void storeBrakePressure(const char* sensor, int sensor_len, float psi);
+            void storeTachometer(const char* sensor, int sensor_len, float rpm);
+
+
+
     };
 
 }
