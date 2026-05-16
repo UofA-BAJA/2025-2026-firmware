@@ -3,6 +3,7 @@
 #include "DataStorage.h"
 #include "CarLogger.h"
 #include "Coms.h"
+#include "CarTime.h"
 
 namespace BajaWildcatRacing{
 
@@ -11,13 +12,15 @@ namespace BajaWildcatRacing{
             GPSSubsystem& gpsSubsystem;
             DataStorage& dataStorage;
             Coms& coms;
+            CarTime& carTime;
             bool isReady;
             bool carTimeSet;
 
-            GPSLoggingProcedure(GPSSubsystem& gpsSubsystem, DataStorage& dataStorage, Coms& coms)
+            GPSLoggingProcedure(GPSSubsystem& gpsSubsystem, DataStorage& dataStorage, Coms& coms, CarTime& carTime)
             : gpsSubsystem(gpsSubsystem)
             , dataStorage(dataStorage)
-            , coms(coms){
+            , coms(coms)
+            , carTime(carTime){
                 this->frequency = 10; 
                 isReady = false;
                 carTimeSet = false;
@@ -47,7 +50,7 @@ namespace BajaWildcatRacing{
                     if(!carTimeSet){
                         uint32_t epoch = gpsSubsystem.getUnixEpoch();
                         if(epoch > 0){
-                            //TODO: set car time
+                            carTime.setUnixEpoch(epoch);
                             carTimeSet = true;
                         }
                     }
