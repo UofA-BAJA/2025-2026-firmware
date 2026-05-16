@@ -134,7 +134,7 @@ namespace BajaWildcatRacing
         storeLinearActuator("LA_RL", 5, data.rearLeft);
     }
 
-    static void storeLinearActuator(const char* sensor, int sensor_len, float displacement){
+    void DataStorage::storeLinearActuator(const char* sensor, int sensor_len, float displacement){
         sqlite3_stmt *statement;
         
         int exit = sqlite3_prepare_v2(db, INSERT_LINEAR_ACTUATOR, -1, &statement, nullptr);
@@ -179,13 +179,13 @@ namespace BajaWildcatRacing
         queueSqlStatement(statement);
     }
 
-    void storeData(BrakePressure data){
+    void DataStorage::storeData(BrakePressure data){
 
         storeBrakePressure("BP_F", 4, data.front);
         storeBrakePressure("BP_R", 4, data.rear);
     }
 
-    static void storeBrakePressure(const char* sensor, int sensor_len, float psi){
+    void DataStorage::storeBrakePressure(const char* sensor, int sensor_len, float psi){
         sqlite3_stmt *statement;
         
         int exit = sqlite3_prepare_v2(db, INSERT_PRESSURE, -1, &statement, nullptr);
@@ -204,17 +204,17 @@ namespace BajaWildcatRacing
         queueSqlStatement(statement);
     }
 
-    void storeData(WheelSpeed data){
+    void DataStorage::storeData(WheelSpeed data){
         storeTachometer("Sped_FR", 7, data.frontRight);
         storeTachometer("Sped_FL", 7, data.frontLeft);
         storeTachometer("Sped_R", 6, data.rear);
     }
 
-    void storeData(EngineRPM data){
+    void DataStorage::storeData(EngineRPM data){
         storeTachometer("Engine_Tach", 11, data.rpm);
     }
 
-    static void storeTachometer(const char* sensor, int sensor_len, float rpm){
+    void DataStorage::storeTachometer(const char* sensor, int sensor_len, float rpm){
         
         sqlite3_stmt *statement;
         

@@ -13,7 +13,7 @@
 #include "procedures/TemperatureLoggingProcedure.cpp"
 #include "procedures/AccelerationProcedure.cpp"
 #include "procedures/CheckEngineProcedure.cpp"
-#include "procedures/DistCalcProcedure.cpp"
+#include "procedures/CarStateProcedure.cpp"
 #include "procedures/RPMLoggingProcedure.cpp"
 #include "procedures/SpeedLoggingProcedure.cpp"
 #include "procedures/TestProcedure.cpp"
