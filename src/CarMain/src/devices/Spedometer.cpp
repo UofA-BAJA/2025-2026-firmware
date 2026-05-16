@@ -9,7 +9,7 @@ namespace BajaWildcatRacing
     }
 
     WheelRPM Spedometer::getWheelRPM(){
-        sendCanRequest(0x00, &lastRPM, sizeof(float));
+        sendCanRequest(0x00, &lastRPM, sizeof(WheelRPM));
         return lastRPM;
     }
 
