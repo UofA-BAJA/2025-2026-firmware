@@ -27,6 +27,9 @@ namespace BajaWildcatRacing{
                 //Overall "car speed" is logged in CarStateProcedure
 
                 //TODO: log these and send via radio
+                WheelRPM rpm = drivetrainSubsystem.getWheelRPM();
+                coms.sendData(DataType::WHEEL_RPM, rpm);
+                dataStorage.storeData(rpm);
  
             }
 

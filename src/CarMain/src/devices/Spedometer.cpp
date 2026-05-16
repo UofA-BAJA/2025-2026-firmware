@@ -3,22 +3,15 @@
 namespace BajaWildcatRacing
 {
     Spedometer::Spedometer(CANDispatcher& canDispatcher, byte deviceId) : CANDevice(canDispatcher, deviceId){
-
+        lastRPM.frontLeft = 0;
+        lastRPM.frontRight = 0;
+        lastRPM.rear = 0;
     }
 
-    float Spedometer::getFrontLeftRPM(){
-        sendCanRequest(0x02, &frontLeftRPM, sizeof(float));
-        return frontLeftRPM;
+    WheelRPM Spedometer::getWheelRPM(){
+        sendCanRequest(0x00, &lastRPM, sizeof(float));
+        return lastRPM;
     }
 
-    float Spedometer::getFrontRightRPM(){
-        sendCanRequest(0x03, &frontRightRPM, sizeof(float));
-        return frontRightRPM;
-    }
-
-    float Spedometer::getRearRPM(){
-        sendCanRequest(0x01, &rearRPM, sizeof(float));
-        return rearRPM;
-    }
 
 }

@@ -22,9 +22,8 @@ namespace BajaWildcatRacing
 
             float getEngineRPM();
 
-            float getFrontRightRPM();
-            float getFrontLeftRPM();
-            float getRearRPM();
+            
+            WheelRPM getWheelRPM();
             float getCarSpeedMetersSec();
             float getCarSpeedMPH();
 

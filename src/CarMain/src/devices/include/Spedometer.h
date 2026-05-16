@@ -3,19 +3,16 @@
 
 #include "CANDevice.h"
 // #include "Devices.h"
+#include "DataTypes.h"
 
 namespace BajaWildcatRacing
 {
     class Spedometer : CANDevice {
         public: 
             Spedometer(CANDispatcher& canDispatcher, byte deviceId);
-            float getFrontLeftRPM();
-            float getFrontRightRPM();
-            float getRearRPM();
+            WheelRPM getWheelRPM();
         private:
-            float frontLeftRPM = 0.0;
-            float frontRightRPM = 0.0;
-            float rearRPM = 0.0;
+            WheelRPM lastRPM;
     };
 }
 
