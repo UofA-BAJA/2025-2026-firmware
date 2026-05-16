@@ -20,7 +20,7 @@ namespace BajaWildcatRacing
             float getCVTTemperature();
             bool isCVTHot();
 
-            float getEngineRPM();
+            EngineRPM getEngineRPM();
 
             float getFrontRightRPM();
             float getFrontLeftRPM();

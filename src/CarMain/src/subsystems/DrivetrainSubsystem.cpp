@@ -23,8 +23,10 @@ namespace BajaWildcatRacing
         return cvtIsHot;
     }
 
-    float DrivetrainSubsystem::getEngineRPM(){
-        return tachometer.getEngineRPM();
+    EngineRPM DrivetrainSubsystem::getEngineRPM(){
+        EngineRPM r;
+        r.rpm = tachometer.getEngineRPM();
+        return r;
     }
 
     float DrivetrainSubsystem::getFrontRightRPM(){
