@@ -4,7 +4,7 @@
 #include <SPI.h>
 #include <RH_RF95.h>
 
-const int RADIO_CS_PIN = 17;
+const int RADIO_CS_PIN = 17; //17
 const int RADIO_INT_PIN = 16;
 
 const uint32_t USB_DELIMITER = 0xAAAAAAAA;
@@ -30,17 +30,16 @@ void setup()
     Serial.begin(115200);
 
     while (!Serial); // Wait for serial port to be available
-
+    pinMode(2, OUTPUT);
     // Serial.println("RF95 init in progress...");
     if (!rf95.init())
     {
         // Serial.println("RF95 init failed. Try restarting power.");
-        pinMode(2, OUTPUT);
         while (1){
             digitalWrite(2, HIGH);
-            delay(400);
+            delay(100);
             digitalWrite(2, LOW);
-            delay(400);   
+            delay(100);   
         }
     }
 
@@ -63,6 +62,11 @@ uint8_t len = sizeof(buf);
 uint8_t serialLastByte;
 uint8_t intQueue[4];
 
+bool flash = true;
+bool stuffRemains = false;
+bool acknowledged = false;
+int sendIndex = 0;
+
 void loop()
 {
     if (rf95.waitAvailableTimeout(500))
@@ -77,6 +81,8 @@ void loop()
             uint8_t headerFlags = rf95.headerFlags();
             int16_t lastRSSI = rf95.lastRssi();
 
+           
+
             //flags (1 byte) + rssi (2 bytes) + message (n bytes) + delimiters (4 bytes)
             outputBufLength = len + 7;
 
@@ -87,46 +93,62 @@ void loop()
             
             Serial.write(outputBuf, outputBufLength);
             
-
-            if(headerFlags & 1){
-                //build up the message
-                int i = 0;
-                bool stuffRemains = false;
-                for(; i < commandQueueLength; i++){
-                    if(commandQueue[i] == 0){
-                        if(RH_RF95_MAX_MESSAGE_LEN - radioOuputBufLength > 4){
-                            memcpy(radioOutputBuf + radioOuputBufLength, &newFrequency, 4);
-                            radioOuputBufLength += 4;
-                        }else{
-                            stuffRemains = true;
-                        }
-                    }else if(commandQueue[i] == 1){
-                        if(RH_RF95_MAX_MESSAGE_LEN - radioOuputBufLength > 32){
-                            memcpy(radioOutputBuf + radioOuputBufLength, newDataTypeMask, 32);
-                            radioOuputBufLength += 32;
-                        }else{
-                            stuffRemains = true;
-                        }
-                    }else if(radioOuputBufLength == RH_RF95_MAX_MESSAGE_LEN){
-                        //shift everything down for the next cycle
-                        memcpy(commandQueue, commandQueue + i, commandQueueLength - i);
-                        commandQueueLength = commandQueueLength - i;
-                        break;
-                    }else{
-                        radioOutputBuf[radioOuputBufLength] = commandQueue[i];
-                        radioOuputBufLength++;
-                    }
-                }
-                
-                rf95.send(radioOutputBuf, radioOuputBufLength);
-
+            // Serial.println(headerFlags, BIN);
+            //Successful recieve, empty queue
+            // Serial.println(headerFlags);
+            if(headerFlags & (1 << 1) && !acknowledged){
+                acknowledged = true;
                 if(stuffRemains){
-                    memcpy(commandQueue, commandQueue + i, commandQueueLength - i);
-                    commandQueueLength = commandQueueLength - i;
+                    memcpy(commandQueue, commandQueue + sendIndex, commandQueueLength - sendIndex);
+                    commandQueueLength = commandQueueLength - sendIndex;
                 }else{
-                    commandQueueLength = 0;
+                    commandQueueLength = 0;                  
                 }
             }
+            if(headerFlags & 1){
+                // Serial.println("trying to send");
+                //Not everything was sent last time, try again
+                if(!acknowledged){
+                    // Serial.println("didn't empty buffer last time");
+                    rf95.send(radioOutputBuf, radioOuputBufLength);
+                }else{
+                    // Serial.println("new stuff");
+                    sendIndex = 0;
+                    radioOuputBufLength = 0;
+                    stuffRemains = false;
+                    acknowledged = false;
+                    for(; sendIndex < commandQueueLength; sendIndex++){
+                        // Serial.println("actually adding commands");
+                        if(commandQueue[sendIndex] == 0){
+                            if(RH_RF95_MAX_MESSAGE_LEN - radioOuputBufLength > 4){
+                                memcpy(radioOutputBuf + radioOuputBufLength, &newFrequency, 4);
+                                radioOuputBufLength += 4;
+                            }else{
+                                stuffRemains = true;
+                            }
+                        }else if(commandQueue[sendIndex] == 1){
+                            if(RH_RF95_MAX_MESSAGE_LEN - radioOuputBufLength > 32){
+                                memcpy(radioOutputBuf + radioOuputBufLength, newDataTypeMask, 32);
+                                radioOuputBufLength += 32;
+                            }else{
+                                stuffRemains = true;
+                            }
+                        }else if(radioOuputBufLength == RH_RF95_MAX_MESSAGE_LEN){
+                            //shift everything down for the next cycle
+                            stuffRemains = true;
+                            break;
+                        }else{
+                            radioOutputBuf[radioOuputBufLength] = commandQueue[sendIndex];
+                            radioOuputBufLength++;
+                        }
+                    }
+                    
+                    // int tempROBL = radioOuputBufLength;
+                    rf95.send(radioOutputBuf, radioOuputBufLength);
+                }
+            }
+
+            rf95.setHeaderFlags(0x0); //Clear header flags
         }
         else
         {
@@ -135,7 +157,13 @@ void loop()
     }
     else
     {
-        digitalWrite(2, HIGH);
+        if(flash){
+            digitalWrite(2, HIGH);
+            flash = false;
+        }else{
+            digitalWrite(2, LOW);
+            flash = true;
+        }
         // Nothing Recieved
     }
 
