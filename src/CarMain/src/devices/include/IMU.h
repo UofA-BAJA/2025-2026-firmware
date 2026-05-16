@@ -3,12 +3,7 @@
 
 
 #include "CANDevice.h"
-#include "functional"
-// #include "linux/can.h"
-// #include "Devices.h"
-
-
-#include <chrono>
+#include "DataTypes.h"
 
 namespace BajaWildcatRacing
 {
@@ -18,22 +13,13 @@ namespace BajaWildcatRacing
         public:
             IMU(CANDispatcher& canDispatcher, byte deviceId);
 
-            float getLatestRotationX();
-            float getLatestRotationY();
-            float getLatestRotationZ();
+            RotationXYZ getLatestRotation();
 
-            float getLatestAccelerationX();
-            float getLatestAccelerationY();
-            float getLatestAccelerationZ();
+            AccelerationXYZ getLatestAcceleration();
         private:
 
-            float rotX = 0;
-            float rotY = 0;
-            float rotZ = 0;
-
-            float accX = 0;
-            float accY = 0;
-            float accZ = 0;
+            RotationXYZ rot;
+            AccelerationXYZ accel;
     };
 
 }
