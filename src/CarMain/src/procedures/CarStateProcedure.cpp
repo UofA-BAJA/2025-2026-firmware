@@ -11,7 +11,7 @@
 namespace BajaWildcatRacing
 {
 
-class DistCalcProcedure : public Procedure {
+class CarStateProcedure : public Procedure {
     public:
 
         DrivetrainSubsystem& drivetrainSubsystem;
@@ -29,7 +29,7 @@ class DistCalcProcedure : public Procedure {
         //Counter so we only send to dash every 5 hz 
         int cycleNum = 0;
 
-        DistCalcProcedure(DrivetrainSubsystem& drivetrainSubsystem, DashSubsystem& dashSubsystem, DataStorage& dataStorage, Coms& coms)
+        CarStateProcedure(DrivetrainSubsystem& drivetrainSubsystem, DashSubsystem& dashSubsystem, DataStorage& dataStorage, Coms& coms)
         : drivetrainSubsystem(drivetrainSubsystem)
         , dashSubsystem(dashSubsystem)
         , dataStorage(dataStorage)
@@ -63,7 +63,10 @@ class DistCalcProcedure : public Procedure {
             // std::cout << "Dist (miles): " << distMiles << " MPH: " << mph << std::endl;
 
             // dataStorage.storeData(distMeters, DataType::DISTANCE);
-            coms.sendData(DataType::DISTANCE, distMeters);
+            CarState state;
+            state.distance = distMeters;
+            state.speed = mps;
+            coms.sendData(DataType::CAR_STATE, state);
 
             prevCarMPS = mps;
 
@@ -72,13 +75,6 @@ class DistCalcProcedure : public Procedure {
             if(cycleNum  % 12 == 0){
                 dashSubsystem.sendDistance(distMeters * 0.000621371f);
             }
-
-            // float rpm1 = drivetrainSubsystem.getFrontLeftRPM();
-            // float rpm2 = drivetrainSubsystem.getFrontRightRPM();
-            // float rpm3 = drivetrainSubsystem.getRearRPM();
-            // std::cout << "RPM 1: " << rpm1 << std::endl;
-            // std::cout << "RPM 2: " << rpm2 << std::endl;
-            // std::cout << "RPM 3: " << rpm3 << std::endl;
 
         }
 

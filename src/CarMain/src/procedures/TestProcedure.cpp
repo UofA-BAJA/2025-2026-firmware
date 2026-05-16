@@ -61,7 +61,12 @@ class TestProcedure : public Procedure{
             coms.sendData(DataType::CVT_TEMPERATURE, randomNum);
             std::cout << "id 8: " << randomNum << std::endl;
             randomNum = rand() % 50;
-            coms.sendData(DataType::CAR_SPEED, randomNum);
+
+            CarState state;
+            state.distance = rand() % 30;
+            state.speed = rand() % 512 - 256;
+
+            coms.sendData(DataType::CAR_STATE, state);
             std::cout << "id 2: " << randomNum << std::endl;
             // coms.sendData(DataType::CAR_SPEED, 2026.0f);
             
