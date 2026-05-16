@@ -24,21 +24,9 @@ namespace BajaWildcatRacing{
             }
 
             void execute() override {
-                float fr = drivetrainSubsystem.getFrontRightRPM();
-                float fl = drivetrainSubsystem.getFrontLeftRPM();
-                float rear = drivetrainSubsystem.getRearRPM();
+                //Overall "car speed" is logged in CarStateProcedure
 
-                float mps = drivetrainSubsystem.getCarSpeedMetersSec();
-
-                dataStorage.storeData(mps, DataTypes::CAR_SPEED);
-                dataStorage.storeData(fr, DataTypes::RPM_FRONT_R);
-                dataStorage.storeData(fl, DataTypes::RPM_FRONT_L);
-                dataStorage.storeData(rear, DataTypes::RPM_BACK);
-
-                coms.sendData(DataTypes::CAR_SPEED, mps);
-                coms.sendData(DataTypes::RPM_FRONT_R, fr);
-                coms.sendData(DataTypes::RPM_FRONT_L, fl);
-                coms.sendData(DataTypes::RPM_BACK, rear);
+                //TODO: log these and send via radio
  
             }
 

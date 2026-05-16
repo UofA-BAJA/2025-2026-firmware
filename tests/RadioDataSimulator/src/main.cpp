@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-enum DataTypes{
+enum DataType{
     RPM_FRONT_L = 0x000,
     RPM_FRONT_R = 0x001,
     RPM_BACK_L = 0x002,

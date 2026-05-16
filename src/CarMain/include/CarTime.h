@@ -1,6 +1,9 @@
 #ifndef CARTIME_H
 #define CARTIME_H
 
+#include <iostream>
+#include <cstdint>
+
 namespace BajaWildcatRacing
 {
 
@@ -8,13 +11,16 @@ namespace BajaWildcatRacing
 
         public:
 
-            static float getCurrentTimeSeconds();
-
-            static void setCurrentTimeSeconds(float time);
+            static float getElapsedTimeSeconds();
+            static std::int64_t getUnixEpoch();
+            static void setElapsedTimeSeconds(float time);
+            static void setUnixEpoch(std::int64_t);
 
         private:
 
-            static float currTimeSeconds;
+            // Milliseconds
+            static std::int64_t currUnixEpoch;
+            static float elapsedTimeSeconds;
 
         
     };

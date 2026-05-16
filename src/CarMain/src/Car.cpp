@@ -70,14 +70,10 @@ namespace BajaWildcatRacing
         std::signal(SIGINT, signal_handler);
         std::signal(SIGTERM, signal_handler);
 
-    
-
         // Init behavior that needs to be called before the subsystems start running.
         init();
 
         CarLogger::Initialize(logPath);
-
-        dataStorage.startNewSession("Test session name O.o");
 
         procedureScheduler.receiveComCommand(Command::DEFAULT_CAR_START);
 
@@ -140,21 +136,23 @@ namespace BajaWildcatRacing
         steady_clock::time_point absoluteStart;
         absoluteStart = steady_clock::now();
 
+        auto system_time = system_clock::now();
 
         steady_clock::time_point startTime;
         steady_clock::time_point endTime;
 
         while(g_running){
             startTime = steady_clock::now();
+            system_time = system_clock::now();
             double time = duration_cast<nanoseconds>(startTime - absoluteStart).count();
 
             // std::cout << time / 1000000000L << std::setprecision(9) << std::endl;
 
             procedureScheduler.execute();
             canDispatcher.execute();
-            CarTime::setCurrentTimeSeconds(time / 1000000000L);
-            dataStorage.execute(CarTime::getCurrentTimeSeconds());
-            coms.execute(CarTime::getCurrentTimeSeconds());
+            CarTime::setElapsedTimeSeconds(time / 1000000000L);
+            CarTime::setUnixEpoch(duration_cast<milliseconds>(system_time.time_since_epoch()).count());
+            coms.execute(CarTime::getElapsedTimeSeconds());
 
             endTime = steady_clock::now();
 
@@ -170,7 +168,7 @@ namespace BajaWildcatRacing
                 nanosleep(&req, (struct timespec *)NULL);
             }
             else{
-                std::cout << "Please stop you're like genuinely killing the raspberry pi with how much work it's doing" << std::endl;
+                std::cout << "Please stop you're like genuinely killing the raspberry pi (Cycle time > Frequency)" << std::endl;
                 CarLogger::LogError("Car Computer cycle takes longer to compute than frequency");
             }
         }
@@ -213,9 +211,10 @@ namespace BajaWildcatRacing
     *
     */
     void Car::end(){
+        
 	// Ends currently running procedures
+        std::cout << "Ending car..." << std::endl;
         procedureScheduler.end();
-	    dataStorage.endCurrentSession();
         dataStorage.end();
 	    canDispatcher.end();
         coms.end();
