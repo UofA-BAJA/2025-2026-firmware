@@ -23,28 +23,12 @@ namespace BajaWildcatRacing
     *  Returns: A double of the x value of the rotaiton
     *
     */
-    double IMUSubsystem::getRotationX(){
-        return imu.getLatestRotationX();
+    RotationXYZ IMUSubsystem::getRotation(){
+        return imu.getLatestRotation();
     }
 
-    double IMUSubsystem::getRotationY(){
-        return imu.getLatestRotationY();
-    }
-
-    double IMUSubsystem::getRotationZ(){
-        return imu.getLatestRotationZ();
-    }
-
-    double IMUSubsystem::getAccelerationX(){
-        return imu.getLatestAccelerationX();
-    }
-
-    double IMUSubsystem::getAccelerationY(){
-        return imu.getLatestAccelerationY();
-    }
-
-    double IMUSubsystem::getAccelerationZ(){
-        return imu.getLatestAccelerationZ();
+    AccelerationXYZ IMUSubsystem::getAcceleration(){
+        return imu.getLatestAcceleration();
     }
 
 }
