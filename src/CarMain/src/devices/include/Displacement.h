@@ -6,18 +6,28 @@
 namespace BajaWildcatRacing
 {
 
+    typedef struct ShockDisplacementPair{
+        float left;
+        float right;
+    }ShockDisplacementPair;
+
     class Displacement : CANDevice {
 
         public:
 
             Displacement(CANDispatcher& candispatcher, byte deviceId);
 
-            typedef struct ShockDisplacementPair
-
-        private:
             
 
+            ShockDisplacementPair getDisplacement();
+
+        private:
+            ShockDisplacementPair disp;
+
+
     };
+
+    
 
 }
 
