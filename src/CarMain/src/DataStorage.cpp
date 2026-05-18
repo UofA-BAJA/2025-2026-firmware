@@ -234,4 +234,42 @@ namespace BajaWildcatRacing
         queueSqlStatement(statement);
     }
 
+    void DataStorage::storeData(CVTTemp data){
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_TEMPERATURE, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, "CVT_Temp", 8, NULL);
+        sqlite3_bind_double(statement, 4, data.temp);
+
+        queueSqlStatement(statement);
+    }
+
+    void DataStorage::storeData(GPSPosition data){
+        sqlite3_stmt *statement;
+        
+        int exit = sqlite3_prepare_v2(db, INSERT_GPS, -1, &statement, nullptr);
+        
+        if(exit){
+            std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+            return;
+        }
+        // Bind values to parameters
+        sqlite3_bind_int64(statement, 1, CarTime::getUnixEpoch());      // TODO: Need unix epoch somehow
+        sqlite3_bind_text(statement, 2, VEHICLE_NAME, strlen(VEHICLE_NAME), NULL);
+        sqlite3_bind_text(statement, 3, "GPS", 3, NULL);
+        sqlite3_bind_double(statement, 4, data.latitude);
+        sqlite3_bind_double(statement, 4, data.longitude);
+        sqlite3_bind_double(statement, 4, data.atltitude);
+
+        queueSqlStatement(statement);
+    }
+
 }
