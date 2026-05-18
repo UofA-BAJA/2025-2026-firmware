@@ -9,7 +9,7 @@ namespace BajaWildcatRacing
 
     float Temperature::getLatestTemperature(){
 
-        sendCanRequest(0x01, &temperature, sizeof(float));
+        sendCanRequest(0x00, &temperature, sizeof(float));
         return temperature;
 
     }
