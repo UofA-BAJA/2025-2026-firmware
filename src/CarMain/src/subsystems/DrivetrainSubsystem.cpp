@@ -7,6 +7,8 @@ namespace BajaWildcatRacing
     : cvtTemperature(canDispatcher, Device::Devices::CVT_TEMP)
     , tachometer(canDispatcher, Device::Devices::TACHOMETER)
     , spedometer(canDispatcher, Device::Devices::SPEDOMETER)
+    , frontBrakePressure(canDispatcher, Device::Devices::BRAKE_PRESSURE_FRONT)
+    , rearBrakePressure(canDispatcher, Device::Devices::BRAKE_PRESSURE_REAR)
     {
 
     }
@@ -49,6 +51,13 @@ namespace BajaWildcatRacing
         return ((rpm.frontLeft + rpm.frontRight + rpm.rear) / 3.0) * 0.0647f; //Slightly different magic number
         // return spedometer.getFrontRightRPM() * 0.0647f;
 
+    }
+
+    BrakePressure DrivetrainSubsystem::getBrakePressure(){
+        BrakePressure bp;
+        bp.front = frontBrakePressure.getBrakePressure();
+        bp.rear = rearBrakePressure.getBrakePressure();
+        return bp;
     }
 
 }

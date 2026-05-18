@@ -8,6 +8,7 @@
 #include "Temperature.h"
 #include "Tachometer.h"
 #include "Spedometer.h"
+#include "BrakePressureSensor.h"
 
 namespace BajaWildcatRacing
 {
@@ -21,11 +22,12 @@ namespace BajaWildcatRacing
             bool isCVTHot();
 
             EngineRPM getEngineRPM();
-
             
             WheelRPM getWheelRPM();
             float getCarSpeedMetersSec();
             float getCarSpeedMPH();
+
+            BrakePressure getBrakePressure();
 
         private:
             Tachometer tachometer;
@@ -33,6 +35,9 @@ namespace BajaWildcatRacing
             Temperature cvtTemperature;
 
             Spedometer spedometer;
+
+            BrakePressureSensor frontBrakePressure;
+            BrakePressureSensor rearBrakePressure;
             
             bool cvtIsHot = false;
 
