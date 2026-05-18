@@ -9,6 +9,7 @@
 #include "Tachometer.h"
 #include "Spedometer.h"
 #include "BrakePressureSensor.h"
+#include "Displacement.h"
 
 namespace BajaWildcatRacing
 {
@@ -29,6 +30,8 @@ namespace BajaWildcatRacing
 
             BrakePressure getBrakePressure();
 
+            ShockDisplacement getDisplacement();
+
         private:
             Tachometer tachometer;
 
@@ -38,6 +41,9 @@ namespace BajaWildcatRacing
 
             BrakePressureSensor frontBrakePressure;
             BrakePressureSensor rearBrakePressure;
+
+            Displacement frontDisplacement;
+            Displacement rearDisplacement;
             
             bool cvtIsHot = false;
 

@@ -9,6 +9,8 @@ namespace BajaWildcatRacing
     , spedometer(canDispatcher, Device::Devices::SPEDOMETER)
     , frontBrakePressure(canDispatcher, Device::Devices::BRAKE_PRESSURE_FRONT)
     , rearBrakePressure(canDispatcher, Device::Devices::BRAKE_PRESSURE_REAR)
+    , frontDisplacement(canDispatcher, Device::Devices::DISPLACEMENT_FRONT)
+    , rearDisplacement(canDispatcher, Device::Devices::DISPLACEMENT_REAR)
     {
 
     }
@@ -58,6 +60,17 @@ namespace BajaWildcatRacing
         bp.front = frontBrakePressure.getBrakePressure();
         bp.rear = rearBrakePressure.getBrakePressure();
         return bp;
+    }
+
+    ShockDisplacement DrivetrainSubsystem::getDisplacement(){
+        ShockDisplacementPair front = frontDisplacement.getDisplacement();
+        ShockDisplacementPair rear = rearDisplacement.getDisplacement();
+        ShockDisplacement both;
+        both.frontLeft = front.left;
+        both.frontRight = front.right;
+        both.rearLeft = rear.left;
+        both.rearRight = rear.right;
+        return both;
     }
 
 }
