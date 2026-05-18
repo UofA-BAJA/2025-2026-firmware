@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SKM10E-03
+D Isolated DC/DC Converters 4.7-9Vin 3.3Vout 2500mA DIP Iso Reg
+K
+F https://www.arrow.com/en/products/skm10e-03/mean-well-enterprises
+$ENDCMP
+#
+#End Doc Library

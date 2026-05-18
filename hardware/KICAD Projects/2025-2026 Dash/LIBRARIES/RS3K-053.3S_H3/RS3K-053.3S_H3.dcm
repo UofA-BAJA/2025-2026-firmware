@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP RS3K-053.3S_H3
+D 3W DC/DC-Converter 'ECONOLINE' SIP8 3kV reg 2:1
+K
+F https://recom-power.com/pdf/Econoline/RS3K(-Z).pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP CRG0805F47R
+D Configuration Features: Number of Resistors 1 | Dimensions: Product Width 1.25 MM | Product Height .55 MM | Product Length .079 INCH | Product Width .049 INCH | Product Length 2 MM | Product Height .022 INCH | Electrical Characteristics: Power Rating .125 WATT | Operating Voltage 150 V | Passive Component Tolerance 1 PCT | Resistance Value 47 OHM | Resistance Class Up to 1k | Packaging Features: Packaging Method Taped & Reeled | Product Type Features: Element Type Thick Film | Resistor Type General Purpos
+K
+F https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1773204&DocType=Data%20Sheet&DocLang=English&PartCntxt=1623235-1&DocFormat=pdf
+$ENDCMP
+#
+#End Doc Library

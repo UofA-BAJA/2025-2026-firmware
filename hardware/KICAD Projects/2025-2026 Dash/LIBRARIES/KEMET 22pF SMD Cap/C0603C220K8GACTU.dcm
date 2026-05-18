@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP C0603C220K8GACTU
+D SMD Comm C0G, Ceramic, 22 pF, 10%, 10 VDC, 25 VDC, 125C, -55C, C0G, SMD, MLCC, Ultra-Stable, Low Loss, Class I, 0.1 % , 100 GOhms, 3.7 mg, 0603, 1.6mm, 0.8mm, 0.8mm, 0.7mm, 0.35mm, 4000, 78  Weeks, 120
+K
+F https://content.kemet.com/datasheets/KEM_C1003_C0G_SMD.pdf
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MCP25625-E_SS
+D CAN Controller with Transceiver SSOP28 Microchip MCP25625-E/SS, CAN Controller 1MBps CAN 2.0, 28-Pin SSOP
+K
+F https://datasheet.datasheetarchive.com/originals/distributors/Datasheets-DGA14/1192265.pdf
+$ENDCMP
+#
+#End Doc Library

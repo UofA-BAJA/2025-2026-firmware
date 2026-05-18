@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MAX6955ATL+
+D LED Display Drivers 2.7-5.5V LED Display Driver
+K
+F https://datasheets.maximintegrated.com/en/ds/MAX6955.pdf
+$ENDCMP
+#
+#End Doc Library

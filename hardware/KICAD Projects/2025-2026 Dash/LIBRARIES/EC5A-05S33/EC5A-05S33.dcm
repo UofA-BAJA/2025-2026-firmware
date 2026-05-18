@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP EC5A-05S33
+D Non-Isolated DC/DC Converters DC-DC Converter, 6 to 24 Watt, 4.7-6VDC Input, 3.3VDC Output, DIP 1.25x0.80x0.40"
+K
+F https://www.cincon.com/productdownload/EC5A-V14.pdf
+$ENDCMP
+#
+#End Doc Library
