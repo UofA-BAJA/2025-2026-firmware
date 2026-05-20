@@ -36,11 +36,11 @@ class CANTProtocol{
         template <typename T>
         void sendRequestResponse(T data, unsigned long callbackID){
             #if DEBUG_CAN
-                Serial.println("response");
+                Serial.println("inside sendRequestResponse()");
             #endif
             if(callbackID > 0){
                 #if DEBUG_CAN
-                    Serial.println("actually sending");
+                    Serial.print("actually sending response. size: ");
                     Serial.println(sizeof(T));
                 #endif
                 byte outputBuffer[8];
@@ -62,6 +62,7 @@ class CANTProtocol{
                             // Serial.print(" and ID ");
                             // Serial.println(callbackID + j, HEX);
                             #if DEBUG_CAN
+                                Serial.print("now sending callback id: ");
                                 Serial.println(callbackID + j);
                             #endif
                             memcpy(&outputBuffer, ptr + (j * 8), sizeof(T) - (j * 8));
@@ -77,6 +78,7 @@ class CANTProtocol{
                             // Serial.print("Sending start/mid frame of length: 8 and ID ");
                             // Serial.println(callbackID + j, HEX);
                             #if DEBUG_CAN
+                                Serial.print("now sending callback id: ");
                                 Serial.println(callbackID + j);
                             #endif
                             memcpy(&outputBuffer, ptr + (j * 8), 8);
