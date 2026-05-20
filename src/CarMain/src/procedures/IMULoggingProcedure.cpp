@@ -22,7 +22,7 @@ class IMULoggingProcedure : public Procedure{
         , coms(coms)
         {
 
-            this->frequency = 30;
+            this->frequency = 30; //30
 
         }
         
@@ -33,6 +33,9 @@ class IMULoggingProcedure : public Procedure{
         void execute() override {
             RotationXYZ rot = imuSubsystem.getRotation();
             AccelerationXYZ accel = imuSubsystem.getAcceleration();
+
+            // std::cout << "rotation XYZ " << rot.rotationx << " " << rot.rotationy << " " << rot.rotationz << std::endl;
+            // std::cout << "acceleration XYZ " << accel.accelerationx << " " << accel.accelerationy << " " << accel.accelerationz << std::endl;
             
             dataStorage.storeData(rot, accel);
             

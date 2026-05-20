@@ -24,7 +24,10 @@ namespace BajaWildcatRacing{
             }
 
             void execute() override {
+                // std::cout << "getting displacements" << std::endl;
                 ShockDisplacement disp = drivetrainSubsystem.getDisplacement();
+
+                // std::cout << disp.rearLeft << " " << disp.rearRight << " " << std::endl;
 
                 dataStorage.storeData(disp);
                 coms.sendData(DataType::SHOCK_DISPLACEMENT, disp);
