@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "CANTProtocol.h"
-#include <mcp_can.h>
+// #include <mcp_can.h>
 
 CANTProtocol CAN(10,2,3);
 
@@ -44,7 +44,7 @@ void setup() {
     pinMode(analogPin2, INPUT);  // Set the analog pin as an input
 
 
-    CAN.registerRequest(0,thisSpeed);
+    CAN.registerRequest(0,builder);
     CAN.begin();
     delay(500);
 
@@ -54,7 +54,7 @@ void setup() {
 
 
 void loop() {
-    CAN.execute()
+    CAN.execute();
 
     
 
