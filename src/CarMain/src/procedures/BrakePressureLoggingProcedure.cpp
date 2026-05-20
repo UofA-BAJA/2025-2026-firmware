@@ -26,6 +26,8 @@ namespace BajaWildcatRacing{
             void execute() override {
                 BrakePressure bp = drivetrainSubsystem.getBrakePressure();
 
+                // std::cout << "brake pressure: " << bp.front << " " << bp.rear << std::endl;
+
                 dataStorage.storeData(bp);
                 coms.sendData(DataType::BRAKE_PRESSURE, bp);
             }

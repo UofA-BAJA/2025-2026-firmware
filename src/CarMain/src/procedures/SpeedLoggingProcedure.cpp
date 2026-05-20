@@ -26,6 +26,9 @@ namespace BajaWildcatRacing{
             void execute() override {
                 //Overall "car speed" is logged in CarStateProcedure
                 WheelRPM rpm = drivetrainSubsystem.getWheelRPM();
+
+                // std::cout << "speed LRR " << rpm.frontLeft << " " << rpm.frontRight << " " << rpm.rear << std::endl;
+
                 coms.sendData(DataType::WHEEL_RPM, rpm);
                 dataStorage.storeData(rpm);
  

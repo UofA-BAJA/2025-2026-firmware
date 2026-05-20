@@ -26,6 +26,8 @@ namespace BajaWildcatRacing{
             void execute() override {
                 EngineRPM engineRPM = drivetrainSubsystem.getEngineRPM();
 
+                // std::cout << "engine rpm: " << engineRPM.rpm << std::endl;
+
                 dataStorage.storeData(engineRPM);
                 coms.sendData(DataType::MOTOR_RPM, engineRPM);
             }

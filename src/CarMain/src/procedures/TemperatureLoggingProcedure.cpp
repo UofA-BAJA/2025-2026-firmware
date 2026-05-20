@@ -23,7 +23,7 @@ class TemperatureLoggingProcedure : public Procedure{
         {
 
 
-            this->frequency = 30; 
+            this->frequency = 15; //15 or 30??
 
         }
         
@@ -33,6 +33,8 @@ class TemperatureLoggingProcedure : public Procedure{
 
         void execute() override {
             CVTTemp cvt_temperature = drivetrainSubsystem.getCVTTemperature();
+
+            // std::cout << "cvt temp: " << cvt_temperature.temp << std::endl;
 
             dataStorage.storeData(cvt_temperature);
             coms.sendData(DataType::CVT_TEMPERATURE, cvt_temperature);
