@@ -20,7 +20,7 @@ namespace BajaWildcatRacing{
             , dataStorage(dataStorage)
             , coms(coms)
             {
-                this->frequency = 10; 
+                this->frequency = 5; 
                 isReady = false;
                 carTimeSet = false;
             }
@@ -34,6 +34,7 @@ namespace BajaWildcatRacing{
             void execute() override {
                 //If not ready, check and wait
                 if(!isReady){
+                    std::cout << "gps not ready" << std::endl;
                     isReady = gpsSubsystem.isReady();
                     if(isReady){
                         //Send commands just to start flushing the "0" from them
@@ -55,6 +56,8 @@ namespace BajaWildcatRacing{
                     }
 
                     GPSPosition pos = gpsSubsystem.getPosition();
+
+                    std::cout << "gps pos: LatLongAlt" << pos.latitude << " " << pos.longitude << " " << pos.atltitude << std::endl;
 
                     dataStorage.storeData(pos);
                     coms.sendData(DataType::GPS_POSITION, pos);

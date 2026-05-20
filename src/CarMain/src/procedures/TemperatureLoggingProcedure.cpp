@@ -34,7 +34,7 @@ class TemperatureLoggingProcedure : public Procedure{
         void execute() override {
             CVTTemp cvt_temperature = drivetrainSubsystem.getCVTTemperature();
 
-            // std::cout << "cvt temp: " << cvt_temperature.temp << std::endl;
+            std::cout << "cvt temp: " << cvt_temperature.temp << std::endl;
 
             dataStorage.storeData(cvt_temperature);
             coms.sendData(DataType::CVT_TEMPERATURE, cvt_temperature);
