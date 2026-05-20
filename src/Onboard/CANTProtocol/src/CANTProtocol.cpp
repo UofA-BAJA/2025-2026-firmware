@@ -1,4 +1,5 @@
 #include "CANTProtocol.h"
+// #define DEBUG_CAN 1
 
 
 #if !defined(CANT_ARDUINO) && !defined(CANT_ESP32)
@@ -109,7 +110,7 @@ bool CANTProtocol::registerCommand(byte commandID, void (*onRecieved) (unsigned 
 //Call in the loop() function to execute pending CAN requests and commands
 void CANTProtocol::execute(){
     #if DEBUG_CAN
-        Serial.println("L");
+        // Serial.println("L");
     #endif
     //Sort all the incoming CAN frames into their respective queues 
     while(frameQueueLength > 0){

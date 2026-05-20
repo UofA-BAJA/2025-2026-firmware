@@ -1,5 +1,6 @@
 #ifndef CANTPROTOCOL_H
 #define CANTPROTOCOL_H
+// #define DEBUG_CAN 1
 
 #include <mcp_can.h>
 #include <Arduino.h>
@@ -34,13 +35,23 @@ class CANTProtocol{
         //Do NOT call this method for CAN commands (what would the data be anyway?)
         template <typename T>
         void sendRequestResponse(T data, unsigned long callbackID){
+            #if DEBUG_CAN
+                Serial.println("response");
+            #endif
             if(callbackID > 0){
+                #if DEBUG_CAN
+                    Serial.println("actually sending");
+                    Serial.println(sizeof(T));
+                #endif
                 byte outputBuffer[8];
                 //If we need to send multiple frames back
-                if(sizeof(T) > 8){
+                // if(sizeof(T) > 8){
                     // Serial.print("Responding to ");
                     // Serial.println(callbackID, HEX);
-                    int numFrames = (sizeof(T) / 8) + 1;
+                    int numFrames = (sizeof(T) / 8);
+                    if(sizeof(T) % 8 > 0){
+                        numFrames++;
+                    }
                     byte* ptr = (byte*) &data; //Get a pointer that increments by bytes
                     for(int j = 0; j < numFrames; j++){
                         //(this could be one line but I was having trouble thinking of the right way to do it)
@@ -50,25 +61,35 @@ class CANTProtocol{
                             // Serial.print(sizeof(T) - (j * 8));
                             // Serial.print(" and ID ");
                             // Serial.println(callbackID + j, HEX);
+                            #if DEBUG_CAN
+                                Serial.println(callbackID + j);
+                            #endif
                             memcpy(&outputBuffer, ptr + (j * 8), sizeof(T) - (j * 8));
                             byte sendMSG = CAN.sendMsgBuf(callbackID + j, 1, sizeof(T) - (j * 8), outputBuffer);
-                            // if(sendMSG == CAN_GETTXBFTIMEOUT) Serial.println("Get TX Buffer Timeout");
-                            // else if(sendMSG == CAN_SENDMSGTIMEOUT) Serial.println("Send Message Timeout");
-                            // else if(sendMSG != CAN_OK) Serial.println("Send message failed unknown");
+                            #if DEBUG_CAN
+                                if(sendMSG == CAN_GETTXBFTIMEOUT) Serial.println("Get TX Buffer Timeout");
+                                else if(sendMSG == CAN_SENDMSGTIMEOUT) Serial.println("Send Message Timeout");
+                                else if(sendMSG != CAN_OK) Serial.println("Send message failed unknown");
+                            #endif
                         }
                         //Otherwise, copy 8 bytes
                         else {
                             // Serial.print("Sending start/mid frame of length: 8 and ID ");
                             // Serial.println(callbackID + j, HEX);
+                            #if DEBUG_CAN
+                                Serial.println(callbackID + j);
+                            #endif
                             memcpy(&outputBuffer, ptr + (j * 8), 8);
                             byte sendMSG = CAN.sendMsgBuf(callbackID + j, 1, 8, outputBuffer);
-                            // if(sendMSG == CAN_GETTXBFTIMEOUT) Serial.println("Get TX Buffer Timeout");
-                            // else if(sendMSG == CAN_SENDMSGTIMEOUT) Serial.println("Send Message Timeout");
-                            // else if(sendMSG != CAN_OK) Serial.println("Send message failed unknown");
+                            #if DEBUG_CAN
+                                if(sendMSG == CAN_GETTXBFTIMEOUT) Serial.println("Get TX Buffer Timeout");
+                                else if(sendMSG == CAN_SENDMSGTIMEOUT) Serial.println("Send Message Timeout");
+                                else if(sendMSG != CAN_OK) Serial.println("Send message failed unknown");
+                            #endif
                         }
                         //TODO: do something if it fails to send 
                     }
-                }
+                // }
             }
         }
 
