@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
 // I2C
-#define I2C_SDA 9
-#define I2C_SCL 8
+#define I2C_SDA 8
+#define I2C_SCL 9
 
 #define I2C_ADDR_UPPER 0x70
 #define I2C_ADDR_LOWER 0x71
@@ -31,6 +31,6 @@
 #define SERVO_SPEED 2
 
 #define SERVO_TACH_MIN 0
-#define SERVO_TACH_MAX 160
+#define SERVO_TACH_MAX 155
 #define SERVO_SPEED_MIN 160
 #define SERVO_SPEED_MAX 0

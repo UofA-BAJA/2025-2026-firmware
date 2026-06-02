@@ -64,7 +64,7 @@ void setup(){
     Serial.println("Entering setup...");
 
     // Alpha Setup
-    Wire.begin(I2C_SCL,I2C_SDA);
+    Wire.begin(I2C_SDA,I2C_SCL);
     upper.begin(I2C_ADDR_UPPER);
     lower.begin(I2C_ADDR_LOWER);
 
@@ -105,7 +105,7 @@ void setup(){
     speedometer.attach(SERVO_SPEED, 600, 2400);
 
     tachometer.write(0);
-    speedometer.write(0);
+    speedometer.write(130);
     delay(500);
 
     Serial.println("servoes set up...");
@@ -116,21 +116,31 @@ void setup(){
 
     Serial.println("button set up...");
 
-    Serial.println("CAN commands registered...");
 
     lower.clear();
     upper.clear();
+
+    writeText(upper,String(lowerPos));
+    writeText(lower,String(130-lowerPos));
+
 }
 // MAIN ---------------------
 
 void loop(){
+    
+    button.update();
 
     if(button.fell()){
         Serial.println("Updating stuff.");
+        upper.clear();
+        writeText(upper,String(lowerPos));
         lower.clear();
-        writeText(lower,String(lowerPos));
-        speedometer.write(lowerPos);
-        lowerPos++;
+        writeText(lower,String(130-lowerPos));
+        tachometer.write(lowerPos);
+        speedometer.write(130-lowerPos);
+        lowerPos = (lowerPos + 1) % 131;
         Serial.println("Done.");
     }
+
+    
 }

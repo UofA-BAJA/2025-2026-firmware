@@ -22,9 +22,9 @@
 #include "Adafruit_LEDBackpack.h"
 #include <Adafruit_GFX.h>
 
-#include "dog_7565R.h"
-#include "fonts.h"
-#include "images.h"
+//#include "dog_7565R.h"
+//#include "fonts.h"
+//#include "images.h"
 
 #include <Bounce2.h>
 
@@ -35,27 +35,25 @@
 float rpm = 0;      // Engine RPM      (data ID 0)
 float speed = 0;     // Car speed        (data ID 1)
 float cvtTemp = 0;   // CVT temperature  (data ID 2)
-int carTime = 0;   // Car time         (data ID 3)
+float carTime = 0;   // Car time         (data ID 3)
 float distance = 0;  // Distance travelled (data ID 4)
 
 
 // Other helpers
-int displayIndex = 0;
+int displayIndex = 2;
 int counter = 0;
 
 // Instantiations -----------
 
-CANTProtocol CAN(SPI_CS_CAN, SPI_INT_CAN, CAN_ADDR);
+//CANTProtocol CAN(SPI_CS_CAN, SPI_INT_CAN, CAN_ADDR);
 
 Adafruit_AlphaNum4 upper = Adafruit_AlphaNum4();
 Adafruit_AlphaNum4 lower = Adafruit_AlphaNum4();
-
-dog_7565R lcd;
-
+//dog_7565R lcd;
 Servo tachometer;
 Servo speedometer;
 
-Bounce button = Bounce();
+// Bounce button = Bounce();
 
 // Functions ----------------
 
@@ -110,7 +108,8 @@ void updateAlphas(int index){
     }
 }
 
-void displayMenu(String items[], int count, int selected) {
+
+/*void displayMenu(String items[], int count, int selected) {
     lcd.clear();
     lcd.string(20, 0, font_8x8, "== MENU ==");
     
@@ -122,8 +121,7 @@ void displayMenu(String items[], int count, int selected) {
         lcd.string(10, i + 2, font_6x8, items[i].c_str());
       }
     }
-}
-
+}*/
 
 
 // CAN Command Handlers -----
@@ -131,32 +129,32 @@ void displayMenu(String items[], int count, int selected) {
 void onEngineRPM(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&rpm, incomingData, sizeof(float));
 
-    tachometer.write(int(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX)));
+    tachometer.write(constrain(map(rpm,0,4000,SERVO_TACH_MIN,SERVO_TACH_MAX), SERVO_TACH_MIN, SERVO_TACH_MAX));
     
-    if(displayIndex == 0) updateAlphas(0);
+    // if(displayIndex == 0) updateAlphas(0);
 }
 
 void onCarSpeed(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&speed, incomingData, sizeof(float));
 
-    speedometer.write(int(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX)));
+    speedometer.write(constrain(map(speed,0,40,SERVO_SPEED_MIN,SERVO_SPEED_MAX), SERVO_SPEED_MAX, SERVO_SPEED_MIN));
     
-    if(displayIndex == 1) updateAlphas(1);
+    // if(displayIndex == 1) updateAlphas(1);
 }
 
 void onCVTTemp(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&cvtTemp, incomingData, sizeof(float));
-    if(displayIndex == 2) updateAlphas(2);
+    // if(displayIndex == 2) updateAlphas(2);
 }
 
 void onCarTime(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&carTime, incomingData, sizeof(float));
-    if(displayIndex == 3) updateAlphas(3);
+    // if(displayIndex == 3) updateAlphas(3);
 }
 
 void onDistance(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
     memcpy(&distance, incomingData, sizeof(float));
-    if(displayIndex == 4) updateAlphas(4);
+    // if(displayIndex == 4) updateAlphas(4);
 }
 
 // SETUP --------------------
@@ -168,7 +166,7 @@ void setup(){
     Serial.println("Entering setup...");
 
     // Alpha Setup
-    Wire.begin(I2C_SCL,I2C_SDA);
+    //Wire.begin(I2C_SDA,I2C_SCL);
     upper.begin(I2C_ADDR_UPPER);
     lower.begin(I2C_ADDR_LOWER);
 
@@ -180,13 +178,13 @@ void setup(){
     Serial.println("I2C init done...");
 
     Serial.println("Entering CAN init loop");
-    while (!CAN.begin()) {
-        delay(2000);
-        Serial.println("CAN init failed, retrying...");
-    }
+    // while (!CAN.begin()) {
+        // delay(2000);
+        // Serial.println("CAN init failed, retrying...");
+    // }
 
     writeText(upper, "UofA");
-    writeText(lower, "SAE.");
+    writeText(lower, "Baja");
     delay(2000);
 
     // LCD Setup
@@ -202,39 +200,37 @@ void setup(){
     Serial.println("LCD set up...");*/
 
     // Allow allocation of all timers
-    ESP32PWM::allocateTimer(0);
-	ESP32PWM::allocateTimer(1);
-	ESP32PWM::allocateTimer(2);
-	ESP32PWM::allocateTimer(3);
+	//ESP32PWM::allocateTimer(1);
+	//ESP32PWM::allocateTimer(2);
+    //ESP32PWM::allocateTimer(0);
+	//ESP32PWM::allocateTimer(3);
 
-    // Servo Setup
+    //Servo Setup
     tachometer.setPeriodHertz(50);
     tachometer.attach(SERVO_TACH, 600, 2400);
 
     speedometer.setPeriodHertz(50);
     speedometer.attach(SERVO_SPEED, 600, 2400);
 
-    tachometer.write(0);
-    speedometer.write(0);
-    delay(500);
-    tachometer.write(180);
-    speedometer.write(180);
-    delay(500);
-    tachometer.write(0);
-    speedometer.write(0);
-    delay(500);
+    tachometer.write(SERVO_TACH_MIN);
+    speedometer.write(SERVO_SPEED_MIN);
+    delay(1000);
+    tachometer.write(SERVO_TACH_MAX);
+    speedometer.write(SERVO_SPEED_MAX);
+    delay(1000);
+    tachometer.write(SERVO_TACH_MIN);
+    speedometer.write(SERVO_SPEED_MIN);
+    delay(1000);
 
     Serial.println("servoes set up...");
 
-    pinMode(BUTTON_LOWER, INPUT_PULLUP);
-    button.attach(BUTTON_LOWER);
-    button.interval(5);
+    //pinMode(BUTTON_LOWER, INPUT_PULLUP);
+    // button.attach(BUTTON_LOWER);
+    // button.interval(5);
 
     Serial.println("button set up...");
 
     // CAN Setup
-	pinMode(SPI_CS_CAN,OUTPUT); pinMode(SPI_INT_CAN,INPUT);
-    //pinMode(SPI_MOSI,OUTPUT);   pinMode(SPI_SCK,OUTPUT);
 
     Serial.println("CAN commands registered...");
 
@@ -242,31 +238,31 @@ void setup(){
     writeText(lower, "INIT");
     
 
-    CAN.registerCommand(0, onEngineRPM);
-    CAN.registerCommand(1, onCarSpeed);
-    CAN.registerCommand(2, onCVTTemp);
-    CAN.registerCommand(3, onCarTime);
-    CAN.registerCommand(4, onDistance);
+    // CAN.registerCommand(0, onEngineRPM);
+    // CAN.registerCommand(1, onCarSpeed);
+    // CAN.registerCommand(2, onCVTTemp);
+    // CAN.registerCommand(3, onCarTime);
+    // CAN.registerCommand(4, onDistance);
 
     writeText(lower, "DONE");
-    delay(1000);
+    //delay(1000);
 
-    lower.clear();
-    upper.clear();
+    //lower.clear();
+    //upper.clear();
 
-    updateAlphas(displayIndex);
+    //updateAlphas(displayIndex);
 }
 // MAIN ---------------------
 
 void loop(){
     
-    CAN.execute();
-    button.update();
+    //CAN.execute();
+    //button.update();
 
-    if(button.fell()){
-        Serial.println("Updating stuff.");
-        displayIndex = (displayIndex + 1) % 5;
-        updateAlphas(displayIndex);
-        Serial.println("Done.");
-    }
+    // if(button.fell()){
+        // Serial.println("Updating stuff.");
+        // displayIndex = (displayIndex + 1) % 5;
+        // updateAlphas(displayIndex);
+        // Serial.println("Done.");
+    // }
 }
