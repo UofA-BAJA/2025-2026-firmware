@@ -16,7 +16,7 @@ void displayDistance(HT16K33 disp);
 
 // Constants
 const int CAN_CS_PIN = 5;
-const int CAN_INT_PIN = 17;
+const int CAN_INT_PIN = 27;
 const unsigned long DASH_DEVICE_ID = 9;
 const int DISPLAY1_BUTTON_PIN = 12;
 const int DISPLAY2_BUTTON_PIN = 14;
@@ -220,12 +220,12 @@ void setup()
   Serial.println("CAN Init OK!");
 
   // Register CANT command handlers (data IDs match CC sender)
+  CAN.registerCommand(0x00, onRPM);
   CAN.registerCommand(0x01, onSpeed);
-  CAN.registerCommand(0x02, onRPM);
-  CAN.registerCommand(0x03, onCVTTemp);
-  CAN.registerCommand(0x04, onTime);
+  CAN.registerCommand(0x02, onCVTTemp);
+  CAN.registerCommand(0x03, onTime);
+  CAN.registerCommand(0x04, onDistance);
   CAN.registerCommand(0x05, onIndicatorLights);
-  CAN.registerCommand(0x06, onDistance);
 
   Serial.println("CAN setup complete");
 
@@ -270,7 +270,8 @@ void setup()
 
 void loop()
 {
-  CAN.execute();
+
+ CAN.execute();
 
   //If we haven't recieved a CAN command in 2 seconds, assume CAN is offline
   if(millis()-lastCANRx > 2000 && canRecentRX){
