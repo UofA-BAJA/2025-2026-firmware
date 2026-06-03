@@ -148,14 +148,14 @@ class CANTProtocol{
             command comes in, we'd have to sift through all 5 requests first. With this system, we can only sift through, say,
             2 of those requests before moving on to sift through many commands. 
         */
-        volatile PendingCANFrame pendingFrames[16];
+        volatile PendingCANFrame pendingFrames[32];
         volatile int frameQueueFront = 0;
         volatile int frameQueueLength = 0;
 
-        PendingCANFrame pendingRequests[16];
+        PendingCANFrame pendingRequests[32];
         int requestQueueFront = 0;
         int requestQueueLength = 0;
-        PendingCANFrame pendingCommands[16];
+        PendingCANFrame pendingCommands[32];
         int commandQueueFront = 0;
         int commandQueueLength = 0;
 
