@@ -43,6 +43,10 @@ float distance = 0;  // Distance travelled (data ID 4)
 int displayIndex = 2;
 int counter = 0;
 
+int carHours;
+int carMinutes;
+float carSeconds;
+
 // Instantiations -----------
 
 CANTProtocol CAN(SPI_CS_CAN, SPI_INT_CAN, CAN_ADDR);
@@ -91,10 +95,20 @@ void updateAlphas(int index){
             break;
 
         // Car Time
-        case 3:
-            writeText(upper,"TIME");
-            writeText(lower, String(int(carTime)));
+        case 3: 
+            carSeconds = fmodf(carTime, 60.0f);
+            carMinutes = (static_cast<int>(carTime) % 3600) / 60;
+            carHours   = static_cast<int>(carTime) / 3600;
+        
+            char hmStr[5];
+            char secStr[6];
+            snprintf(hmStr,  sizeof(hmStr),  "%02d%02d", carHours, carMinutes);
+            snprintf(secStr, sizeof(secStr), "%05.2f",   carSeconds);
+        
+            writeText(upper, String(hmStr));
+            writeText(lower, String(secStr));
             break;
+        
 
         // Distance
         case 4:
