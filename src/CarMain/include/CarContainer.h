@@ -17,11 +17,15 @@
 #include "procedures/RPMLoggingProcedure.cpp"
 #include "procedures/SpeedLoggingProcedure.cpp"
 #include "procedures/TestProcedure.cpp"
+#include "procedures/DisplacementLoggingProcedure.cpp"
+#include "procedures/BrakePressureLoggingProcedure.cpp"
+#include "procedures/GPSLoggingProcedure.cpp"
 
 #include "DashSubsystem.h"
 #include "IMUSubsystem.h"
 #include "DrivetrainSubsystem.h"
 #include "TestSubsystem.h"
+#include "GPSSubsystem.h"
 
 namespace BajaWildcatRacing
 {
@@ -43,6 +47,8 @@ namespace BajaWildcatRacing
             DrivetrainSubsystem drivetrainSubsystem;
 
             TestSubsystem testSubsystem;
+
+            GPSSubsystem gpsSubsystem;
 
     };
 

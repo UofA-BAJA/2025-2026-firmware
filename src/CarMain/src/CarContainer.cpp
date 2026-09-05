@@ -45,76 +45,82 @@ namespace BajaWildcatRacing
     , drivetrainSubsystem(canDispatcher)
     , dashSubsystem(canDispatcher)
     , testSubsystem(canDispatcher)
+    , gpsSubsystem(canDispatcher)
     {
+
+        ///////////////////////////////////////////////////////////
+        // Testing procedures
+        ///////////////////////////////////////////////////////////
+
+        // procedureScheduler.bindCommand<TestProcedure>(
+        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+        //     std::unordered_set<Command>({Command::END_LOG}),
+        //     testSubsystem, coms, dataStorage
+        // );
 
         ///////////////////////////////////////////////////////////
         // Logging procedures
         ///////////////////////////////////////////////////////////
 
-        //  procedureScheduler.bindCommand<IMULoggingProcedure>(
-        //      std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}), 
-        //      std::unordered_set<Command>({Command::END_LOG}), 
-        //      imuSubsystem, dataStorage, coms
-        // );
+        procedureScheduler.bindCommand<IMULoggingProcedure>(
+             std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}), 
+             std::unordered_set<Command>({Command::END_LOG}), 
+             imuSubsystem, dataStorage, coms
+        );
         
-        // procedureScheduler.bindCommand<TemperatureLoggingProcedure>(
-        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
-        //     std::unordered_set<Command>({Command::END_LOG}),
-        //      drivetrainSubsystem, dataStorage, coms
-        // );
-
-        procedureScheduler.bindCommand<TestProcedure>(
+       	procedureScheduler.bindCommand<TemperatureLoggingProcedure>(
             std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
-            std::unordered_set<Command>({Command::END_LOG}),
-             testSubsystem, coms, dataStorage
+             std::unordered_set<Command>({Command::END_LOG}),
+              drivetrainSubsystem, dataStorage, coms, dashSubsystem
+        );
+
+        procedureScheduler.bindCommand<CarStateProcedure>(
+             std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+             std::unordered_set<Command>({Command::END_LOG}),
+             drivetrainSubsystem, dashSubsystem, dataStorage, coms
+        );
+
+
+         procedureScheduler.bindCommand<RPMLoggingProcedure>(
+             std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+             std::unordered_set<Command>({Command::END_LOG}),
+             drivetrainSubsystem, dataStorage, coms
+        );
+
+        procedureScheduler.bindCommand<SpeedLoggingProcedure>(
+             std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+             std::unordered_set<Command>({Command::END_LOG}),
+             drivetrainSubsystem, dataStorage, coms
          );
 
-        // procedureScheduler.bindCommand<CarStateProcedure>(
-        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
-        //     std::unordered_set<Command>({Command::END_LOG}),
-        //     drivetrainSubsystem, dashSubsystem, dataStorage, coms
-        // );
+        procedureScheduler.bindCommand<DisplacementLoggingProcedure>(
+            std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+           std::unordered_set<Command>({Command::END_LOG}),
+           drivetrainSubsystem, dataStorage, coms
+        );
 
-        // procedureScheduler.bindCommand<RPMLoggingProcedure>(
-        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
-        //     std::unordered_set<Command>({Command::END_LOG}),
-        //     drivetrainSubsystem, dataStorage, coms
-        // );
-        // procedureScheduler.bindCommand<SpeedLoggingProcedure>(
-        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
-        //     std::unordered_set<Command>({Command::END_LOG}),
-        //     drivetrainSubsystem, dataStorage, coms
-        // );
+        procedureScheduler.bindCommand<BrakePressureLoggingProcedure>(
+            std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+           std::unordered_set<Command>({Command::END_LOG}),
+            drivetrainSubsystem, dataStorage, coms
+        );
+
+         procedureScheduler.bindCommand<GPSLoggingProcedure>(
+             std::unordered_set<Command>({Command::DEFAULT_CAR_START, Command::START_LOG}),
+             std::unordered_set<Command>({Command::END_LOG}),
+             gpsSubsystem, dataStorage, coms
+         );
 
         ///////////////////////////////////////////////////////////
-        // End of logging procedures
+        // Other Procedures
         ///////////////////////////////////////////////////////////
-
-        
-    //     procedureScheduler.bindCommand<AccelerationProcedure>(
-    //         std::unordered_set<Command>({Command::ACCELERATION}), 
-    //         std::unordered_set<Command>({Command::END_LOG, Command::EMERGENCY_STOP})
-    //    );
-
 
         // The dash is always running.
-        // procedureScheduler.bindCommand<DashProcedure>( 
-        //    std::unordered_set<Command>({Command::DEFAULT_CAR_START}),
-        //    std::unordered_set<Command>({}),
-        //    dashSubsystem, drivetrainSubsystem, imuSubsystem
-        // );
-        //This is also part of the dash
-        // procedureScheduler.bindCommand<CheckEngineProcedure>(
-        //     std::unordered_set<Command>({Command::ENABLE_CHECK_ENGINE}),
-        //     std::unordered_set<Command>({Command::DISABLE_CHECK_ENGINE}),
-        //     dashSubsystem
-        //  );
-
-        // procedureScheduler.bindCommand<SpedometerProcedure>(
-        //     std::unordered_set<Command>({Command::DEFAULT_CAR_START}),
-        //     std::unordered_set<Command>({Command::END_LOG}),
-        //     drivetrainSubsystem, dataStorage, coms
-        // );
+         procedureScheduler.bindCommand<DashProcedure>( 
+            std::unordered_set<Command>({Command::DEFAULT_CAR_START}),
+            std::unordered_set<Command>({}),
+            dashSubsystem, drivetrainSubsystem, imuSubsystem
+         );
 
 
 

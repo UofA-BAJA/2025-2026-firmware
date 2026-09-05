@@ -69,12 +69,12 @@ class TestProcedure : public Procedure{
             coms.sendData(DataType::CAR_STATE, state);
             std::cout << "id 2: " << randomNum << std::endl;
             // coms.sendData(DataType::CAR_SPEED, 2026.0f);
-            
+            TestDevice::TestStruct st = testSubsystem.getTestStruct();
             // testSubsystem.test(true);
             // testSubsystem.test(false);
-            // std::cout << std::fixed;
-            // std::cout << std::setprecision(2);
-            // std::cout << "Test Struct: " << st.a << " " << st.b << " " <<  st.c << " " << st.d << " " << st.e << std::endl;
+            std::cout << std::fixed;
+            std::cout << std::setprecision(2);
+            std::cout << "Test Struct: " << st.a << " " << st.b << " " <<  st.c << " " << st.d << " " << st.e << std::endl;
         }
 
         void end() override {

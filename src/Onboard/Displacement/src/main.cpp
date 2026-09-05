@@ -7,7 +7,7 @@ typedef struct displacement{
 } Displacement;
 //5 is the CAN ID for one of the displacement sensors
 //Change it to 6 for one of the sensors
-CANTProtocol CAN(2, 10, 0x5);
+CANTProtocol CAN(10, 2, 0x6);
 
 void builder(unsigned char dataLength, byte* incomingData, unsigned long callbackID){
   Displacement x;

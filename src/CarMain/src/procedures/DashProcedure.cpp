@@ -32,17 +32,10 @@ namespace BajaWildcatRacing
 
             void execute() override {
                 // Commented out lines to avoid millions of dropped commands during testing
-                dashSubsystem.sendCVTTemp(drivetrainSubsystem.getCVTTemperature());
-                if(drivetrainSubsystem.isCVTHot()){
-                    dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CVT_HOT, true);
-                }else{
-                    dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CVT_HOT, false);
-                }
-
+                dashSubsystem.sendCVTTemp(drivetrainSubsystem.getCVTTemperature().temp);
                 dashSubsystem.sendTimeSeconds(CarTime::getElapsedTimeSeconds());
-                dashSubsystem.sendIndicatorLightState();
 
-                dashSubsystem.sendRPM(drivetrainSubsystem.getEngineRPM());
+                dashSubsystem.sendRPM(drivetrainSubsystem.getEngineRPM().rpm);
                 dashSubsystem.sendSpeed(drivetrainSubsystem.getCarSpeedMPH());
 
                 //Convert RPM to MPH with magic numbers

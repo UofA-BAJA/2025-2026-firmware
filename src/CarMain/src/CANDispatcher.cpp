@@ -38,7 +38,7 @@ namespace BajaWildcatRacing
             }
             if(responses[i] != nullptr && (responses[i]->commandCycles) >= cycleThreshold){
                 droppedCommands++;
-                std::cout << "Commands Dropped: " << droppedCommands << std::endl;
+                // std::cout << "Commands Dropped: " << droppedCommands << " Device ID: " << (responses[i]->deviceCommandID >> 4) << std::endl;
                 
                 // std::cout << "Command Dropped: "  << (i) << std::endl;
                 
@@ -204,7 +204,10 @@ namespace BajaWildcatRacing
             frame.can_id |= currUID;
 
             //Prepare response object
-            int numFrames = (recievedDataLength / 8) + 1; //8 bytes in a can frame, do integer division then add one because we have to round up
+            int numFrames = (recievedDataLength / 8); //8 bytes in a can frame, do integer division 
+            if(recievedDataLength % 8 > 0){
+                numFrames++; //Add 1 if there's an odd number of bytes (since we need them all to fit)
+            }
             std::shared_ptr<CANResponse> response(new CANResponse());
             response->firstUID = currUID; //We don't want the full can_id
             response->framesLeft = numFrames; 
@@ -214,6 +217,8 @@ namespace BajaWildcatRacing
             response->commandCycles = 0;
             response->recievedData = std::make_unique<unsigned char[]>(recievedDataLength);
             response->deviceCommandID = deviceCommandID;
+
+            // std::cout << "recieved data length: " << recievedDataLength << "num frames: " << numFrames << std::endl;
 
             //Only store sent data for lossless command (we need it if we need to resend)
             if(lossless){
@@ -373,9 +378,12 @@ namespace BajaWildcatRacing
 
                 byte frameLength = (byte) frame.len;
                 // Check to see if the can frame is actually meant for us.
+                // std::cout << "response recieved" << std::endl;
                 if(currentResponse != nullptr){
+                    // std::cout << "for us" << std::endl;
                     //Don't copy anything if we aren't expecting to copy anything
                     if(currentResponse->recievedDataLength > 0){
+                        // std::cout << "has data" << std::endl;
                         uint32_t difference = messageID - currentResponse->firstUID;
 
                         //**** Print Statements for debugging below

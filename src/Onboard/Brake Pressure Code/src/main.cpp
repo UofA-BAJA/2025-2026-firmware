@@ -6,7 +6,8 @@ CANTProtocol CAN(10, 2, 0x7);
 
 
 void builder(unsigned char dataLength, byte* incomingData, unsigned long callbackID) {
-  CAN.sendRequestResponse(analogRead(A0), callbackID);
+  float x = analogRead(A0);
+  CAN.sendRequestResponse(x, callbackID);
 }
 
 

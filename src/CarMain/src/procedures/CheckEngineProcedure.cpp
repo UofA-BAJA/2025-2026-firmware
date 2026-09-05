@@ -18,7 +18,7 @@ namespace BajaWildcatRacing
             }
 
             void init() override {
-                dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CHECK_ENGINE, true);
+                // dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CHECK_ENGINE, true);
                 std::cout << "Check Engine Light enabled!!" << std::endl;
             }
 
@@ -28,7 +28,7 @@ namespace BajaWildcatRacing
 
             void end() override {
                 // ! Remember to reset any local variables! This class does not actually get destroyed, only reused!
-                dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CHECK_ENGINE, false);
+                // dashSubsystem.setSpecificIndicatorLight(Dash::IndicatorLights::CHECK_ENGINE, false);
                 std::cout << "Check Engine Light disabled!!" << std::endl;
             }
     

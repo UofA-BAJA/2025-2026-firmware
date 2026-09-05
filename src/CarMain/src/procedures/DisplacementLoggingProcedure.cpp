@@ -16,7 +16,7 @@ namespace BajaWildcatRacing{
             : drivetrainSubsystem(drivetrainSubsystem)
             , dataStorage(dataStorage)
             , coms(coms){
-                this->frequency = 30; 
+                this->frequency = 30; //30
             }
 
             void init() override {
@@ -24,7 +24,11 @@ namespace BajaWildcatRacing{
             }
 
             void execute() override {
+                // std::cout << "getting displacements" << std::endl;
                 ShockDisplacement disp = drivetrainSubsystem.getDisplacement();
+
+                std::cout << "disp RL: " << disp.rearLeft << ", disp RR: " << disp.rearRight << " " << std::endl;
+                std::cout << "displ FL: " << disp.frontLeft << ", disp FR: " << disp.frontRight << " " << std::endl;
 
                 dataStorage.storeData(disp);
                 coms.sendData(DataType::SHOCK_DISPLACEMENT, disp);

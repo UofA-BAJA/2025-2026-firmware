@@ -1,4 +1,5 @@
 #include "CANTProtocol.h"
+// #define DEBUG_CAN 1
 
 
 #if !defined(CANT_ARDUINO) && !defined(CANT_ESP32)
@@ -109,12 +110,12 @@ bool CANTProtocol::registerCommand(byte commandID, void (*onRecieved) (unsigned 
 //Call in the loop() function to execute pending CAN requests and commands
 void CANTProtocol::execute(){
     #if DEBUG_CAN
-        Serial.println("L");
+        // Serial.println("L");
     #endif
     //Sort all the incoming CAN frames into their respective queues 
     while(frameQueueLength > 0){
         #if DEBUG_CAN
-            Serial.println("Q");
+            Serial.print("Clearing stuff out of queue at pos: ");
             Serial.println(frameQueueFront);
         #endif
         volatile PendingCANFrame* incoming = &pendingFrames[frameQueueFront];
@@ -161,7 +162,7 @@ void CANTProtocol::execute(){
     for(int i = 0; i < 2; i++){
         if(requestQueueLength > 0){
             #if DEBUG_CAN
-                Serial.println("R");
+                Serial.println("Processing requests");
             #endif
             PendingCANFrame* r = &pendingRequests[requestQueueFront];
             if(requestQueueFront == 31) requestQueueFront = 0;
@@ -171,6 +172,9 @@ void CANTProtocol::execute(){
             RegisteredBase request = registeredMessages[r->dataID];
             if(request.exists){
                 //User's onRecieved method is expected to call sendRequestResponse() at the end
+                #if DEBUG_CAN
+                    Serial.println("running request.onRecieved()");
+                #endif
                 request.onRecieved(r->dataLength, r->data, r->callbackID);
             }
              
@@ -181,7 +185,7 @@ void CANTProtocol::execute(){
     for(int i = 0; i < 6; i++){
         if(commandQueueLength > 0){
             #if DEBUG_CAN
-                Serial.println("C");
+                Serial.println("Processing commands");
             #endif
             PendingCANFrame* r = &pendingCommands[commandQueueFront];
             if(commandQueueFront == 31) commandQueueFront = 0;
