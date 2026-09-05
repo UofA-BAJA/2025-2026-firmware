@@ -20,7 +20,7 @@ namespace BajaWildcatRacing{
             , dataStorage(dataStorage)
             , coms(coms)
             {
-                this->frequency = 5; 
+                this->frequency = 10;
                 isReady = false;
                 carTimeSet = false;
             }
@@ -57,7 +57,7 @@ namespace BajaWildcatRacing{
 
                     GPSPosition pos = gpsSubsystem.getPosition();
 
-                    std::cout << "gps pos: LatLongAlt" << pos.latitude << " " << pos.longitude << " " << pos.atltitude << std::endl;
+                    // std::cout << "gps pos: LatLongAlt" << pos.latitude << " " << pos.longitude << " " << pos.atltitude << std::endl;
 
                     dataStorage.storeData(pos);
                     coms.sendData(DataType::GPS_POSITION, pos);

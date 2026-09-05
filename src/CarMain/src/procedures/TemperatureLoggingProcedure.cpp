@@ -1,5 +1,6 @@
 #include "Procedure.h"
 #include "DrivetrainSubsystem.h"
+#include "DashSubsystem.h"
 #include "DataStorage.h"
 #include "CarLogger.h"
 #include "Coms.h"
@@ -12,18 +13,20 @@ namespace BajaWildcatRacing
 class TemperatureLoggingProcedure : public Procedure{
     public:
         DrivetrainSubsystem& drivetrainSubsystem;
+	DashSubsystem& dashSubsystem;
         DataStorage& dataStorage;
         Coms& coms;
+ 
 
-
-        TemperatureLoggingProcedure(DrivetrainSubsystem& drivetrainSubsystem, DataStorage& dataStorage, Coms& coms)
+        TemperatureLoggingProcedure(DrivetrainSubsystem& drivetrainSubsystem, DataStorage& dataStorage, Coms& coms, DashSubsystem& dashSubsystem)
         : drivetrainSubsystem(drivetrainSubsystem)
         , dataStorage(dataStorage)
         , coms(coms)
+	, dashSubsystem(dashSubsystem)
         {
 
 
-            this->frequency = 15; //15 or 30??
+            this->frequency = 10;
 
         }
         
@@ -34,7 +37,7 @@ class TemperatureLoggingProcedure : public Procedure{
         void execute() override {
             CVTTemp cvt_temperature = drivetrainSubsystem.getCVTTemperature();
 
-            std::cout << "cvt temp: " << cvt_temperature.temp << std::endl;
+            //std::cout << "cvt temp: " << cvt_temperature.temp << std::endl;
 
             dataStorage.storeData(cvt_temperature);
             coms.sendData(DataType::CVT_TEMPERATURE, cvt_temperature);

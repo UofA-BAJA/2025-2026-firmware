@@ -38,7 +38,7 @@ namespace BajaWildcatRacing
             }
             if(responses[i] != nullptr && (responses[i]->commandCycles) >= cycleThreshold){
                 droppedCommands++;
-                std::cout << "Commands Dropped: " << droppedCommands << std::endl;
+                // std::cout << "Commands Dropped: " << droppedCommands << " Device ID: " << (responses[i]->deviceCommandID >> 4) << std::endl;
                 
                 // std::cout << "Command Dropped: "  << (i) << std::endl;
                 

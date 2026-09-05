@@ -60,17 +60,24 @@ namespace BajaWildcatRacing
         BrakePressure bp;
         bp.front = frontBrakePressure.getBrakePressure();
         bp.rear = rearBrakePressure.getBrakePressure();
-        return bp;
+
+	BrakePressure bp_psi;
+	bp_psi.front = (bp.front - 102.0) / (921.0 - 102.0) * 5000.0;
+	bp_psi.rear = (bp.rear - 102.0) / (921.0 - 102.0) * 5000.0;
+        return bp_psi;
     }
 
     ShockDisplacement DrivetrainSubsystem::getDisplacement(){
         ShockDisplacementPair front = frontDisplacement.getDisplacement();
         ShockDisplacementPair rear = rearDisplacement.getDisplacement();
         ShockDisplacement both;
-        both.frontLeft = front.left;
-        both.frontRight = front.right;
-        both.rearLeft = rear.left;
-        both.rearRight = rear.right;
+
+        // Physically wired backwards so the values are swapped because it cannot be rewired right now
+        both.frontLeft = front.right * -.00968 + 9.9;
+        both.frontRight = front.left * -.00968 + 9.9;
+
+        both.rearLeft = rear.left * -.00968 + 9.9;
+        both.rearRight = rear.right * -.00968 + 9.9;
         return both;
     }
 
